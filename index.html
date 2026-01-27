@@ -1,0 +1,1166 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>腎臟健康衛教 - 張竣傑醫師</title>
+
+    <!-- 預加載 PDF 文件加速載入 -->
+    <link rel="prefetch" href="衛教漫畫/認識慢性腎臟病五階段.pdf" as="document">
+    <link rel="prefetch" href="衛教漫畫/腎友飲食指南：低鈉低蛋白飲食.pdf" as="document">
+    <link rel="prefetch" href="衛教漫畫/腎臟病患者的運動建議.pdf" as="document">
+    <link rel="prefetch" href="專業領域/慢性腎臟病管理.pdf" as="document">
+    <link rel="prefetch" href="專業領域/透析治療.pdf" as="document">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;600;700;900&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #1a4a5e;
+            --primary-light: #2d7a9c;
+            --primary-dark: #0d2d3a;
+            --accent: #e58a2c;
+            --accent-light: #f5a54a;
+            --bg-light: #f8fafc;
+            --bg-cream: #faf8f5;
+            --bg-white: #ffffff;
+            --text-dark: #1a202c;
+            --text-body: #374151;
+            --text-muted: #6b7280;
+            --border: #e5e7eb;
+            --success: #10b981;
+            --shadow-sm: 0 1px 2px rgba(0,0,0,0.05);
+            --shadow-md: 0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -1px rgba(0,0,0,0.06);
+            --shadow-lg: 0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -2px rgba(0,0,0,0.05);
+            --shadow-xl: 0 20px 25px -5px rgba(0,0,0,0.1), 0 10px 10px -5px rgba(0,0,0,0.04);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'Noto Sans TC', -apple-system, BlinkMacSystemFont, sans-serif;
+            color: var(--text-body);
+            line-height: 1.75;
+            overflow-x: hidden;
+            background: var(--bg-light);
+            font-size: 16px;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        /* Navigation */
+        nav {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            background: rgba(255, 255, 255, 0.98);
+            backdrop-filter: blur(12px);
+            z-index: 1000;
+            border-bottom: 1px solid var(--border);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .nav-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--primary);
+            letter-spacing: -0.5px;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 2.5rem;
+            list-style: none;
+        }
+
+        .nav-links a {
+            text-decoration: none;
+            color: var(--text-body);
+            font-weight: 500;
+            font-size: 0.95rem;
+            transition: all 0.3s ease;
+            position: relative;
+            padding: 0.5rem 0;
+        }
+
+        .nav-links a::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: var(--accent);
+            transition: width 0.3s ease;
+            border-radius: 1px;
+        }
+
+        .nav-links a:hover {
+            color: var(--primary);
+        }
+
+        .nav-links a:hover::after {
+            width: 100%;
+        }
+
+        /* Hero Section */
+        .hero {
+            margin-top: 72px;
+            min-height: calc(100vh - 72px);
+            background: linear-gradient(135deg, #e8f4f8 0%, #f5f0eb 50%, #fdf8f3 100%);
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+        }
+
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -20%;
+            width: 80%;
+            height: 150%;
+            background: radial-gradient(ellipse, rgba(45, 122, 156, 0.08) 0%, transparent 70%);
+            pointer-events: none;
+        }
+
+        .hero-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 4rem 2rem;
+            display: grid;
+            grid-template-columns: auto 1fr;
+            gap: 4rem;
+            align-items: center;
+            position: relative;
+            z-index: 1;
+            box-sizing: border-box;
+            width: 100%;
+        }
+
+        .doctor-card {
+            position: relative;
+        }
+
+        .doctor-avatar {
+            width: 220px;
+            height: 220px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #4db6ac 0%, #26a69a 100%);
+            border: 6px solid white;
+            box-shadow: var(--shadow-xl);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+
+        .doctor-avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .doctor-avatar-placeholder {
+            font-size: 100px;
+            color: white;
+            text-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+
+        .hero-content {
+            animation: fadeInUp 0.8s ease-out;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .hero h1 {
+            font-size: 3rem;
+            font-weight: 900;
+            color: var(--text-dark);
+            margin-bottom: 0.75rem;
+            line-height: 1.3;
+            letter-spacing: -1px;
+            word-break: keep-all;
+        }
+
+        .hero-subtitle {
+            font-size: 1.75rem;
+            color: var(--accent);
+            font-weight: 700;
+            margin-bottom: 1.5rem;
+            letter-spacing: -0.5px;
+        }
+
+        .hero p {
+            font-size: 1.125rem;
+            color: var(--text-body);
+            max-width: 550px;
+            line-height: 1.85;
+            margin-bottom: 2.5rem;
+        }
+
+        .hero-buttons {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 1rem 2rem;
+            border-radius: 50px;
+            font-weight: 600;
+            font-size: 1rem;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            border: none;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
+            color: white;
+            box-shadow: 0 4px 14px rgba(26, 74, 94, 0.3);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(26, 74, 94, 0.4);
+        }
+
+        .btn-secondary {
+            background: white;
+            color: var(--primary);
+            border: 2px solid var(--border);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .btn-secondary:hover {
+            border-color: var(--primary);
+            background: var(--bg-light);
+        }
+
+        /* Section Styling */
+        section {
+            padding: 6rem 2rem;
+        }
+
+        .section-container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .section-header {
+            text-align: center;
+            margin-bottom: 4rem;
+        }
+
+        .section-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: linear-gradient(135deg, rgba(229, 138, 44, 0.1) 0%, rgba(229, 138, 44, 0.05) 100%);
+            color: var(--accent);
+            padding: 0.5rem 1.25rem;
+            border-radius: 50px;
+            font-size: 0.875rem;
+            font-weight: 600;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            margin-bottom: 1rem;
+            border: 1px solid rgba(229, 138, 44, 0.2);
+        }
+
+        .section-title {
+            font-size: 2.5rem;
+            color: var(--text-dark);
+            font-weight: 800;
+            margin-bottom: 1rem;
+            letter-spacing: -0.5px;
+        }
+
+        .section-subtitle {
+            font-size: 1.125rem;
+            color: var(--text-muted);
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        /* Comics Section - 衛教漫畫 */
+        #comics {
+            background: linear-gradient(180deg, #ffffff 0%, #fef7ed 100%);
+        }
+
+        .comics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 2rem;
+        }
+
+        .comic-card {
+            background: white;
+            border-radius: 20px;
+            overflow: hidden;
+            border: 1px solid var(--border);
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            cursor: pointer;
+            box-shadow: var(--shadow-sm);
+            text-decoration: none;
+            color: inherit;
+            display: block;
+        }
+
+        .comic-card:hover {
+            transform: translateY(-8px);
+            box-shadow: var(--shadow-xl);
+            border-color: var(--accent-light);
+        }
+
+        .comic-image {
+            width: 100%;
+            height: 200px;
+            background: linear-gradient(135deg, #ffeaa7 0%, #fdcb6e 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 4rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .comic-image.style-1 { background: linear-gradient(135deg, #ffeaa7 0%, #fdcb6e 100%); }
+        .comic-image.style-2 { background: linear-gradient(135deg, #a8e6cf 0%, #56ab91 100%); }
+        .comic-image.style-3 { background: linear-gradient(135deg, #ffaaa5 0%, #ff8b94 100%); }
+        .comic-image.style-4 { background: linear-gradient(135deg, #b4a7d6 0%, #8e7cc3 100%); }
+        .comic-image.style-5 { background: linear-gradient(135deg, #87ceeb 0%, #5dade2 100%); }
+        .comic-image.style-6 { background: linear-gradient(135deg, #dda0dd 0%, #ba55d3 100%); }
+
+        .comic-content {
+            padding: 1.75rem;
+        }
+
+        .comic-category {
+            display: inline-block;
+            background: rgba(229, 138, 44, 0.1);
+            color: var(--accent);
+            padding: 0.35rem 0.9rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            margin-bottom: 0.75rem;
+        }
+
+        .comic-card h3 {
+            font-size: 1.25rem;
+            color: var(--text-dark);
+            margin-bottom: 0.75rem;
+            font-weight: 700;
+            line-height: 1.4;
+        }
+
+        .comic-card p {
+            color: var(--text-muted);
+            font-size: 0.95rem;
+            line-height: 1.7;
+            margin-bottom: 1rem;
+        }
+
+        .comic-meta {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            color: var(--text-muted);
+            font-size: 0.85rem;
+        }
+
+        .read-more {
+            color: var(--primary);
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.25rem;
+            transition: gap 0.3s ease;
+        }
+
+        .comic-card:hover .read-more {
+            gap: 0.5rem;
+            color: var(--accent);
+        }
+
+        /* Expertise Section - 專業領域 */
+        #expertise {
+            background: var(--bg-light);
+        }
+
+        .expertise-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .expertise-card {
+            background: white;
+            padding: 2rem;
+            border-radius: 16px;
+            border: 1px solid var(--border);
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+            box-shadow: var(--shadow-sm);
+            text-decoration: none;
+            color: inherit;
+            display: block;
+        }
+
+        .expertise-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 4px;
+            height: 0;
+            background: linear-gradient(180deg, var(--accent) 0%, var(--accent-light) 100%);
+            transition: height 0.4s ease;
+        }
+
+        .expertise-card:hover {
+            transform: translateY(-6px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .expertise-card:hover::before {
+            height: 100%;
+        }
+
+        .expertise-icon {
+            width: 56px;
+            height: 56px;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            margin-bottom: 1.25rem;
+            box-shadow: 0 4px 12px rgba(26, 74, 94, 0.2);
+        }
+
+        .expertise-card h3 {
+            font-size: 1.2rem;
+            color: var(--text-dark);
+            margin-bottom: 0.75rem;
+            font-weight: 700;
+        }
+
+        .expertise-card > p {
+            color: var(--text-muted);
+            font-size: 0.95rem;
+            line-height: 1.7;
+            margin-bottom: 1rem;
+        }
+
+        .expertise-list {
+            list-style: none;
+        }
+
+        .expertise-list li {
+            padding: 0.4rem 0;
+            color: var(--text-body);
+            font-size: 0.9rem;
+            position: relative;
+            padding-left: 1.5rem;
+        }
+
+        .expertise-list li::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 6px;
+            height: 6px;
+            background: var(--accent);
+            border-radius: 50%;
+        }
+
+        /* About Section */
+        #about {
+            background: white;
+        }
+
+        .about-content {
+            display: grid;
+            grid-template-columns: 1fr 1.2fr;
+            gap: 4rem;
+            align-items: center;
+        }
+
+        .about-image {
+            position: relative;
+        }
+
+        .about-image img {
+            width: 100%;
+            border-radius: 20px;
+            box-shadow: var(--shadow-xl);
+        }
+
+        .about-image-placeholder {
+            width: 100%;
+            aspect-ratio: 3/4;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 6rem;
+            box-shadow: var(--shadow-xl);
+        }
+
+        .about-text h3 {
+            font-size: 1.75rem;
+            color: var(--text-dark);
+            margin-bottom: 1.5rem;
+            font-weight: 700;
+        }
+
+        .about-text p {
+            color: var(--text-body);
+            margin-bottom: 1.25rem;
+            font-size: 1.05rem;
+            line-height: 1.85;
+        }
+
+        .credentials {
+            background: var(--bg-light);
+            padding: 1.75rem;
+            border-radius: 16px;
+            margin-top: 2rem;
+            border-left: 4px solid var(--accent);
+        }
+
+        .credentials h4 {
+            color: var(--text-dark);
+            margin-bottom: 1rem;
+            font-size: 1.1rem;
+            font-weight: 700;
+        }
+
+        .credentials ul {
+            list-style: none;
+            display: grid;
+            gap: 0.5rem;
+        }
+
+        .credentials li {
+            color: var(--text-body);
+            font-size: 0.95rem;
+            position: relative;
+            padding-left: 1.75rem;
+        }
+
+        .credentials li::before {
+            content: '✓';
+            position: absolute;
+            left: 0;
+            color: var(--success);
+            font-weight: bold;
+        }
+
+        /* Contact Section */
+        #contact {
+            background: var(--bg-light);
+        }
+
+        .contact-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .contact-card {
+            background: white;
+            padding: 2.5rem 2rem;
+            border-radius: 16px;
+            text-align: center;
+            border: 1px solid var(--border);
+            transition: all 0.3s ease;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .contact-card:hover {
+            transform: translateY(-4px);
+            box-shadow: var(--shadow-lg);
+            border-color: var(--accent-light);
+        }
+
+        .contact-icon {
+            width: 64px;
+            height: 64px;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.5rem;
+            margin: 0 auto 1.25rem;
+            box-shadow: 0 4px 12px rgba(26, 74, 94, 0.2);
+        }
+
+        .contact-card h3 {
+            color: var(--text-dark);
+            margin-bottom: 0.75rem;
+            font-size: 1.2rem;
+            font-weight: 700;
+        }
+
+        .contact-card p {
+            color: var(--text-muted);
+            line-height: 1.7;
+            font-size: 0.95rem;
+        }
+
+        /* Footer */
+        footer {
+            background: var(--primary-dark);
+            color: white;
+            text-align: center;
+            padding: 2.5rem 2rem;
+        }
+
+        footer p {
+            opacity: 0.85;
+            font-size: 0.9rem;
+        }
+
+        /* Responsive */
+        @media (max-width: 968px) {
+            .hero-container {
+                grid-template-columns: 1fr;
+                text-align: center;
+                gap: 2rem;
+                padding: 3rem 1.5rem;
+            }
+
+            .doctor-card {
+                display: flex;
+                justify-content: center;
+            }
+
+            .doctor-avatar {
+                width: 180px;
+                height: 180px;
+            }
+
+            .hero h1 {
+                font-size: 2rem;
+            }
+
+            .hero-subtitle {
+                font-size: 1.4rem;
+            }
+
+            .hero p {
+                margin-left: auto;
+                margin-right: auto;
+                max-width: 100%;
+                padding: 0 0.5rem;
+            }
+
+            .hero-buttons {
+                justify-content: center;
+                flex-wrap: wrap;
+                gap: 1rem;
+            }
+
+            .about-content {
+                grid-template-columns: 1fr;
+                text-align: center;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .nav-links {
+                display: none;
+            }
+
+            .hero-container {
+                padding: 2rem 1rem;
+            }
+
+            .hero h1 {
+                font-size: 1.6rem;
+            }
+
+            .hero-subtitle {
+                font-size: 1.2rem;
+            }
+
+            .hero p {
+                font-size: 0.9rem;
+            }
+
+            .hero-buttons {
+                flex-direction: column;
+                align-items: center;
+                gap: 0.75rem;
+            }
+
+            .hero-buttons .btn {
+                width: 100%;
+                max-width: 280px;
+                justify-content: center;
+            }
+
+            .section-title {
+                font-size: 1.5rem;
+            }
+
+            .comics-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Animation on scroll */
+        .fade-in {
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 0.6s ease, transform 0.6s ease;
+        }
+
+        .fade-in.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* PDF 橫向瀏覽提示 */
+        .pdf-toast {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: rgba(16, 185, 129, 0.9);
+            color: white;
+            padding: 12px 20px;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            font-weight: 500;
+            z-index: 10000;
+            display: none;
+            align-items: center;
+            gap: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            animation: slideIn 0.3s ease;
+        }
+
+        .pdf-toast.show {
+            display: flex;
+        }
+
+        .pdf-toast.fade-out {
+            animation: slideOut 0.3s ease forwards;
+        }
+
+        @keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+        @keyframes slideOut {
+            from { transform: translateX(0); opacity: 1; }
+            to { transform: translateX(100%); opacity: 0; }
+        }
+    </style>
+</head>
+<body>
+    <!-- PDF 橫向瀏覽提示 -->
+    <div id="pdfToast" class="pdf-toast">
+        <span>📱</span>
+        <span>手機觀看橫向瀏覽效果更佳唷</span>
+    </div>
+
+    <!-- Navigation -->
+    <nav>
+        <div class="nav-container">
+            <div class="logo">腎臟健康平台</div>
+            <ul class="nav-links">
+                <li><a href="#home">首頁</a></li>
+                <li><a href="#comics">衛教漫畫</a></li>
+                <li><a href="#expertise">專業領域</a></li>
+                <li><a href="#about">關於醫師</a></li>
+                <li><a href="#contact">聯絡資訊</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section id="home" class="hero">
+        <div class="hero-container">
+            <div class="doctor-card">
+                <div class="doctor-avatar">
+                    <img src="image.jpg" alt="張竣傑醫師" style="object-fit: cover; object-position: top center; transform: scale(1.05); transform-origin: top center;" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+                    <span class="doctor-avatar-placeholder" style="display:none;">👨‍⚕️</span>
+                </div>
+            </div>
+            <div class="hero-content">
+                <h1>守護腎臟健康 從正確知識開始</h1>
+                <div class="hero-subtitle">張竣傑 醫師</div>
+                <p>
+                    透過淺顯易懂的衛教文章與生動有趣的漫畫，讓您輕鬆了解腎臟保健知識，預防勝於治療，一起守護健康。
+                </p>
+                <div class="hero-buttons">
+                    <a href="#comics" class="btn btn-primary">
+                        <span>📚</span> 瀏覽衛教漫畫
+                    </a>
+                    <a href="#contact" class="btn btn-secondary">
+                        <span>💬</span> 聯絡我們
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Comics Section - 衛教漫畫 -->
+    <section id="comics">
+        <div class="section-container">
+            <div class="section-header">
+                <span class="section-badge">📖 衛教漫畫</span>
+                <h2 class="section-title">輕鬆學腎臟保健</h2>
+                <p class="section-subtitle">用生動有趣的漫畫，讓健康知識更容易理解</p>
+            </div>
+            <div class="comics-grid">
+                <a href="衛教漫畫/認識慢性腎臟病五階段.pdf" target="_blank" class="comic-card fade-in">
+                    <div class="comic-image style-1">📊</div>
+                    <div class="comic-content">
+                        <span class="comic-category">疾病認識</span>
+                        <h3>認識慢性腎臟病五階段</h3>
+                        <p>詳細解說慢性腎臟病的五個分期，各階段的症狀特徵、治療重點與生活調整建議。</p>
+                        <div class="comic-meta">
+                            <span>📅 2024-12-20</span>
+                            <span class="read-more">閱讀更多 →</span>
+                        </div>
+                    </div>
+                </a>
+                <a href="衛教漫畫/腎友飲食指南：低鈉低蛋白飲食.pdf" target="_blank" class="comic-card fade-in">
+                    <div class="comic-image style-2">🥗</div>
+                    <div class="comic-content">
+                        <span class="comic-category">飲食保健</span>
+                        <h3>腎友飲食指南：低鈉低蛋白飲食</h3>
+                        <p>如何正確執行低鈉低蛋白飲食？營養師教你聰明選擇食材，兼顧美味與健康。</p>
+                        <div class="comic-meta">
+                            <span>📅 2024-12-18</span>
+                            <span class="read-more">閱讀更多 →</span>
+                        </div>
+                    </div>
+                </a>
+                <a href="衛教漫畫/腎臟病患者的運動建議.pdf" target="_blank" class="comic-card fade-in">
+                    <div class="comic-image style-3">💪</div>
+                    <div class="comic-content">
+                        <span class="comic-category">生活保健</span>
+                        <h3>腎臟病患者的運動建議</h3>
+                        <p>適度運動對腎臟病患者有益！了解哪些運動適合你，如何安全地進行體能活動。</p>
+                        <div class="comic-meta">
+                            <span>📅 2024-12-15</span>
+                            <span class="read-more">閱讀更多 →</span>
+                        </div>
+                    </div>
+                </a>
+                <a href="衛教漫畫/腎功能檢查報告怎麼看？.pdf" target="_blank" class="comic-card fade-in">
+                    <div class="comic-image style-4">🔬</div>
+                    <div class="comic-content">
+                        <span class="comic-category">檢查須知</span>
+                        <h3>腎功能檢查報告怎麼看？</h3>
+                        <p>肌酸酐、腎絲球過濾率(eGFR)、蛋白尿...這些數值代表什麼意義？一次搞懂你的檢查報告。</p>
+                        <div class="comic-meta">
+                            <span>📅 2024-12-12</span>
+                            <span class="read-more">閱讀更多 →</span>
+                        </div>
+                    </div>
+                </a>
+                <a href="衛教漫畫/腎友用藥安全指南.pdf" target="_blank" class="comic-card fade-in">
+                    <div class="comic-image style-5">💊</div>
+                    <div class="comic-content">
+                        <span class="comic-category">用藥安全</span>
+                        <h3>腎友用藥安全指南</h3>
+                        <p>腎臟病患者如何安全用藥？哪些藥物需要特別注意？常見止痛藥、抗生素使用須知。</p>
+                        <div class="comic-meta">
+                            <span>📅 2024-12-10</span>
+                            <span class="read-more">閱讀更多 →</span>
+                        </div>
+                    </div>
+                </a>
+                <a href="專業領域/透析治療.pdf" target="_blank" class="comic-card fade-in">
+                    <div class="comic-image style-6">🏥</div>
+                    <div class="comic-content">
+                        <span class="comic-category">透析治療</span>
+                        <h3>血液透析 vs 腹膜透析</h3>
+                        <p>兩種透析方式有何不同？各有什麼優缺點？如何選擇最適合自己的透析方式？</p>
+                        <div class="comic-meta">
+                            <span>📅 2024-12-08</span>
+                            <span class="read-more">閱讀更多 →</span>
+                        </div>
+                    </div>
+                </a>
+                <a href="衛教漫畫/血液透析時可以做的運動.pdf" target="_blank" class="comic-card fade-in">
+                    <div class="comic-image style-2">🚴</div>
+                    <div class="comic-content">
+                        <span class="comic-category">透析運動</span>
+                        <h3>血液透析時可以做的運動</h3>
+                        <p>透析中騎腳踏車不只能增強體力，還能促進血液循環、提升透析效率，讓毒素清除更徹底！</p>
+                        <div class="comic-meta">
+                            <span>📅 2025-01-25</span>
+                            <span class="read-more">閱讀更多 →</span>
+                        </div>
+                    </div>
+                </a>
+                <a href="衛教漫畫/腎性骨病變.pdf" target="_blank" class="comic-card fade-in">
+                    <div class="comic-image style-4">🦴</div>
+                    <div class="comic-content">
+                        <span class="comic-category">併發症</span>
+                        <h3>腎性骨病變</h3>
+                        <p>慢性腎臟病會影響骨骼健康？認識腎性骨病變的成因、症狀，以及如何透過飲食與藥物預防骨質疏鬆。</p>
+                        <div class="comic-meta">
+                            <span>📅 2025-01-25</span>
+                            <span class="read-more">閱讀更多 →</span>
+                        </div>
+                    </div>
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Expertise Section - 專業領域 -->
+    <section id="expertise">
+        <div class="section-container">
+            <div class="section-header">
+                <span class="section-badge">🩺 專業領域</span>
+                <h2 class="section-title">腎臟疾病專區</h2>
+                <p class="section-subtitle">提供全面性的腎臟疾病知識與照護資訊</p>
+            </div>
+            <div class="expertise-grid">
+                <a href="專業領域/慢性腎臟病管理.pdf" target="_blank" class="expertise-card fade-in">
+                    <div class="expertise-icon">🫀</div>
+                    <h3>慢性腎臟病管理</h3>
+                    <p>深入了解慢性腎臟病的分期、症狀與日常照護，掌握延緩疾病進展的關鍵。</p>
+                    <ul class="expertise-list">
+                        <li>腎功能檢測與追蹤</li>
+                        <li>飲食營養建議</li>
+                        <li>併發症預防指南</li>
+                    </ul>
+                </a>
+                <a href="專業領域/透析治療.pdf" target="_blank" class="expertise-card fade-in">
+                    <div class="expertise-icon">💧</div>
+                    <h3>透析治療</h3>
+                    <p>完整的透析治療知識，包括血液透析與腹膜透析的原理、流程與注意事項。</p>
+                    <ul class="expertise-list">
+                        <li>透析方式比較</li>
+                        <li>透析前準備</li>
+                        <li>透析生活品質提升</li>
+                    </ul>
+                </a>
+                <a href="專業領域/高血壓腎病變.pdf" target="_blank" class="expertise-card fade-in">
+                    <div class="expertise-icon">⚕️</div>
+                    <h3>高血壓腎病變</h3>
+                    <p>認識高血壓對腎臟的影響，學習如何透過控制血壓來保護腎功能。</p>
+                    <ul class="expertise-list">
+                        <li>血壓監測技巧</li>
+                        <li>生活型態調整</li>
+                        <li>用藥安全須知</li>
+                    </ul>
+                </a>
+                <a href="專業領域/急性腎損傷.pdf" target="_blank" class="expertise-card fade-in">
+                    <div class="expertise-icon">💊</div>
+                    <h3>急性腎損傷</h3>
+                    <p>了解急性腎損傷的警訊、處理方式，把握黃金治療時機。</p>
+                    <ul class="expertise-list">
+                        <li>常見原因與症狀</li>
+                        <li>緊急處置步驟</li>
+                        <li>預後與恢復追蹤</li>
+                    </ul>
+                </a>
+                <a href="專業領域/糖尿病腎病變.pdf" target="_blank" class="expertise-card fade-in">
+                    <div class="expertise-icon">🩺</div>
+                    <h3>糖尿病腎病變</h3>
+                    <p>認識糖尿病對腎臟的影響，學習如何透過血糖控制延緩腎病變進展。</p>
+                    <ul class="expertise-list">
+                        <li>血糖監測與管理</li>
+                        <li>蛋白尿檢測追蹤</li>
+                        <li>飲食與用藥調整</li>
+                    </ul>
+                </a>
+                <a href="專業領域/腎臟移植.pdf" target="_blank" class="expertise-card fade-in">
+                    <div class="expertise-icon">🫘</div>
+                    <h3>腎臟移植</h3>
+                    <p>腎臟移植是末期腎病的重要治療選項，提供更好的生活品質與長期預後。</p>
+                    <ul class="expertise-list">
+                        <li>移植前評估與配對</li>
+                        <li>手術過程與術後照護</li>
+                        <li>抗排斥藥物須知</li>
+                    </ul>
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- About Section -->
+    <section id="about">
+        <div class="section-container">
+            <div class="section-header">
+                <span class="section-badge">👨‍⚕️ 關於醫師</span>
+                <h2 class="section-title">張竣傑 醫師</h2>
+            </div>
+            <div class="about-content">
+                <div class="about-image fade-in">
+                    <img src="doctor-image.png" alt="張竣傑醫師" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                    <div class="about-image-placeholder" style="display:none;">👨‍⚕️</div>
+                </div>
+                <div class="about-text fade-in">
+                    <h3>用心照護 專業守護</h3>
+                    <p>
+                        張竣傑醫師畢業於長庚醫學系，並於基隆長庚醫院完成內科及腎臟專科訓練。秉持「預防勝於治療」的理念，致力於腎臟健康衛教推廣。
+                    </p>
+                    <p>
+                        深信正確的醫療知識能幫助民眾及早預防腎臟疾病，因此創立此平台，以淺顯易懂的方式分享腎臟保健資訊，讓每個人都能成為自己健康的守護者。
+                    </p>
+                    <div class="credentials">
+                        <h4>學經歷</h4>
+                        <ul>
+                            <li>長庚醫學系醫學士</li>
+                            <li>基隆長庚醫院內科住院醫師</li>
+                            <li>基隆長庚醫院腎臟科總醫師</li>
+                            <li>中華民國內科專科醫師</li>
+                            <li>中華民國腎臟科專科醫師</li>
+                            <li>台灣腎臟醫學會會員</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Contact Section -->
+    <section id="contact">
+        <div class="section-container">
+            <div class="section-header">
+                <span class="section-badge">📬 聯絡資訊</span>
+                <h2 class="section-title">與我聯繫</h2>
+                <p class="section-subtitle">歡迎來信交流或提供衛教內容建議</p>
+            </div>
+            <div class="contact-cards">
+                <div class="contact-card fade-in">
+                    <div class="contact-icon">✉️</div>
+                    <h3>電子郵件</h3>
+                    <p><a href="mailto:calldrjackhere@gmail.com" style="color: var(--primary); text-decoration: none;">calldrjackhere@gmail.com</a><br><br>歡迎來信詢問衛教內容或合作事宜</p>
+                </div>
+                <div class="contact-card fade-in">
+                    <div class="contact-icon">📱</div>
+                    <h3>社群媒體</h3>
+                    <p><a href="https://www.facebook.com/profile.php?id=61586867342658" target="_blank" style="color: var(--primary); text-decoration: none;">Facebook 粉絲團</a><br><br>追蹤獲取最新衛教資訊</p>
+                </div>
+                <div class="contact-card fade-in">
+                    <div class="contact-icon">💬</div>
+                    <h3>內容建議</h3>
+                    <p>有想了解的腎臟健康主題？<br><br>歡迎透過郵件告訴我們</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+        <p>&copy; 2024 張竣傑醫師 腎臟健康衛教平台 | 本網站內容僅供參考，實際診療請諮詢專業醫師</p>
+    </footer>
+
+    <script>
+        // Smooth scroll animation trigger
+        const observerOptions = {
+            threshold: 0.1,
+            rootMargin: '0px 0px -50px 0px'
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('visible');
+                }
+            });
+        }, observerOptions);
+
+        document.querySelectorAll('.fade-in').forEach(el => {
+            observer.observe(el);
+        });
+
+        // Smooth scroll for navigation links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            });
+        });
+
+        // 手機首次進入網站自動顯示橫向瀏覽提示
+        function isMobile() {
+            return window.innerWidth <= 768 || /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+        }
+
+        (function showMobileToastOnce() {
+            if (isMobile() && !localStorage.getItem('mobileToastShown')) {
+                const toast = document.getElementById('pdfToast');
+
+                // 延遲一點顯示，讓頁面先載入完成
+                setTimeout(() => {
+                    toast.classList.add('show');
+                    toast.classList.remove('fade-out');
+
+                    // 標記已顯示過
+                    localStorage.setItem('mobileToastShown', 'true');
+
+                    setTimeout(() => {
+                        toast.classList.add('fade-out');
+                    }, 2500);
+
+                    setTimeout(() => {
+                        toast.classList.remove('show', 'fade-out');
+                    }, 3000);
+                }, 500);
+            }
+        })();
+    </script>
+</body>
+</html>
