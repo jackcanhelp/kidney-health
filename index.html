@@ -512,6 +512,89 @@
             border-radius: 50%;
         }
 
+        /* Tools Section - 實用工具 */
+        #tools {
+            background: linear-gradient(180deg, #f0f9ff 0%, #e0f2fe 100%);
+        }
+
+        .tools-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .tool-card {
+            background: white;
+            padding: 2rem;
+            border-radius: 16px;
+            border: 1px solid var(--border);
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+            box-shadow: var(--shadow-sm);
+            text-decoration: none;
+            color: inherit;
+            display: block;
+        }
+
+        .tool-card:not(.coming-soon):hover {
+            transform: translateY(-6px);
+            box-shadow: var(--shadow-lg);
+            border-color: var(--primary-light);
+        }
+
+        .tool-card.coming-soon {
+            opacity: 0.7;
+            cursor: default;
+        }
+
+        .tool-card .tool-icon {
+            width: 56px;
+            height: 56px;
+            background: linear-gradient(135deg, var(--accent) 0%, var(--accent-light) 100%);
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            margin-bottom: 1.25rem;
+            box-shadow: 0 4px 12px rgba(229, 138, 44, 0.2);
+        }
+
+        .tool-card h3 {
+            font-size: 1.2rem;
+            color: var(--text-dark);
+            margin-bottom: 0.75rem;
+            font-weight: 700;
+        }
+
+        .tool-card p {
+            color: var(--text-muted);
+            font-size: 0.95rem;
+            line-height: 1.7;
+            margin-bottom: 1rem;
+        }
+
+        .tool-link {
+            color: var(--primary);
+            font-weight: 600;
+            font-size: 0.95rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.25rem;
+            transition: gap 0.3s ease;
+        }
+
+        .tool-card:not(.coming-soon):hover .tool-link {
+            gap: 0.5rem;
+            color: var(--accent);
+        }
+
+        .tool-link.coming {
+            color: var(--text-muted);
+            font-style: italic;
+        }
+
         /* About Section */
         #about {
             background: white;
@@ -817,6 +900,7 @@
                 <li><a href="#home">首頁</a></li>
                 <li><a href="#comics">衛教漫畫</a></li>
                 <li><a href="#expertise">專業領域</a></li>
+                <li><a href="#tools">實用工具</a></li>
                 <li><a href="#about">關於醫師</a></li>
                 <li><a href="#contact">聯絡資訊</a></li>
             </ul>
@@ -1028,6 +1112,37 @@
                         <li>抗排斥藥物須知</li>
                     </ul>
                 </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Tools Section - 實用工具 -->
+    <section id="tools">
+        <div class="section-container">
+            <div class="section-header">
+                <span class="section-badge">🛠️ 實用工具</span>
+                <h2 class="section-title">腎友好幫手</h2>
+                <p class="section-subtitle">提供實用的健康管理小工具，幫助您更好地照顧自己</p>
+            </div>
+            <div class="tools-grid">
+                <a href="tools.html#potassium-tool" class="tool-card fade-in">
+                    <div class="tool-icon">🥬</div>
+                    <h3>食物鉀含量查詢</h3>
+                    <p>輸入食物名稱，快速查詢鉀含量是低鉀、中鉀還是高鉀，幫助您做出更好的飲食選擇。</p>
+                    <span class="tool-link">開始使用 →</span>
+                </a>
+                <div class="tool-card coming-soon fade-in">
+                    <div class="tool-icon">🧮</div>
+                    <h3>腎功能計算機</h3>
+                    <p>輸入肌酸酐數值，自動計算腎絲球過濾率(eGFR)，了解您的腎功能狀況。</p>
+                    <span class="tool-link coming">即將推出</span>
+                </div>
+                <div class="tool-card coming-soon fade-in">
+                    <div class="tool-icon">💊</div>
+                    <h3>用藥提醒助手</h3>
+                    <p>設定服藥時間提醒，不再忘記吃藥，養成規律用藥好習慣。</p>
+                    <span class="tool-link coming">即將推出</span>
+                </div>
             </div>
         </div>
     </section>
