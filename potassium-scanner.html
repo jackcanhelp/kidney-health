@@ -520,7 +520,7 @@
 
         // --- Call Gemini API ---
         async function analyzeFood(base64Image) {
-            var endpoint = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=' + _k();
+            var endpoint = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-lite:generateContent?key=' + _k();
 
             var prompt = '你是一位專業的腎臟科營養師。請分析這張照片中的食物，並回傳以下 JSON 格式（不要加 markdown 標記，只回傳純 JSON）：\n\n' +
                 '{\n' +
