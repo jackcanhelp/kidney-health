@@ -883,6 +883,153 @@
             from { transform: translateX(0); opacity: 1; }
             to { transform: translateX(100%); opacity: 0; }
         }
+
+        /* Mobile Hamburger Menu */
+        .hamburger {
+            display: none;
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 0.5rem;
+            z-index: 1100;
+        }
+
+        .hamburger span {
+            display: block;
+            width: 24px;
+            height: 3px;
+            background: var(--primary);
+            margin: 5px 0;
+            border-radius: 2px;
+            transition: all 0.3s ease;
+        }
+
+        .hamburger.active span:nth-child(1) {
+            transform: rotate(45deg) translate(5px, 6px);
+        }
+
+        .hamburger.active span:nth-child(2) {
+            opacity: 0;
+        }
+
+        .hamburger.active span:nth-child(3) {
+            transform: rotate(-45deg) translate(5px, -6px);
+        }
+
+        .mobile-menu {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 1050;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .mobile-menu.active {
+            opacity: 1;
+        }
+
+        .mobile-menu-panel {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 280px;
+            height: 100%;
+            background: white;
+            box-shadow: 4px 0 20px rgba(0,0,0,0.15);
+            transform: translateX(-100%);
+            transition: transform 0.3s ease;
+            padding: 5rem 1.5rem 2rem;
+            overflow-y: auto;
+        }
+
+        .mobile-menu.active .mobile-menu-panel {
+            transform: translateX(0);
+        }
+
+        .mobile-menu-panel a {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 1rem 0.5rem;
+            text-decoration: none;
+            color: var(--text-dark);
+            font-size: 1.05rem;
+            font-weight: 600;
+            border-bottom: 1px solid var(--border);
+            transition: color 0.2s;
+        }
+
+        .mobile-menu-panel a:hover {
+            color: var(--accent);
+        }
+
+        .mobile-menu-panel a .menu-icon {
+            font-size: 1.25rem;
+            width: 1.5rem;
+            text-align: center;
+        }
+
+        @media (max-width: 768px) {
+            .hamburger {
+                display: block;
+            }
+
+            .mobile-menu {
+                display: block;
+                pointer-events: none;
+            }
+
+            .mobile-menu.active {
+                pointer-events: auto;
+            }
+        }
+
+        /* Show More Button */
+        .show-more-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            margin: 2rem auto 0;
+            padding: 0.875rem 2.5rem;
+            background: white;
+            color: var(--primary);
+            border: 2px solid var(--border);
+            border-radius: 50px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-family: inherit;
+        }
+
+        .show-more-btn:hover {
+            border-color: var(--primary);
+            background: var(--bg-light);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .show-more-btn .arrow {
+            transition: transform 0.3s ease;
+        }
+
+        .show-more-btn.expanded .arrow {
+            transform: rotate(180deg);
+        }
+
+        .collapsible-item {
+            display: none;
+        }
+
+        .collapsible-item.show {
+            display: block;
+        }
     </style>
 </head>
 <body>
@@ -895,6 +1042,11 @@
     <!-- Navigation -->
     <nav>
         <div class="nav-container">
+            <button class="hamburger" id="hamburgerBtn" aria-label="開啟選單">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
             <div class="logo">腎臟健康平台</div>
             <ul class="nav-links">
                 <li><a href="#home">首頁</a></li>
@@ -906,6 +1058,18 @@
             </ul>
         </div>
     </nav>
+
+    <!-- Mobile Side Menu -->
+    <div class="mobile-menu" id="mobileMenu">
+        <div class="mobile-menu-panel">
+            <a href="#home" class="mobile-nav-link"><span class="menu-icon">🏠</span>首頁</a>
+            <a href="#comics" class="mobile-nav-link"><span class="menu-icon">📖</span>衛教漫畫</a>
+            <a href="#expertise" class="mobile-nav-link"><span class="menu-icon">🩺</span>專業領域</a>
+            <a href="#tools" class="mobile-nav-link"><span class="menu-icon">🛠️</span>實用工具</a>
+            <a href="#about" class="mobile-nav-link"><span class="menu-icon">👨‍⚕️</span>關於醫師</a>
+            <a href="#contact" class="mobile-nav-link"><span class="menu-icon">📬</span>聯絡資訊</a>
+        </div>
+    </div>
 
     <!-- Hero Section -->
     <section id="home" class="hero">
@@ -991,7 +1155,7 @@
                         </div>
                     </div>
                 </a>
-                <a href="衛教漫畫/腎友用藥安全指南.pdf" target="_blank" class="comic-card fade-in">
+                <a href="衛教漫畫/腎友用藥安全指南.pdf" target="_blank" class="comic-card fade-in collapsible-item" data-group="comics">
                     <div class="comic-image style-5">💊</div>
                     <div class="comic-content">
                         <span class="comic-category">用藥安全</span>
@@ -1003,7 +1167,7 @@
                         </div>
                     </div>
                 </a>
-                <a href="專業領域/透析治療.pdf" target="_blank" class="comic-card fade-in">
+                <a href="專業領域/透析治療.pdf" target="_blank" class="comic-card fade-in collapsible-item" data-group="comics">
                     <div class="comic-image style-6">🏥</div>
                     <div class="comic-content">
                         <span class="comic-category">透析治療</span>
@@ -1015,7 +1179,7 @@
                         </div>
                     </div>
                 </a>
-                <a href="衛教漫畫/血液透析時可以做的運動.pdf" target="_blank" class="comic-card fade-in">
+                <a href="衛教漫畫/血液透析時可以做的運動.pdf" target="_blank" class="comic-card fade-in collapsible-item" data-group="comics">
                     <div class="comic-image style-2">🚴</div>
                     <div class="comic-content">
                         <span class="comic-category">透析運動</span>
@@ -1027,7 +1191,7 @@
                         </div>
                     </div>
                 </a>
-                <a href="衛教漫畫/腎性骨病變.pdf" target="_blank" class="comic-card fade-in">
+                <a href="衛教漫畫/腎性骨病變.pdf" target="_blank" class="comic-card fade-in collapsible-item" data-group="comics">
                     <div class="comic-image style-4">🦴</div>
                     <div class="comic-content">
                         <span class="comic-category">併發症</span>
@@ -1039,7 +1203,22 @@
                         </div>
                     </div>
                 </a>
+                <a href="衛教漫畫/高血鉀的危險.pdf" target="_blank" class="comic-card fade-in collapsible-item" data-group="comics">
+                    <div class="comic-image style-3">⚡</div>
+                    <div class="comic-content">
+                        <span class="comic-category">併發症</span>
+                        <h3>高血鉀的危險</h3>
+                        <p>高血鉀是腎臟病常見的危險併發症，可能導致心律不整甚至猝死。了解如何預防與處理高血鉀。</p>
+                        <div class="comic-meta">
+                            <span>📅 2025-01-29</span>
+                            <span class="read-more">閱讀更多 →</span>
+                        </div>
+                    </div>
+                </a>
             </div>
+            <button class="show-more-btn" data-target="comics" onclick="toggleMore(this)">
+                更多衛教漫畫 <span class="arrow">▼</span>
+            </button>
         </div>
     </section>
 
@@ -1082,7 +1261,7 @@
                         <li>用藥安全須知</li>
                     </ul>
                 </a>
-                <a href="專業領域/急性腎損傷.pdf" target="_blank" class="expertise-card fade-in">
+                <a href="專業領域/急性腎損傷.pdf" target="_blank" class="expertise-card fade-in collapsible-item" data-group="expertise">
                     <div class="expertise-icon">💊</div>
                     <h3>急性腎損傷</h3>
                     <p>了解急性腎損傷的警訊、處理方式，把握黃金治療時機。</p>
@@ -1092,7 +1271,7 @@
                         <li>預後與恢復追蹤</li>
                     </ul>
                 </a>
-                <a href="專業領域/糖尿病腎病變.pdf" target="_blank" class="expertise-card fade-in">
+                <a href="專業領域/糖尿病腎病變.pdf" target="_blank" class="expertise-card fade-in collapsible-item" data-group="expertise">
                     <div class="expertise-icon">🩺</div>
                     <h3>糖尿病腎病變</h3>
                     <p>認識糖尿病對腎臟的影響，學習如何透過血糖控制延緩腎病變進展。</p>
@@ -1102,7 +1281,7 @@
                         <li>飲食與用藥調整</li>
                     </ul>
                 </a>
-                <a href="專業領域/腎臟移植.pdf" target="_blank" class="expertise-card fade-in">
+                <a href="專業領域/腎臟移植.pdf" target="_blank" class="expertise-card fade-in collapsible-item" data-group="expertise">
                     <div class="expertise-icon">🫘</div>
                     <h3>腎臟移植</h3>
                     <p>腎臟移植是末期腎病的重要治療選項，提供更好的生活品質與長期預後。</p>
@@ -1113,6 +1292,9 @@
                     </ul>
                 </a>
             </div>
+            <button class="show-more-btn" data-target="expertise" onclick="toggleMore(this)">
+                更多專業領域 <span class="arrow">▼</span>
+            </button>
         </div>
     </section>
 
@@ -1137,19 +1319,22 @@
                     <p>輸入肌酸酐數值，自動計算腎絲球過濾率(eGFR)，了解您的腎功能狀況及慢性腎臟病分期。</p>
                     <span class="tool-link">開始使用 →</span>
                 </a>
-                <a href="tools.html#kfre-tool" class="tool-card fade-in">
+                <a href="tools.html#kfre-tool" class="tool-card fade-in collapsible-item" data-group="tools">
                     <div class="tool-icon">📈</div>
                     <h3>KFRE 腎衰竭風險預測</h3>
                     <p>預測慢性腎臟病患者 2 年及 5 年內進展至腎衰竭的風險，協助醫病共同決策。</p>
                     <span class="tool-link">開始使用 →</span>
                 </a>
-                <a href="potassium-scanner.html" class="tool-card fade-in">
+                <a href="potassium-scanner.html" class="tool-card fade-in collapsible-item" data-group="tools">
                     <div class="tool-icon">📷</div>
                     <h3>鉀離子掃描器（實驗版）</h3>
                     <p>用手機相機掃描食材，AI 即時辨識並顯示鉀離子含量，幫助腎友快速判斷飲食安全。</p>
                     <span class="tool-link">開始使用 →</span>
                 </a>
             </div>
+            <button class="show-more-btn" data-target="tools" onclick="toggleMore(this)">
+                更多實用工具 <span class="arrow">▼</span>
+            </button>
         </div>
     </section>
 
@@ -1256,6 +1441,59 @@
                 }
             });
         });
+
+        // Mobile Hamburger Menu
+        const hamburgerBtn = document.getElementById('hamburgerBtn');
+        const mobileMenu = document.getElementById('mobileMenu');
+
+        hamburgerBtn.addEventListener('click', function() {
+            this.classList.toggle('active');
+            mobileMenu.classList.toggle('active');
+            document.body.style.overflow = mobileMenu.classList.contains('active') ? 'hidden' : '';
+        });
+
+        // Close menu when clicking backdrop
+        mobileMenu.addEventListener('click', function(e) {
+            if (e.target === mobileMenu) {
+                hamburgerBtn.classList.remove('active');
+                mobileMenu.classList.remove('active');
+                document.body.style.overflow = '';
+            }
+        });
+
+        // Close menu when clicking a link
+        document.querySelectorAll('.mobile-nav-link').forEach(link => {
+            link.addEventListener('click', function() {
+                hamburgerBtn.classList.remove('active');
+                mobileMenu.classList.remove('active');
+                document.body.style.overflow = '';
+            });
+        });
+
+        // Show More / Collapse toggle
+        function toggleMore(btn) {
+            const group = btn.getAttribute('data-target');
+            const items = document.querySelectorAll('.collapsible-item[data-group="' + group + '"]');
+            const isExpanded = btn.classList.contains('expanded');
+
+            items.forEach(item => {
+                if (isExpanded) {
+                    item.classList.remove('show');
+                } else {
+                    item.classList.add('show');
+                    // Trigger fade-in animation for newly visible items
+                    observer.observe(item);
+                }
+            });
+
+            btn.classList.toggle('expanded');
+            const labels = { comics: '衛教漫畫', expertise: '專業領域', tools: '實用工具' };
+            if (isExpanded) {
+                btn.innerHTML = '更多' + labels[group] + ' <span class="arrow">▼</span>';
+            } else {
+                btn.innerHTML = '收合 <span class="arrow">▼</span>';
+            }
+        }
 
         // 手機首次進入網站自動顯示橫向瀏覽提示
         function isMobile() {
