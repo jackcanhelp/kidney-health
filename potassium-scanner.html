@@ -1,0 +1,674 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>鉀離子掃描器（實驗版）- 腎臟健康衛教平台</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;600;700;900&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #1a4a5e;
+            --primary-light: #2d7a9c;
+            --accent: #e58a2c;
+            --bg-light: #f8fafc;
+            --text-dark: #1a202c;
+            --text-body: #374151;
+            --text-muted: #6b7280;
+            --border: #e5e7eb;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Noto Sans TC', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: #0d1b21;
+            color: white;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            -webkit-font-smoothing: antialiased;
+            overflow-x: hidden;
+        }
+
+        /* Header */
+        .app-header {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
+            padding: 1rem 1.25rem;
+            text-align: center;
+            position: relative;
+            z-index: 10;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+        }
+
+        .app-header h1 {
+            font-size: 1.25rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+
+        .app-header p {
+            font-size: 0.85rem;
+            opacity: 0.85;
+            margin-top: 0.25rem;
+        }
+
+        .back-link {
+            position: absolute;
+            left: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: white;
+            text-decoration: none;
+            font-size: 1.5rem;
+            opacity: 0.8;
+            transition: opacity 0.2s;
+        }
+
+        .back-link:hover { opacity: 1; }
+
+        /* Camera Area */
+        .camera-area {
+            flex: 1;
+            position: relative;
+            background: #000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 300px;
+        }
+
+        .camera-area video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            position: absolute;
+            top: 0;
+            left: 0;
+        }
+
+        .camera-area canvas {
+            display: none;
+        }
+
+        .camera-placeholder {
+            text-align: center;
+            color: rgba(255,255,255,0.6);
+            padding: 2rem;
+        }
+
+        .camera-placeholder .icon {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+        }
+
+        /* Capture Button */
+        .capture-area {
+            position: absolute;
+            bottom: 1.5rem;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 10;
+        }
+
+        .capture-btn {
+            width: 72px;
+            height: 72px;
+            border-radius: 50%;
+            border: 4px solid white;
+            background: rgba(255,255,255,0.25);
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            backdrop-filter: blur(4px);
+        }
+
+        .capture-btn:hover {
+            background: rgba(255,255,255,0.4);
+            transform: scale(1.05);
+        }
+
+        .capture-btn:active {
+            transform: scale(0.95);
+        }
+
+        .capture-btn::after {
+            content: '';
+            width: 52px;
+            height: 52px;
+            border-radius: 50%;
+            background: white;
+        }
+
+        .capture-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .capture-btn:disabled::after {
+            background: rgba(255,255,255,0.5);
+        }
+
+        /* Loading Overlay */
+        .loading-overlay {
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.7);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 20;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .loading-overlay.active {
+            display: flex;
+        }
+
+        .spinner {
+            width: 48px;
+            height: 48px;
+            border: 4px solid rgba(255,255,255,0.2);
+            border-top-color: white;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .loading-text {
+            font-size: 1rem;
+            opacity: 0.9;
+        }
+
+        /* Result Panel */
+        .result-panel {
+            display: none;
+            background: white;
+            color: var(--text-body);
+            border-radius: 24px 24px 0 0;
+            padding: 1.5rem;
+            max-height: 65vh;
+            overflow-y: auto;
+            box-shadow: 0 -4px 20px rgba(0,0,0,0.3);
+            position: relative;
+            z-index: 30;
+        }
+
+        .result-panel.active {
+            display: block;
+            animation: slideUp 0.4s ease;
+        }
+
+        @keyframes slideUp {
+            from { transform: translateY(100%); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        .result-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.25rem;
+        }
+
+        .result-header h2 {
+            font-size: 1.35rem;
+            color: var(--text-dark);
+            font-weight: 700;
+        }
+
+        .close-btn {
+            padding: 0.4rem 1rem;
+            background: var(--bg-light);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            font-family: inherit;
+            color: var(--text-body);
+            font-weight: 500;
+            transition: background 0.2s;
+        }
+
+        .close-btn:hover {
+            background: var(--border);
+        }
+
+        .result-content {
+            line-height: 1.8;
+        }
+
+        /* Food Name */
+        .food-name-row {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .food-name-row .icon { font-size: 1.5rem; }
+
+        .food-name {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--text-dark);
+        }
+
+        /* Potassium Level Card */
+        .k-level-card {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 1rem 1.25rem;
+            border-radius: 14px;
+            margin-bottom: 1rem;
+        }
+
+        .k-level-card.level-low {
+            background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%);
+            border: 1.5px solid #a7f3d0;
+        }
+
+        .k-level-card.level-medium {
+            background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%);
+            border: 1.5px solid #fde68a;
+        }
+
+        .k-level-card.level-high {
+            background: linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%);
+            border: 1.5px solid #fecaca;
+        }
+
+        .traffic-light {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            flex-shrink: 0;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+        }
+
+        .traffic-light.green {
+            background: radial-gradient(circle at 40% 40%, #34d399, #059669);
+        }
+
+        .traffic-light.yellow {
+            background: radial-gradient(circle at 40% 40%, #fbbf24, #d97706);
+        }
+
+        .traffic-light.red {
+            background: radial-gradient(circle at 40% 40%, #f87171, #dc2626);
+        }
+
+        .k-level-text {
+            font-size: 1.15rem;
+            font-weight: 700;
+        }
+
+        .k-level-text.text-low { color: #065f46; }
+        .k-level-text.text-medium { color: #92400e; }
+        .k-level-text.text-high { color: #991b1b; }
+
+        .k-level-sub {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            margin-top: 0.1rem;
+        }
+
+        /* Detail Rows */
+        .detail-row {
+            display: flex;
+            align-items: flex-start;
+            gap: 0.5rem;
+            padding: 0.75rem 0;
+            border-bottom: 1px solid #f3f4f6;
+            line-height: 1.7;
+        }
+
+        .detail-row:last-child {
+            border-bottom: none;
+        }
+
+        .detail-row .icon {
+            font-size: 1.1rem;
+            flex-shrink: 0;
+            margin-top: 0.15rem;
+        }
+
+        .detail-row .text {
+            font-size: 0.95rem;
+            color: var(--text-body);
+        }
+
+        .detail-row .text strong {
+            color: var(--text-dark);
+        }
+
+        /* Disclaimer */
+        .disclaimer {
+            margin-top: 1.25rem;
+            padding: 0.75rem 1rem;
+            background: #f9fafb;
+            border-radius: 10px;
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            line-height: 1.6;
+            text-align: center;
+        }
+
+        /* Error State */
+        .error-msg {
+            background: #fef2f2;
+            border: 1px solid #fecaca;
+            color: #991b1b;
+            padding: 1rem;
+            border-radius: 12px;
+            text-align: center;
+            line-height: 1.6;
+        }
+
+        /* Bottom Legend */
+        .bottom-legend {
+            display: flex;
+            justify-content: center;
+            gap: 0.75rem;
+            padding: 0.75rem;
+            background: rgba(0,0,0,0.5);
+            backdrop-filter: blur(4px);
+            position: absolute;
+            bottom: 100px;
+            left: 50%;
+            transform: translateX(-50%);
+            border-radius: 20px;
+            z-index: 5;
+        }
+
+        .legend-chip {
+            display: flex;
+            align-items: center;
+            gap: 0.35rem;
+            font-size: 0.75rem;
+            color: rgba(255,255,255,0.9);
+        }
+
+        .legend-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+        }
+
+        .legend-dot.green { background: #10b981; }
+        .legend-dot.yellow { background: #f59e0b; }
+        .legend-dot.red { background: #ef4444; }
+
+        /* Copyright */
+        .copyright {
+            text-align: center;
+            padding: 0.5rem;
+            font-size: 0.75rem;
+            color: rgba(255,255,255,0.4);
+            background: #0d1b21;
+        }
+    </style>
+</head>
+<body>
+    <div class="app-header">
+        <a href="index.html" class="back-link" aria-label="返回首頁">&larr;</a>
+        <h1>📷 鉀離子掃描器（實驗版）</h1>
+        <p>將相機對準食物，點擊拍照分析</p>
+    </div>
+
+    <div class="camera-area" id="cameraArea">
+        <video id="video" autoplay playsinline muted></video>
+        <canvas id="canvas"></canvas>
+
+        <div class="camera-placeholder" id="cameraPlaceholder">
+            <div class="icon">📷</div>
+            <p>正在啟動相機...</p>
+        </div>
+
+        <div class="bottom-legend" id="legend" style="display:none;">
+            <div class="legend-chip"><span class="legend-dot green"></span>低鉀 &lt;150</div>
+            <div class="legend-chip"><span class="legend-dot yellow"></span>中鉀 150-300</div>
+            <div class="legend-chip"><span class="legend-dot red"></span>高鉀 &gt;300</div>
+        </div>
+
+        <div class="capture-area" id="captureArea" style="display:none;">
+            <button class="capture-btn" id="captureBtn" aria-label="拍照分析"></button>
+        </div>
+
+        <div class="loading-overlay" id="loadingOverlay">
+            <div class="spinner"></div>
+            <div class="loading-text">AI 分析中...</div>
+        </div>
+    </div>
+
+    <div class="result-panel" id="resultPanel">
+        <div class="result-header">
+            <h2>分析結果</h2>
+            <button class="close-btn" id="closeBtn">關閉</button>
+        </div>
+        <div class="result-content" id="resultContent"></div>
+        <div class="disclaimer">
+            ⚠️ 本工具僅供參考，AI 辨識可能有誤差。實際飲食建議請諮詢您的醫師或營養師。<br>
+            &copy; 張竣傑醫師 腎臟健康衛教平台
+        </div>
+    </div>
+
+    <script>
+    (function() {
+        'use strict';
+
+        // --- Config (obfuscated) ---
+        var _0x=[65,73,122,97,83,121,66,81,50,122,99,68,74,116,106,97,107,70,106,85,103,111,85,85,50,117,69,54,120,70,55,106,87,57,77,111,52,115,69];
+        function _k(){return _0x.map(function(c){return String.fromCharCode(c)}).join('')}
+
+        var video = document.getElementById('video');
+        var canvas = document.getElementById('canvas');
+        var ctx = canvas.getContext('2d');
+        var captureBtn = document.getElementById('captureBtn');
+        var captureArea = document.getElementById('captureArea');
+        var legend = document.getElementById('legend');
+        var loadingOverlay = document.getElementById('loadingOverlay');
+        var resultPanel = document.getElementById('resultPanel');
+        var resultContent = document.getElementById('resultContent');
+        var closeBtn = document.getElementById('closeBtn');
+        var placeholder = document.getElementById('cameraPlaceholder');
+
+        var stream = null;
+
+        // --- Start Camera ---
+        async function startCamera() {
+            try {
+                stream = await navigator.mediaDevices.getUserMedia({
+                    video: {
+                        facingMode: 'environment',
+                        width: { ideal: 1280 },
+                        height: { ideal: 720 }
+                    }
+                });
+                video.srcObject = stream;
+                video.onloadedmetadata = function() {
+                    placeholder.style.display = 'none';
+                    captureArea.style.display = 'block';
+                    legend.style.display = 'flex';
+                };
+            } catch (err) {
+                placeholder.innerHTML = '<div class="icon">⚠️</div><p>無法啟動相機<br>請確認已允許相機權限</p>';
+            }
+        }
+
+        // --- Capture Photo ---
+        function capturePhoto() {
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            ctx.drawImage(video, 0, 0);
+            return canvas.toDataURL('image/jpeg', 0.8).split(',')[1];
+        }
+
+        // --- Call Gemini API ---
+        async function analyzeFood(base64Image) {
+            var endpoint = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=' + _k();
+
+            var prompt = '你是一位專業的腎臟科營養師。請分析這張照片中的食物，並回傳以下 JSON 格式（不要加 markdown 標記，只回傳純 JSON）：\n\n' +
+                '{\n' +
+                '  "food_name": "食物中文名稱",\n' +
+                '  "food_name_en": "食物英文名稱",\n' +
+                '  "level": "high 或 medium 或 low",\n' +
+                '  "level_label": "高鉀 或 中鉀 或 低鉀",\n' +
+                '  "potassium_range": "每100g的鉀含量範圍，例如 約300-350mg",\n' +
+                '  "advice": "給腎臟病患者的飲食建議，50字以內",\n' +
+                '  "cooking_tip": "降低鉀含量的烹調建議，30字以內，若無則填空字串"\n' +
+                '}\n\n' +
+                '鉀含量分級標準：低鉀 < 150mg/100g、中鉀 150-300mg/100g、高鉀 > 300mg/100g。\n' +
+                '如果照片中沒有食物，請回傳：{"error": "未偵測到食物，請將相機對準食材再試一次"}';
+
+            var body = {
+                contents: [{
+                    parts: [
+                        { text: prompt },
+                        { inline_data: { mime_type: 'image/jpeg', data: base64Image } }
+                    ]
+                }],
+                generationConfig: {
+                    temperature: 0.2,
+                    maxOutputTokens: 500
+                }
+            };
+
+            var response = await fetch(endpoint, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(body)
+            });
+
+            if (!response.ok) {
+                throw new Error('API 請求失敗 (' + response.status + ')');
+            }
+
+            var data = await response.json();
+            var text = data.candidates[0].content.parts[0].text;
+
+            // Strip markdown code fences if present
+            text = text.replace(/```json\s*/g, '').replace(/```\s*/g, '').trim();
+
+            return JSON.parse(text);
+        }
+
+        // --- Render Result ---
+        function renderResult(result) {
+            if (result.error) {
+                resultContent.innerHTML = '<div class="error-msg">' + result.error + '</div>';
+                return;
+            }
+
+            var levelClass, lightClass, textClass, levelRange;
+            switch (result.level) {
+                case 'high':
+                    levelClass = 'level-high';
+                    lightClass = 'red';
+                    textClass = 'text-high';
+                    levelRange = '> 300mg/100g';
+                    break;
+                case 'medium':
+                    levelClass = 'level-medium';
+                    lightClass = 'yellow';
+                    textClass = 'text-medium';
+                    levelRange = '150-300mg/100g';
+                    break;
+                default:
+                    levelClass = 'level-low';
+                    lightClass = 'green';
+                    textClass = 'text-low';
+                    levelRange = '< 150mg/100g';
+            }
+
+            var html = '';
+
+            // Food name
+            html += '<div class="food-name-row">';
+            html += '<span class="icon">🍽️</span>';
+            html += '<span class="food-name">' + escapeHtml(result.food_name);
+            if (result.food_name_en) {
+                html += ' (' + escapeHtml(result.food_name_en) + ')';
+            }
+            html += '</span>';
+            html += '</div>';
+
+            // Potassium level card with traffic light
+            html += '<div class="k-level-card ' + levelClass + '">';
+            html += '<div class="traffic-light ' + lightClass + '"></div>';
+            html += '<div>';
+            html += '<div class="k-level-text ' + textClass + '">鉀含量：' + escapeHtml(result.level_label) + '（' + levelRange + '）</div>';
+            html += '<div class="k-level-sub">每 100g 含鉀：' + escapeHtml(result.potassium_range) + '</div>';
+            html += '</div>';
+            html += '</div>';
+
+            // Advice
+            if (result.advice) {
+                html += '<div class="detail-row">';
+                html += '<span class="icon">💡</span>';
+                html += '<span class="text"><strong>腎友建議：</strong>' + escapeHtml(result.advice) + '</span>';
+                html += '</div>';
+            }
+
+            // Cooking tip
+            if (result.cooking_tip) {
+                html += '<div class="detail-row">';
+                html += '<span class="icon">🍳</span>';
+                html += '<span class="text"><strong>烹調建議：</strong>' + escapeHtml(result.cooking_tip) + '</span>';
+                html += '</div>';
+            }
+
+            resultContent.innerHTML = html;
+        }
+
+        function escapeHtml(str) {
+            var div = document.createElement('div');
+            div.textContent = str;
+            return div.innerHTML;
+        }
+
+        // --- Event Handlers ---
+        captureBtn.addEventListener('click', async function() {
+            if (captureBtn.disabled) return;
+            captureBtn.disabled = true;
+            loadingOverlay.classList.add('active');
+            resultPanel.classList.remove('active');
+
+            try {
+                var base64 = capturePhoto();
+                var result = await analyzeFood(base64);
+                renderResult(result);
+                resultPanel.classList.add('active');
+            } catch (err) {
+                resultContent.innerHTML = '<div class="error-msg">分析失敗：' + escapeHtml(err.message) + '<br>請再試一次</div>';
+                resultPanel.classList.add('active');
+            } finally {
+                loadingOverlay.classList.remove('active');
+                captureBtn.disabled = false;
+            }
+        });
+
+        closeBtn.addEventListener('click', function() {
+            resultPanel.classList.remove('active');
+        });
+
+        // --- Init ---
+        startCamera();
+    })();
+    </script>
+</body>
+</html>

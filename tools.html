@@ -360,6 +360,494 @@
                 gap: 0.75rem;
             }
         }
+
+        /* eGFR Calculator Styles */
+        .egfr-form {
+            margin-bottom: 2rem;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group label {
+            display: block;
+            font-weight: 600;
+            color: var(--text-dark);
+            margin-bottom: 0.5rem;
+            font-size: 0.95rem;
+        }
+
+        .input-with-unit {
+            display: flex;
+            align-items: stretch;
+            border: 2px solid var(--border);
+            border-radius: 10px;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .input-with-unit:focus-within {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 4px rgba(26, 74, 94, 0.1);
+        }
+
+        .input-with-unit input {
+            flex: 1;
+            padding: 0.875rem 1rem;
+            border: none;
+            font-size: 1.1rem;
+            font-family: inherit;
+            outline: none;
+            min-width: 0;
+        }
+
+        .input-with-unit .unit {
+            display: flex;
+            align-items: center;
+            padding: 0 1rem;
+            background: var(--bg-light);
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            font-weight: 500;
+            border-left: 1px solid var(--border);
+        }
+
+        .radio-group {
+            display: flex;
+            gap: 1.5rem;
+        }
+
+        .radio-label {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            cursor: pointer;
+            font-size: 1rem;
+            color: var(--text-body);
+        }
+
+        .radio-label input[type="radio"] {
+            width: 20px;
+            height: 20px;
+            accent-color: var(--primary);
+            cursor: pointer;
+        }
+
+        .calculate-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 1rem 2rem;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
+            color: white;
+            border: none;
+            border-radius: 50px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 14px rgba(26, 74, 94, 0.3);
+            font-family: inherit;
+        }
+
+        .calculate-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(26, 74, 94, 0.4);
+        }
+
+        .calculate-btn:active {
+            transform: translateY(0);
+        }
+
+        /* Result Card */
+        .egfr-result {
+            margin-bottom: 2rem;
+            animation: fadeIn 0.5s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .result-card {
+            background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+            border-radius: 16px;
+            padding: 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1.5rem;
+            border: 2px solid #bae6fd;
+            margin-bottom: 1.5rem;
+        }
+
+        .result-egfr {
+            display: flex;
+            flex-direction: column;
+            gap: 0.25rem;
+        }
+
+        .result-label {
+            font-size: 0.9rem;
+            color: var(--text-muted);
+            font-weight: 500;
+        }
+
+        .result-number {
+            font-size: 3.5rem;
+            font-weight: 800;
+            color: var(--primary);
+            line-height: 1;
+        }
+
+        .result-unit {
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+
+        .result-stage {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: 0.5rem;
+        }
+
+        .stage-badge {
+            padding: 0.5rem 1.25rem;
+            border-radius: 50px;
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: white;
+        }
+
+        .stage-badge.stage-1 { background: var(--success); }
+        .stage-badge.stage-2 { background: #84cc16; }
+        .stage-badge.stage-3a { background: var(--warning); }
+        .stage-badge.stage-3b { background: #f97316; }
+        .stage-badge.stage-4 { background: #ef4444; }
+        .stage-badge.stage-5 { background: #991b1b; }
+
+        .stage-name {
+            font-size: 1rem;
+            color: var(--text-body);
+            font-weight: 600;
+        }
+
+        .stage-description {
+            background: white;
+            padding: 1.25rem;
+            border-radius: 12px;
+            border-left: 4px solid var(--primary);
+            margin-bottom: 1rem;
+        }
+
+        .stage-description p {
+            margin: 0;
+            color: var(--text-body);
+            line-height: 1.7;
+        }
+
+        .stage-advice {
+            background: #fef3c7;
+            padding: 1.25rem;
+            border-radius: 12px;
+            border-left: 4px solid var(--warning);
+        }
+
+        .stage-advice h4 {
+            margin: 0 0 0.5rem 0;
+            color: var(--text-dark);
+            font-size: 1rem;
+        }
+
+        .stage-advice ul {
+            margin: 0;
+            padding-left: 1.25rem;
+        }
+
+        .stage-advice li {
+            color: var(--text-body);
+            margin-bottom: 0.35rem;
+            line-height: 1.6;
+        }
+
+        /* CKD Stages Info Table */
+        .ckd-stages-info {
+            margin-top: 2rem;
+            padding-top: 2rem;
+            border-top: 2px solid var(--bg-light);
+        }
+
+        .ckd-stages-info h3 {
+            font-size: 1.2rem;
+            color: var(--text-dark);
+            margin-bottom: 1rem;
+            font-weight: 700;
+        }
+
+        .stages-table {
+            border-radius: 12px;
+            overflow: hidden;
+            border: 1px solid var(--border);
+        }
+
+        .stage-row {
+            display: grid;
+            grid-template-columns: 100px 120px 1fr;
+            padding: 0.875rem 1rem;
+            border-bottom: 1px solid var(--border);
+            align-items: center;
+        }
+
+        .stage-row:last-child {
+            border-bottom: none;
+        }
+
+        .stage-row.header {
+            background: var(--primary);
+            color: white;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+
+        .stage-row.stage-1 { background: rgba(16, 185, 129, 0.1); }
+        .stage-row.stage-2 { background: rgba(132, 204, 22, 0.1); }
+        .stage-row.stage-3a { background: rgba(245, 158, 11, 0.1); }
+        .stage-row.stage-3b { background: rgba(249, 115, 22, 0.1); }
+        .stage-row.stage-4 { background: rgba(239, 68, 68, 0.1); }
+        .stage-row.stage-5 { background: rgba(153, 27, 27, 0.1); }
+
+        .stage-row span:first-child {
+            font-weight: 600;
+            color: var(--text-dark);
+        }
+
+        .stage-row.header span:first-child {
+            color: white;
+        }
+
+        @media (max-width: 600px) {
+            .result-card {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .result-stage {
+                align-items: flex-start;
+            }
+
+            .result-number {
+                font-size: 2.5rem;
+            }
+
+            .stage-row {
+                grid-template-columns: 80px 80px 1fr;
+                font-size: 0.85rem;
+                padding: 0.75rem 0.5rem;
+            }
+        }
+
+        /* KFRE Tool Styles */
+        .kfre-notice {
+            display: flex;
+            align-items: flex-start;
+            gap: 0.75rem;
+            background: #eff6ff;
+            border: 1px solid #bfdbfe;
+            border-radius: 12px;
+            padding: 1rem 1.25rem;
+            margin-bottom: 1.5rem;
+            font-size: 0.95rem;
+            color: #1e40af;
+            line-height: 1.6;
+        }
+
+        .kfre-notice span {
+            font-size: 1.25rem;
+            flex-shrink: 0;
+            margin-top: 0.1rem;
+        }
+
+        .kfre-result-cards {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .kfre-risk-card {
+            background: white;
+            border-radius: 16px;
+            padding: 1.75rem;
+            text-align: center;
+            border: 2px solid var(--border);
+            transition: border-color 0.3s;
+        }
+
+        .kfre-risk-card.risk-low { border-color: #10b981; background: linear-gradient(180deg, #ecfdf5 0%, #fff 100%); }
+        .kfre-risk-card.risk-moderate { border-color: #f59e0b; background: linear-gradient(180deg, #fffbeb 0%, #fff 100%); }
+        .kfre-risk-card.risk-high { border-color: #f97316; background: linear-gradient(180deg, #fff7ed 0%, #fff 100%); }
+        .kfre-risk-card.risk-very-high { border-color: #ef4444; background: linear-gradient(180deg, #fef2f2 0%, #fff 100%); }
+
+        .kfre-risk-header {
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            margin-bottom: 0.75rem;
+        }
+
+        .kfre-risk-number {
+            font-size: 3rem;
+            font-weight: 800;
+            color: var(--text-dark);
+            line-height: 1;
+            margin-bottom: 1rem;
+        }
+
+        .kfre-risk-bar-wrapper {
+            width: 100%;
+            height: 10px;
+            background: #e5e7eb;
+            border-radius: 5px;
+            overflow: hidden;
+            margin-bottom: 0.75rem;
+        }
+
+        .kfre-risk-bar {
+            height: 100%;
+            border-radius: 5px;
+            transition: width 0.8s ease, background 0.3s;
+            width: 0%;
+        }
+
+        .kfre-risk-bar.risk-low { background: #10b981; }
+        .kfre-risk-bar.risk-moderate { background: #f59e0b; }
+        .kfre-risk-bar.risk-high { background: #f97316; }
+        .kfre-risk-bar.risk-very-high { background: #ef4444; }
+
+        .kfre-risk-level {
+            font-size: 0.95rem;
+            font-weight: 600;
+            padding: 0.3rem 0.75rem;
+            border-radius: 20px;
+            display: inline-block;
+        }
+
+        .kfre-risk-level.risk-low { color: #065f46; background: #d1fae5; }
+        .kfre-risk-level.risk-moderate { color: #92400e; background: #fef3c7; }
+        .kfre-risk-level.risk-high { color: #9a3412; background: #ffedd5; }
+        .kfre-risk-level.risk-very-high { color: #991b1b; background: #fee2e2; }
+
+        .kfre-interpretation {
+            background: white;
+            padding: 1.25rem;
+            border-radius: 12px;
+            border-left: 4px solid var(--primary);
+            margin-bottom: 1rem;
+            line-height: 1.7;
+        }
+
+        .kfre-interpretation p {
+            margin: 0 0 0.5rem 0;
+            color: var(--text-body);
+        }
+
+        .kfre-interpretation p:last-child {
+            margin-bottom: 0;
+        }
+
+        .kfre-egfr-warning {
+            display: flex;
+            align-items: flex-start;
+            gap: 0.75rem;
+            background: #fef3c7;
+            border: 1px solid #fcd34d;
+            border-radius: 12px;
+            padding: 1rem 1.25rem;
+            margin-bottom: 1rem;
+            color: #92400e;
+            line-height: 1.6;
+        }
+
+        .kfre-egfr-warning span {
+            font-size: 1.25rem;
+            flex-shrink: 0;
+        }
+
+        .kfre-legend {
+            margin-top: 2rem;
+            padding-top: 2rem;
+            border-top: 2px solid var(--bg-light);
+        }
+
+        .kfre-legend h3 {
+            font-size: 1.2rem;
+            color: var(--text-dark);
+            margin-bottom: 1rem;
+            font-weight: 700;
+        }
+
+        .kfre-legend-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+
+        .kfre-legend-item {
+            display: flex;
+            gap: 0.75rem;
+            align-items: flex-start;
+            padding: 1rem;
+            background: var(--bg-light);
+            border-radius: 10px;
+        }
+
+        .kfre-legend-dot {
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            flex-shrink: 0;
+            margin-top: 0.25rem;
+        }
+
+        .kfre-legend-dot.risk-low { background: #10b981; }
+        .kfre-legend-dot.risk-moderate { background: #f59e0b; }
+        .kfre-legend-dot.risk-high { background: #f97316; }
+        .kfre-legend-dot.risk-very-high { background: #ef4444; }
+
+        .kfre-legend-item strong {
+            display: block;
+            font-size: 0.95rem;
+            color: var(--text-dark);
+            margin-bottom: 0.25rem;
+        }
+
+        .kfre-legend-item p {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            margin: 0;
+            line-height: 1.5;
+        }
+
+        @media (max-width: 600px) {
+            .kfre-result-cards {
+                grid-template-columns: 1fr;
+            }
+
+            .kfre-risk-number {
+                font-size: 2.25rem;
+            }
+
+            .kfre-legend-grid {
+                grid-template-columns: 1fr;
+            }
+        }
     </style>
 </head>
 <body>
@@ -423,6 +911,245 @@
 
                 <div class="data-source">
                     📊 資料來源：<a href="https://consumer.fda.gov.tw/Food/TFND.aspx?nodeID=178" target="_blank">衛生福利部食品藥物管理署 - 食品營養成分資料庫</a>
+                </div>
+            </div>
+
+            <!-- eGFR Calculator Tool -->
+            <div class="tool-section" id="egfr-tool">
+                <div class="tool-header">
+                    <div class="tool-icon" style="background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);">🧮</div>
+                    <div>
+                        <h2 class="tool-title">腎功能計算機</h2>
+                        <p class="tool-desc">輸入肌酸酐數值，計算腎絲球過濾率(eGFR)及慢性腎臟病分期</p>
+                    </div>
+                </div>
+
+                <div class="egfr-form">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="creatinine">血清肌酸酐 (Creatinine)</label>
+                            <div class="input-with-unit">
+                                <input type="number" id="creatinine" step="0.01" min="0.1" max="30" placeholder="例如：1.2">
+                                <span class="unit">mg/dL</span>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="age">年齡</label>
+                            <div class="input-with-unit">
+                                <input type="number" id="age" min="18" max="120" placeholder="例如：65">
+                                <span class="unit">歲</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>生理性別</label>
+                            <div class="radio-group">
+                                <label class="radio-label">
+                                    <input type="radio" name="gender" value="male" checked>
+                                    <span class="radio-custom"></span>
+                                    男性
+                                </label>
+                                <label class="radio-label">
+                                    <input type="radio" name="gender" value="female">
+                                    <span class="radio-custom"></span>
+                                    女性
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                    <button class="calculate-btn" onclick="calculateEGFR()">
+                        <span>📊</span> 計算 eGFR
+                    </button>
+                </div>
+
+                <div class="egfr-result" id="egfrResult" style="display: none;">
+                    <div class="result-card">
+                        <div class="result-egfr">
+                            <span class="result-label">腎絲球過濾率 (eGFR)</span>
+                            <span class="result-number" id="egfrValue">--</span>
+                            <span class="result-unit">mL/min/1.73m²</span>
+                        </div>
+                        <div class="result-stage" id="ckdStage">
+                            <span class="stage-badge" id="stageBadge">--</span>
+                            <span class="stage-name" id="stageName">--</span>
+                        </div>
+                    </div>
+                    <div class="stage-description" id="stageDescription"></div>
+                    <div class="stage-advice" id="stageAdvice"></div>
+                </div>
+
+                <div class="ckd-stages-info">
+                    <h3>慢性腎臟病分期說明</h3>
+                    <div class="stages-table">
+                        <div class="stage-row header">
+                            <span>分期</span>
+                            <span>eGFR 範圍</span>
+                            <span>腎功能狀態</span>
+                        </div>
+                        <div class="stage-row stage-1">
+                            <span>第一期</span>
+                            <span>≥ 90</span>
+                            <span>腎功能正常或輕微損傷</span>
+                        </div>
+                        <div class="stage-row stage-2">
+                            <span>第二期</span>
+                            <span>60-89</span>
+                            <span>輕度腎功能下降</span>
+                        </div>
+                        <div class="stage-row stage-3a">
+                            <span>第三期A</span>
+                            <span>45-59</span>
+                            <span>輕度至中度腎功能下降</span>
+                        </div>
+                        <div class="stage-row stage-3b">
+                            <span>第三期B</span>
+                            <span>30-44</span>
+                            <span>中度至重度腎功能下降</span>
+                        </div>
+                        <div class="stage-row stage-4">
+                            <span>第四期</span>
+                            <span>15-29</span>
+                            <span>重度腎功能下降</span>
+                        </div>
+                        <div class="stage-row stage-5">
+                            <span>第五期</span>
+                            <span>< 15</span>
+                            <span>腎衰竭</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="data-source">
+                    📊 計算公式：CKD-EPI 2021 公式（不含種族因子）
+                </div>
+            </div>
+
+            <!-- KFRE Risk Prediction Tool -->
+            <div class="tool-section" id="kfre-tool">
+                <div class="tool-header">
+                    <div class="tool-icon" style="background: linear-gradient(135deg, #e74c3c 0%, #f39c12 100%);">📈</div>
+                    <div>
+                        <h2 class="tool-title">KFRE 腎衰竭風險預測</h2>
+                        <p class="tool-desc">預測慢性腎臟病患者 2 年及 5 年內進展至腎衰竭（需透析或移植）的風險</p>
+                    </div>
+                </div>
+
+                <div class="kfre-notice">
+                    <span>ℹ️</span>
+                    <p>本工具適用於 <strong>eGFR &lt; 45</strong> 的慢性腎臟病患者（第 3b～5 期）。若 eGFR ≥ 45，預測結果可能不準確。</p>
+                </div>
+
+                <div class="egfr-form">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="kfre-age">年齡</label>
+                            <div class="input-with-unit">
+                                <input type="number" id="kfre-age" min="18" max="120" placeholder="例如：65">
+                                <span class="unit">歲</span>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label>生理性別</label>
+                            <div class="radio-group">
+                                <label class="radio-label">
+                                    <input type="radio" name="kfre-gender" value="male" checked>
+                                    <span class="radio-custom"></span>
+                                    男性
+                                </label>
+                                <label class="radio-label">
+                                    <input type="radio" name="kfre-gender" value="female">
+                                    <span class="radio-custom"></span>
+                                    女性
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="kfre-egfr">eGFR（腎絲球過濾率）</label>
+                            <div class="input-with-unit">
+                                <input type="number" id="kfre-egfr" step="0.1" min="1" max="120" placeholder="例如：25">
+                                <span class="unit">mL/min/1.73m²</span>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="kfre-acr">尿液白蛋白肌酸酐比值 (ACR)</label>
+                            <div class="input-with-unit">
+                                <input type="number" id="kfre-acr" step="0.1" min="1" max="30000" placeholder="例如：300">
+                                <span class="unit">mg/g</span>
+                            </div>
+                        </div>
+                    </div>
+                    <button class="calculate-btn" onclick="calculateKFRE()">
+                        <span>📈</span> 計算腎衰竭風險
+                    </button>
+                </div>
+
+                <div class="kfre-result" id="kfreResult" style="display: none;">
+                    <div class="kfre-result-cards">
+                        <div class="kfre-risk-card" id="kfre2yr">
+                            <div class="kfre-risk-header">2 年腎衰竭風險</div>
+                            <div class="kfre-risk-number" id="kfre2yrValue">--</div>
+                            <div class="kfre-risk-bar-wrapper">
+                                <div class="kfre-risk-bar" id="kfre2yrBar"></div>
+                            </div>
+                            <div class="kfre-risk-level" id="kfre2yrLevel">--</div>
+                        </div>
+                        <div class="kfre-risk-card" id="kfre5yr">
+                            <div class="kfre-risk-header">5 年腎衰竭風險</div>
+                            <div class="kfre-risk-number" id="kfre5yrValue">--</div>
+                            <div class="kfre-risk-bar-wrapper">
+                                <div class="kfre-risk-bar" id="kfre5yrBar"></div>
+                            </div>
+                            <div class="kfre-risk-level" id="kfre5yrLevel">--</div>
+                        </div>
+                    </div>
+
+                    <div class="kfre-interpretation" id="kfreInterpretation"></div>
+
+                    <div class="kfre-egfr-warning" id="kfreEgfrWarning" style="display: none;">
+                        <span>⚠️</span>
+                        <p>您輸入的 eGFR ≥ 45，KFRE 主要適用於 eGFR &lt; 45 的患者，此結果僅供參考。</p>
+                    </div>
+                </div>
+
+                <div class="kfre-legend">
+                    <h3>風險等級說明</h3>
+                    <div class="kfre-legend-grid">
+                        <div class="kfre-legend-item">
+                            <span class="kfre-legend-dot risk-low"></span>
+                            <div>
+                                <strong>低風險（&lt; 5%）</strong>
+                                <p>建議持續門診追蹤，維持現有治療。</p>
+                            </div>
+                        </div>
+                        <div class="kfre-legend-item">
+                            <span class="kfre-legend-dot risk-moderate"></span>
+                            <div>
+                                <strong>中風險（5% - 15%）</strong>
+                                <p>加強腎臟科追蹤頻率，積極控制危險因子。</p>
+                            </div>
+                        </div>
+                        <div class="kfre-legend-item">
+                            <span class="kfre-legend-dot risk-high"></span>
+                            <div>
+                                <strong>高風險（15% - 40%）</strong>
+                                <p>建議開始與醫療團隊討論透析或移植準備事宜。</p>
+                            </div>
+                        </div>
+                        <div class="kfre-legend-item">
+                            <span class="kfre-legend-dot risk-very-high"></span>
+                            <div>
+                                <strong>極高風險（&gt; 40%）</strong>
+                                <p>儘早進行透析通路建立或移植評估。</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="data-source">
+                    📊 計算公式：Tangri N, et al. JAMA. 2016;315(2):164-174.（4-variable KFRE，非北美校正版本）
                 </div>
             </div>
         </div>
@@ -621,6 +1348,262 @@
                 searchFood(e.target.value);
             }
         });
+
+
+        // eGFR Calculator Functions
+        function calculateEGFR() {
+            const creatinine = parseFloat(document.getElementById('creatinine').value);
+            const age = parseInt(document.getElementById('age').value);
+            const gender = document.querySelector('input[name="gender"]:checked').value;
+
+            // Validation
+            if (!creatinine || creatinine <= 0 || creatinine > 30) {
+                alert('請輸入有效的肌酸酐數值 (0.1 - 30 mg/dL)');
+                return;
+            }
+            if (!age || age < 18 || age > 120) {
+                alert('請輸入有效的年齡 (18 - 120 歲)');
+                return;
+            }
+
+            // CKD-EPI 2021 Formula (without race)
+            // eGFR = 142 × min(Scr/κ, 1)^α × max(Scr/κ, 1)^(-1.200) × 0.9938^age × (1.012 if female)
+            // κ = 0.7 for females, 0.9 for males
+            // α = -0.241 for females, -0.302 for males
+
+            let kappa, alpha, sexFactor;
+            if (gender === 'female') {
+                kappa = 0.7;
+                alpha = -0.241;
+                sexFactor = 1.012;
+            } else {
+                kappa = 0.9;
+                alpha = -0.302;
+                sexFactor = 1;
+            }
+
+            const scrKappa = creatinine / kappa;
+            const minVal = Math.min(scrKappa, 1);
+            const maxVal = Math.max(scrKappa, 1);
+
+            const eGFR = 142 * Math.pow(minVal, alpha) * Math.pow(maxVal, -1.200) * Math.pow(0.9938, age) * sexFactor;
+            const eGFRRounded = Math.round(eGFR);
+
+            // Display result
+            displayEGFRResult(eGFRRounded);
+        }
+
+        function displayEGFRResult(eGFR) {
+            const resultDiv = document.getElementById('egfrResult');
+            const egfrValue = document.getElementById('egfrValue');
+            const stageBadge = document.getElementById('stageBadge');
+            const stageName = document.getElementById('stageName');
+            const stageDescription = document.getElementById('stageDescription');
+            const stageAdvice = document.getElementById('stageAdvice');
+
+            // Show result section
+            resultDiv.style.display = 'block';
+            egfrValue.textContent = eGFR;
+
+            // Determine CKD stage
+            let stage, stageCss, stageText, description, advice;
+
+            if (eGFR >= 90) {
+                stage = '第一期';
+                stageCss = 'stage-1';
+                stageText = '腎功能正常或輕微損傷';
+                description = '您的腎絲球過濾率在正常範圍內。如果有蛋白尿或其他腎臟損傷跡象，仍需注意追蹤。';
+                advice = [
+                    '維持健康生活習慣',
+                    '定期健康檢查（每年1次）',
+                    '控制血壓、血糖在正常範圍',
+                    '避免濫用止痛藥和來路不明藥物'
+                ];
+            } else if (eGFR >= 60) {
+                stage = '第二期';
+                stageCss = 'stage-2';
+                stageText = '輕度腎功能下降';
+                description = '腎功能輕微下降，通常沒有明顯症狀。需要找出導致腎功能下降的原因，並積極控制。';
+                advice = [
+                    '尋找並控制腎病病因（如糖尿病、高血壓）',
+                    '每6-12個月追蹤腎功能',
+                    '注意飲食均衡，減少過量蛋白質攝取',
+                    '維持理想體重，規律運動'
+                ];
+            } else if (eGFR >= 45) {
+                stage = '第三期A';
+                stageCss = 'stage-3a';
+                stageText = '輕度至中度腎功能下降';
+                description = '腎功能已有明顯下降，需要積極治療原發疾病，並注意併發症的預防。';
+                advice = [
+                    '每3-6個月追蹤腎功能',
+                    '開始注意低鈉、適量蛋白飲食',
+                    '積極控制血壓（目標<130/80 mmHg）',
+                    '避免使用腎毒性藥物',
+                    '建議轉介腎臟科追蹤'
+                ];
+            } else if (eGFR >= 30) {
+                stage = '第三期B';
+                stageCss = 'stage-3b';
+                stageText = '中度至重度腎功能下降';
+                description = '腎功能明顯下降，可能出現貧血、骨質異常等併發症，需要專科醫師密切追蹤。';
+                advice = [
+                    '每3個月追蹤腎功能',
+                    '嚴格執行腎臟病飲食（低鈉、低磷、適量蛋白）',
+                    '注意貧血、骨病變等併發症',
+                    '定期追蹤腎臟科門診',
+                    '開始了解透析治療相關資訊'
+                ];
+            } else if (eGFR >= 15) {
+                stage = '第四期';
+                stageCss = 'stage-4';
+                stageText = '重度腎功能下降';
+                description = '腎功能嚴重下降，需要準備腎臟替代療法（透析或移植），並積極處理各種併發症。';
+                advice = [
+                    '每1-3個月追蹤腎功能',
+                    '與醫療團隊討論透析方式選擇',
+                    '建立透析通路（血管通路或腹膜透析導管）',
+                    '嚴格遵守飲食限制',
+                    '評估腎臟移植的可能性'
+                ];
+            } else {
+                stage = '第五期';
+                stageCss = 'stage-5';
+                stageText = '腎衰竭';
+                description = '腎臟已無法維持正常身體功能，需要開始透析治療或接受腎臟移植。';
+                advice = [
+                    '開始或準備開始透析治療',
+                    '密切追蹤電解質、體液狀態',
+                    '嚴格控制飲食和水分攝取',
+                    '配合醫療團隊安排各項治療',
+                    '保持正向心態，維護生活品質'
+                ];
+            }
+
+            // Update UI
+            stageBadge.textContent = stage;
+            stageBadge.className = 'stage-badge ' + stageCss;
+            stageName.textContent = stageText;
+
+            stageDescription.innerHTML = '<p>' + description + '</p>';
+
+            let adviceHtml = '<h4>📋 建議事項</h4><ul>';
+            advice.forEach(item => {
+                adviceHtml += '<li>' + item + '</li>';
+            });
+            adviceHtml += '</ul>';
+            stageAdvice.innerHTML = adviceHtml;
+
+            // Scroll to result
+            resultDiv.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+
+
+        // KFRE Calculator Functions
+        function calculateKFRE() {
+            var age = parseInt(document.getElementById('kfre-age').value);
+            var egfr = parseFloat(document.getElementById('kfre-egfr').value);
+            var acr = parseFloat(document.getElementById('kfre-acr').value);
+            var gender = document.querySelector('input[name="kfre-gender"]:checked').value;
+
+            // Validation
+            if (!age || age < 18 || age > 120) {
+                alert('請輸入有效的年齡（18 - 120 歲）');
+                return;
+            }
+            if (!egfr || egfr <= 0 || egfr > 120) {
+                alert('請輸入有效的 eGFR 數值（1 - 120 mL/min/1.73m²）');
+                return;
+            }
+            if (!acr || acr <= 0 || acr > 30000) {
+                alert('請輸入有效的 ACR 數值（1 - 30000 mg/g）');
+                return;
+            }
+
+            // 4-variable KFRE (Tangri 2016, non-North American recalibrated)
+            var male = (gender === 'male') ? 1 : 0;
+            var lnACR = Math.log(acr); // natural log
+
+            var sum = -0.2201 * (age / 10 - 7.036)
+                    + 0.2467 * (male - 0.5642)
+                    - 0.5567 * (egfr / 5 - 7.222)
+                    + 0.4510 * (lnACR - 5.137);
+
+            var risk2yr = 1 - Math.pow(0.9832, Math.exp(sum));
+            var risk5yr = 1 - Math.pow(0.9365, Math.exp(sum));
+
+            // Convert to percentage
+            var risk2yrPct = (risk2yr * 100);
+            var risk5yrPct = (risk5yr * 100);
+
+            // Cap display at 99.9%
+            risk2yrPct = Math.min(risk2yrPct, 99.9);
+            risk5yrPct = Math.min(risk5yrPct, 99.9);
+
+            displayKFREResult(risk2yrPct, risk5yrPct, egfr);
+        }
+
+        function getKFRERiskClass(pct) {
+            if (pct < 5) return 'risk-low';
+            if (pct < 15) return 'risk-moderate';
+            if (pct < 40) return 'risk-high';
+            return 'risk-very-high';
+        }
+
+        function getKFRERiskLabel(pct) {
+            if (pct < 5) return '低風險';
+            if (pct < 15) return '中風險';
+            if (pct < 40) return '高風險';
+            return '極高風險';
+        }
+
+        function displayKFREResult(risk2yr, risk5yr, egfr) {
+            var resultDiv = document.getElementById('kfreResult');
+            resultDiv.style.display = 'block';
+
+            // 2-year
+            var risk2yrClass = getKFRERiskClass(risk2yr);
+            document.getElementById('kfre2yrValue').textContent = risk2yr.toFixed(1) + '%';
+            document.getElementById('kfre2yrBar').style.width = Math.min(risk2yr, 100) + '%';
+            document.getElementById('kfre2yrBar').className = 'kfre-risk-bar ' + risk2yrClass;
+            document.getElementById('kfre2yrLevel').textContent = getKFRERiskLabel(risk2yr);
+            document.getElementById('kfre2yrLevel').className = 'kfre-risk-level ' + risk2yrClass;
+            document.getElementById('kfre2yr').className = 'kfre-risk-card ' + risk2yrClass;
+
+            // 5-year
+            var risk5yrClass = getKFRERiskClass(risk5yr);
+            document.getElementById('kfre5yrValue').textContent = risk5yr.toFixed(1) + '%';
+            document.getElementById('kfre5yrBar').style.width = Math.min(risk5yr, 100) + '%';
+            document.getElementById('kfre5yrBar').className = 'kfre-risk-bar ' + risk5yrClass;
+            document.getElementById('kfre5yrLevel').textContent = getKFRERiskLabel(risk5yr);
+            document.getElementById('kfre5yrLevel').className = 'kfre-risk-level ' + risk5yrClass;
+            document.getElementById('kfre5yr').className = 'kfre-risk-card ' + risk5yrClass;
+
+            // Interpretation
+            var interpHtml = '<p><strong>結果解讀：</strong></p>';
+            interpHtml += '<p>此患者在未來 <strong>2 年</strong>內進展至腎衰竭的風險為 <strong>' + risk2yr.toFixed(1) + '%</strong>（' + getKFRERiskLabel(risk2yr) + '），';
+            interpHtml += '在未來 <strong>5 年</strong>內的風險為 <strong>' + risk5yr.toFixed(1) + '%</strong>（' + getKFRERiskLabel(risk5yr) + '）。</p>';
+
+            if (risk5yr >= 40) {
+                interpHtml += '<p>⚠️ 建議儘早與腎臟科醫師討論透析通路建立或腎臟移植評估事宜。</p>';
+            } else if (risk5yr >= 15) {
+                interpHtml += '<p>💡 建議開始與醫療團隊討論未來可能需要的腎臟替代療法，並加強追蹤頻率。</p>';
+            } else if (risk5yr >= 5) {
+                interpHtml += '<p>💡 建議持續腎臟科定期追蹤，積極控制血壓、血糖及蛋白尿等危險因子。</p>';
+            } else {
+                interpHtml += '<p>✅ 目前風險較低，建議維持現有治療並定期追蹤。</p>';
+            }
+
+            interpHtml += '<p style="font-size:0.85rem; color:var(--text-muted); margin-top:0.75rem;">⚠️ 本工具僅供參考，不能取代醫師的臨床判斷。實際治療決策請諮詢您的腎臟科醫師。</p>';
+
+            document.getElementById('kfreInterpretation').innerHTML = interpHtml;
+
+            // eGFR warning
+            var warningDiv = document.getElementById('kfreEgfrWarning');
+            warningDiv.style.display = (egfr >= 45) ? 'flex' : 'none';
+
+            resultDiv.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
     </script>
 </body>
 </html>
