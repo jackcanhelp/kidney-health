@@ -1,0 +1,9 @@
+{
+  "short_name": "衛教平台",
+  "name": "腎臟健康衛教平台",
+  "start_url": ".",
+  "display": "browser",
+  "background_color": "#f8fafc",
+  "theme_color": "#1a4a5e",
+  "icons": []
+}
