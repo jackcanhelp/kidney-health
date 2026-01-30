@@ -3,9 +3,29 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <meta name="mobile-web-app-capable" content="no">
+    <meta name="apple-mobile-web-app-capable" content="no">
+    
     <title>腎臟健康衛教 - 張竣傑醫師</title>
 
-    <!-- 預加載 PDF 文件加速載入 -->
+    <script>
+        // 強制移除任何可能控制此頁面的 Service Worker (來自另一個 App)
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.getRegistrations().then(function(registrations) {
+                for(let registration of registrations) {
+                    // 如果發現 Service Worker 的範圍是根目錄 '/' (通常是導致衝突的原因)，就將其移除
+                    if (registration.scope === window.location.origin + '/') {
+                        console.log('已移除干擾的 Service Worker:', registration.scope);
+                        registration.unregister();
+                        // 選擇性：如果移除了，可以強制重整一次頁面以載入正確內容
+                        // window.location.reload(); 
+                    }
+                }
+            });
+        }
+    </script>
+
     <link rel="prefetch" href="衛教漫畫/認識慢性腎臟病五階段.pdf" as="document">
     <link rel="prefetch" href="衛教漫畫/腎友飲食指南：低鈉低蛋白飲食.pdf" as="document">
     <link rel="prefetch" href="衛教漫畫/腎臟病患者的運動建議.pdf" as="document">
@@ -1033,13 +1053,11 @@
     </style>
 </head>
 <body>
-    <!-- PDF 橫向瀏覽提示 -->
     <div id="pdfToast" class="pdf-toast">
         <span>📱</span>
         <span>手機觀看橫向瀏覽效果更佳唷</span>
     </div>
 
-    <!-- Navigation -->
     <nav>
         <div class="nav-container">
             <button class="hamburger" id="hamburgerBtn" aria-label="開啟選單">
@@ -1059,7 +1077,6 @@
         </div>
     </nav>
 
-    <!-- Mobile Side Menu -->
     <div class="mobile-menu" id="mobileMenu">
         <div class="mobile-menu-panel">
             <a href="#home" class="mobile-nav-link"><span class="menu-icon">🏠</span>首頁</a>
@@ -1071,12 +1088,11 @@
         </div>
     </div>
 
-    <!-- Hero Section -->
     <section id="home" class="hero">
         <div class="hero-container">
             <div class="doctor-card">
                 <div class="doctor-avatar">
-                    <img src="image.jpg" alt="張竣傑醫師" style="object-fit: cover; object-position: top center; transform: scale(1.05); transform-origin: top center;" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+                    <img src="image.jpg?v=2024" alt="張竣傑醫師" style="object-fit: cover; object-position: top center; transform: scale(1.05); transform-origin: top center;" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
                     <span class="doctor-avatar-placeholder" style="display:none;">👨‍⚕️</span>
                 </div>
             </div>
@@ -1098,7 +1114,6 @@
         </div>
     </section>
 
-    <!-- Comics Section - 衛教漫畫 -->
     <section id="comics">
         <div class="section-container">
             <div class="section-header">
@@ -1222,7 +1237,6 @@
         </div>
     </section>
 
-    <!-- Expertise Section - 專業領域 -->
     <section id="expertise">
         <div class="section-container">
             <div class="section-header">
@@ -1298,7 +1312,6 @@
         </div>
     </section>
 
-    <!-- Tools Section - 實用工具 -->
     <section id="tools">
         <div class="section-container">
             <div class="section-header">
@@ -1338,7 +1351,6 @@
         </div>
     </section>
 
-    <!-- About Section -->
     <section id="about">
         <div class="section-container">
             <div class="section-header">
@@ -1347,7 +1359,7 @@
             </div>
             <div class="about-content">
                 <div class="about-image fade-in">
-                    <img src="doctor-image.png" alt="張竣傑醫師" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                    <img src="doctor-image.png?v=2024" alt="張竣傑醫師" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
                     <div class="about-image-placeholder" style="display:none;">👨‍⚕️</div>
                 </div>
                 <div class="about-text fade-in">
@@ -1376,7 +1388,6 @@
         </div>
     </section>
 
-    <!-- Contact Section -->
     <section id="contact">
         <div class="section-container">
             <div class="section-header">
@@ -1404,7 +1415,6 @@
         </div>
     </section>
 
-    <!-- Footer -->
     <footer>
         <p>&copy; 2024 張竣傑醫師 腎臟健康衛教平台 | 本網站內容僅供參考，實際診療請諮詢專業醫師</p>
     </footer>
