@@ -8,7 +8,7 @@
 // 6. 將該 URL 填入 HTML 檔案中的 WORKER_ENDPOINT 變數
 
 const ALLOWED_ORIGINS = [
-  'https://nephrojj.github.io',
+  'https://jackcanhelp.github.io',
   'http://localhost',
   'http://127.0.0.1',
 ];
