@@ -503,9 +503,9 @@
     (function() {
         'use strict';
 
-        // --- Config (obfuscated) ---
-        var _0x=[65,73,122,97,83,121,67,113,99,89,106,65,83,85,69,72,99,98,73,81,78,90,57,114,51,48,118,86,98,101,45,75,119,109,84,111,111,83,56];
-        function _k(){return _0x.map(function(c){return String.fromCharCode(c)}).join('')}
+        // --- Config ---
+        // TODO: 部署 Cloudflare Worker 後，將下方 URL 替換為你的 Worker URL
+        var WORKER_ENDPOINT = 'https://gemini-proxy.a5170159.workers.dev';
 
         var video = document.getElementById('video');
         var canvas = document.getElementById('canvas');
@@ -552,8 +552,6 @@
 
         // --- Call Gemini API ---
         async function analyzeFood(base64Image) {
-            var endpoint = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-lite:generateContent?key=' + _k();
-
             var prompt = '你是一位專業的腎臟科營養師。請分析這張照片中的食物，並回傳以下 JSON 格式（不要加 markdown 標記，只回傳純 JSON）：\n\n' +
                 '{\n' +
                 '  "food_name": "食物中文名稱",\n' +
@@ -592,12 +590,10 @@
                 }
             };
 
-            var response = await fetch(endpoint, {
+            var response = await fetch(WORKER_ENDPOINT, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(body),
-                referrer: location.origin + '/',
-                referrerPolicy: 'unsafe-url'
+                body: JSON.stringify(body)
             });
 
             if (!response.ok) {
