@@ -368,6 +368,38 @@
             text-align: center;
         }
 
+        /* Source & Confidence Tags */
+        .source-info {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-top: 0.75rem;
+            flex-wrap: wrap;
+        }
+
+        .source-tag {
+            display: inline-block;
+            padding: 0.2rem 0.6rem;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            background: #e0f2fe;
+            color: #0369a1;
+            border: 1px solid #bae6fd;
+        }
+
+        .conf-tag {
+            display: inline-block;
+            padding: 0.2rem 0.6rem;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .conf-high { background: #dcfce7; color: #166534; border: 1px solid #bbf7d0; }
+        .conf-medium { background: #fef9c3; color: #854d0e; border: 1px solid #fde68a; }
+        .conf-low { background: #fee2e2; color: #991b1b; border: 1px solid #fecaca; }
+
         /* Error State */
         .error-msg {
             background: #fef2f2;
@@ -530,9 +562,21 @@
                 '  "level_label": "高鉀 或 中鉀 或 低鉀",\n' +
                 '  "potassium_range": "每100g的鉀含量範圍，例如 約300-350mg",\n' +
                 '  "advice": "給腎臟病患者的飲食建議，50字以內",\n' +
-                '  "cooking_tip": "降低鉀含量的烹調建議，30字以內，若無則填空字串"\n' +
+                '  "cooking_tip": "降低鉀含量的烹調建議，30字以內，若無則填空字串",\n' +
+                '  "data_source": "數據來源，例如 USDA FoodData Central 或 台灣食藥署",\n' +
+                '  "confidence": "high 或 medium 或 low"\n' +
                 '}\n\n' +
-                '鉀含量分級標準：低鉀 < 150mg/100g、中鉀 150-300mg/100g、高鉀 > 300mg/100g。\n' +
+                '鉀含量分級標準：低鉀 < 150mg/100g、中鉀 150-300mg/100g、高鉀 > 300mg/100g。\n\n' +
+                '【官方參考數值 (mg/100g)】請優先參考以下 USDA 及台灣食藥署數據：\n' +
+                '水果: 香蕉358, 酪梨485, 奇異果312, 哈密瓜267, 葡萄乾749, 榴槤436, 芭樂417, 石榴236, 木瓜182, 芒果168, 柳橙181, 水蜜桃190, 葡萄191, 櫻桃222, 草莓153, 蘋果107, 西瓜112, 梨116, 鳳梨109, 藍莓77, 檸檬138\n' +
+                '蔬菜: 馬鈴薯425, 地瓜337, 菠菜558, 蘑菇318, 花椰菜316, 甜菜根325, 胡蘿蔔320, 南瓜340, 竹筍533, 番茄237, 玉米270, 芹菜260, 茄子229, 甜椒211, 苦瓜296, 高麗菜170, 小黃瓜147, 洋蔥146\n' +
+                '肉類: 牛肉318, 豬肉341, 五花肉231, 雞胸256, 雞腿265, 羊肉310, 豬肝302\n' +
+                '海鮮: 鮭魚363, 鮪魚(罐)252, 蝦185, 螃蟹329, 蛤蜊314, 牡蠣168, 魷魚246, 吳郭魚302, 鯖魚314, 沙丁魚397\n' +
+                '蛋奶: 雞蛋138, 牛奶132, 起司98, 優格155\n' +
+                '豆堅果: 黃豆(乾)1797, 毛豆436, 豆腐180, 花生705, 杏仁733, 核桃441, 腰果660, 開心果1025\n' +
+                '穀類(熟): 白飯35, 糙米飯79, 麵包115, 義大利麵44, 燕麥片61\n' +
+                '飲料: 咖啡49, 茶37, 柳橙汁200, 椰子水250, 啤酒27\n\n' +
+                'confidence判斷標準：若食物明確且有官方數據=high，食物可辨識但數據需推估=medium，食物模糊或混合料理=low。\n' +
                 '如果照片中沒有食物，請回傳：{"error": "未偵測到食物，請將相機對準食材再試一次"}';
 
             var body = {
@@ -629,6 +673,20 @@
                 html += '<div class="detail-row">';
                 html += '<span class="icon">🍳</span>';
                 html += '<span class="text"><strong>烹調建議：</strong>' + escapeHtml(result.cooking_tip) + '</span>';
+                html += '</div>';
+            }
+
+            // Data source & confidence
+            if (result.data_source || result.confidence) {
+                html += '<div class="source-info">';
+                if (result.data_source) {
+                    html += '<span class="source-tag">📊 ' + escapeHtml(result.data_source) + '</span>';
+                }
+                if (result.confidence) {
+                    var confClass = 'conf-' + result.confidence;
+                    var confLabel = result.confidence === 'high' ? '高可信度' : (result.confidence === 'medium' ? '中可信度' : '低可信度');
+                    html += '<span class="conf-tag ' + confClass + '">🎯 ' + confLabel + '</span>';
+                }
                 html += '</div>';
             }
 
