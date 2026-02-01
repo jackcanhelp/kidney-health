@@ -848,7 +848,45 @@
                 grid-template-columns: 1fr;
             }
         }
+        /* Solo mode: when embedded in iframe, only show the targeted tool */
+        body.solo-mode nav,
+        body.solo-mode .page-header {
+            display: none !important;
+        }
+
+        body.solo-mode main {
+            margin-top: 0;
+            padding-top: 1.5rem;
+        }
+
+        body.solo-mode .tool-section {
+            display: none;
+        }
+
+        body.solo-mode .tool-section.solo-active {
+            display: block;
+        }
     </style>
+    <script>
+        // Solo mode: hide everything except the targeted tool section
+        (function() {
+            var params = new URLSearchParams(window.location.search);
+            if (params.get('solo') === '1') {
+                document.documentElement.style.visibility = 'hidden';
+                document.addEventListener('DOMContentLoaded', function() {
+                    document.body.classList.add('solo-mode');
+                    var hash = window.location.hash.replace('#', '');
+                    if (hash) {
+                        var target = document.getElementById(hash);
+                        if (target) {
+                            target.classList.add('solo-active');
+                        }
+                    }
+                    document.documentElement.style.visibility = '';
+                });
+            }
+        })();
+    </script>
 </head>
 <body>
     <!-- Navigation -->

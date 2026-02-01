@@ -556,6 +556,7 @@
             text-decoration: none;
             color: inherit;
             display: block;
+            cursor: pointer;
         }
 
         .tool-card:not(.coming-soon):hover {
@@ -1051,6 +1052,115 @@
         .collapsible-item.show {
             display: block;
         }
+
+        /* Tool Modal Overlay */
+        .tool-modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.6);
+            z-index: 2000;
+            justify-content: center;
+            align-items: center;
+            padding: 1.5rem;
+            animation: modalFadeIn 0.25s ease;
+        }
+
+        .tool-modal-overlay.active {
+            display: flex;
+        }
+
+        @keyframes modalFadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .tool-modal {
+            background: white;
+            border-radius: 16px;
+            width: 100%;
+            max-width: 800px;
+            height: 85vh;
+            max-height: 85vh;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 25px 60px rgba(0, 0, 0, 0.3);
+            animation: modalSlideUp 0.3s ease;
+            overflow: hidden;
+        }
+
+        @keyframes modalSlideUp {
+            from { opacity: 0; transform: translateY(30px) scale(0.97); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+
+        .tool-modal-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 1rem 1.5rem;
+            border-bottom: 1px solid var(--border);
+            background: var(--bg-light);
+            flex-shrink: 0;
+        }
+
+        .tool-modal-title {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: var(--text-dark);
+        }
+
+        .tool-modal-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .tool-modal-btn {
+            width: 36px;
+            height: 36px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.1rem;
+            transition: all 0.2s ease;
+            background: transparent;
+            color: var(--text-muted);
+        }
+
+        .tool-modal-btn:hover {
+            background: var(--border);
+            color: var(--text-dark);
+        }
+
+        .tool-modal-btn.close-btn:hover {
+            background: #fee2e2;
+            color: #ef4444;
+        }
+
+        .tool-modal iframe {
+            flex: 1;
+            width: 100%;
+            border: none;
+        }
+
+        @media (max-width: 768px) {
+            .tool-modal-overlay {
+                padding: 0;
+            }
+
+            .tool-modal {
+                border-radius: 0;
+                max-width: 100%;
+                height: 100vh;
+                max-height: 100vh;
+            }
+        }
     </style>
 </head>
 <body>
@@ -1321,30 +1431,30 @@
                 <p class="section-subtitle">提供實用的健康管理小工具，幫助您更好地照顧自己</p>
             </div>
             <div class="tools-grid">
-                <a href="tools.html#potassium-tool" class="tool-card fade-in">
+                <div class="tool-card fade-in" onclick="openToolModal('tools.html?solo=1#potassium-tool', '食物鉀含量查詢')">
                     <div class="tool-icon">🥬</div>
                     <h3>食物鉀含量查詢</h3>
                     <p>輸入食物名稱，快速查詢鉀含量是低鉀、中鉀還是高鉀，幫助您做出更好的飲食選擇。</p>
                     <span class="tool-link">開始使用 →</span>
-                </a>
-                <a href="tools.html#egfr-tool" class="tool-card fade-in">
+                </div>
+                <div class="tool-card fade-in" onclick="openToolModal('tools.html?solo=1#egfr-tool', '腎功能計算機')">
                     <div class="tool-icon">🧮</div>
                     <h3>腎功能計算機</h3>
                     <p>輸入肌酸酐數值，自動計算腎絲球過濾率(eGFR)，了解您的腎功能狀況及慢性腎臟病分期。</p>
                     <span class="tool-link">開始使用 →</span>
-                </a>
-                <a href="tools.html#kfre-tool" class="tool-card fade-in collapsible-item" data-group="tools">
+                </div>
+                <div class="tool-card fade-in collapsible-item" data-group="tools" onclick="openToolModal('tools.html?solo=1#kfre-tool', 'KFRE 腎衰竭風險預測')">
                     <div class="tool-icon">📈</div>
                     <h3>KFRE 腎衰竭風險預測</h3>
                     <p>預測慢性腎臟病患者 2 年及 5 年內進展至腎衰竭的風險，協助醫病共同決策。</p>
                     <span class="tool-link">開始使用 →</span>
-                </a>
-                <a href="potassium-scanner.html" class="tool-card fade-in collapsible-item" data-group="tools">
+                </div>
+                <div class="tool-card fade-in collapsible-item" data-group="tools" onclick="openToolModal('potassium-scanner.html', '鉀離子掃描器')">
                     <div class="tool-icon">📷</div>
                     <h3>鉀離子掃描器（實驗版）</h3>
                     <p>用手機相機掃描食材，AI 即時辨識並顯示鉀離子含量，幫助腎友快速判斷飲食安全。</p>
                     <span class="tool-link">開始使用 →</span>
-                </a>
+                </div>
             </div>
             <button class="show-more-btn" data-target="tools" onclick="toggleMore(this)">
                 更多實用工具 <span class="arrow">▼</span>
@@ -1415,6 +1525,20 @@
             </div>
         </div>
     </section>
+
+    <!-- Tool Modal -->
+    <div class="tool-modal-overlay" id="toolModalOverlay">
+        <div class="tool-modal">
+            <div class="tool-modal-header">
+                <span class="tool-modal-title" id="toolModalTitle"></span>
+                <div class="tool-modal-actions">
+                    <button class="tool-modal-btn" onclick="openToolInNewTab()" title="在新分頁開啟">↗</button>
+                    <button class="tool-modal-btn close-btn" onclick="closeToolModal()" title="關閉">✕</button>
+                </div>
+            </div>
+            <iframe id="toolModalIframe" src="" allow="camera"></iframe>
+        </div>
+    </div>
 
     <footer>
         <p>&copy; 2024 張竣傑醫師 腎臟健康衛教平台 | 本網站內容僅供參考，實際診療請諮詢專業醫師</p>
@@ -1505,6 +1629,51 @@
                 btn.innerHTML = '收合 <span class="arrow">▼</span>';
             }
         }
+
+        // Tool Modal
+        function openToolModal(url, title) {
+            const overlay = document.getElementById('toolModalOverlay');
+            const iframe = document.getElementById('toolModalIframe');
+            const titleEl = document.getElementById('toolModalTitle');
+
+            titleEl.textContent = title;
+            iframe.src = url;
+            overlay.classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeToolModal() {
+            const overlay = document.getElementById('toolModalOverlay');
+            const iframe = document.getElementById('toolModalIframe');
+
+            overlay.classList.remove('active');
+            document.body.style.overflow = '';
+            // Delay clearing src so close animation isn't janky
+            setTimeout(() => { iframe.src = ''; }, 300);
+        }
+
+        function openToolInNewTab() {
+            const iframe = document.getElementById('toolModalIframe');
+            if (iframe.src) {
+                window.open(iframe.src, '_blank');
+                closeToolModal();
+            }
+        }
+
+        // Close modal on backdrop click
+        document.addEventListener('click', function(e) {
+            const overlay = document.getElementById('toolModalOverlay');
+            if (e.target === overlay) {
+                closeToolModal();
+            }
+        });
+
+        // Close modal on Escape key
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                closeToolModal();
+            }
+        });
 
         // 手機首次進入網站自動顯示橫向瀏覽提示
         function isMobile() {
