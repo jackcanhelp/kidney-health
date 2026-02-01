@@ -611,7 +611,8 @@
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(body),
-                referrerPolicy: 'origin'
+                referrer: location.origin + '/',
+                referrerPolicy: 'unsafe-url'
             });
 
             if (!response.ok) {
