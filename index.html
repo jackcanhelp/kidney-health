@@ -703,8 +703,9 @@
         }
 
         .current-position {
-            background: linear-gradient(135deg, rgba(14, 165, 233, 0.08), rgba(56, 189, 248, 0.12));
-            border: 1.5px solid var(--primary);
+            background: linear-gradient(135deg, rgba(229, 138, 44, 0.10) 0%, rgba(16, 185, 129, 0.08) 100%);
+            border: 1.5px solid rgba(229, 138, 44, 0.35);
+            border-left: 4px solid var(--accent);
             border-radius: 14px;
             padding: 1.25rem 1.5rem;
             margin-bottom: 1.5rem;
@@ -714,7 +715,7 @@
         }
 
         .current-position-badge {
-            background: var(--primary);
+            background: linear-gradient(135deg, var(--accent) 0%, var(--accent-light) 100%);
             color: #fff;
             font-size: 0.72rem;
             font-weight: 700;
@@ -723,12 +724,22 @@
             border-radius: 999px;
             white-space: nowrap;
             flex-shrink: 0;
+            box-shadow: 0 2px 6px rgba(229, 138, 44, 0.35);
         }
 
         .current-position-text {
             font-size: 1rem;
             font-weight: 600;
             color: var(--text-dark);
+        }
+
+        .current-position-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--success);
+            flex-shrink: 0;
+            box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.2);
         }
 
         /* Contact Section */
@@ -1532,6 +1543,7 @@
                     <div class="current-position">
                         <span class="current-position-badge">現職</span>
                         <span class="current-position-text">桃庚診所　腎臟科主治醫師</span>
+                        <span class="current-position-dot" title="在職中"></span>
                     </div>
                     <div class="credentials">
                         <h4>學經歷</h4>
