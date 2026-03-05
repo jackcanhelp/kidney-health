@@ -702,6 +702,35 @@
             font-weight: bold;
         }
 
+        .current-position {
+            background: linear-gradient(135deg, rgba(14, 165, 233, 0.08), rgba(56, 189, 248, 0.12));
+            border: 1.5px solid var(--primary);
+            border-radius: 14px;
+            padding: 1.25rem 1.5rem;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .current-position-badge {
+            background: var(--primary);
+            color: #fff;
+            font-size: 0.72rem;
+            font-weight: 700;
+            letter-spacing: 0.06em;
+            padding: 0.25rem 0.65rem;
+            border-radius: 999px;
+            white-space: nowrap;
+            flex-shrink: 0;
+        }
+
+        .current-position-text {
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--text-dark);
+        }
+
         /* Contact Section */
         #contact {
             background: var(--bg-light);
@@ -1500,6 +1529,10 @@
                     <p>
                         深信正確的醫療知識能幫助民眾及早預防腎臟疾病，因此創立此平台，以淺顯易懂的方式分享腎臟保健資訊，讓每個人都能成為自己健康的守護者。
                     </p>
+                    <div class="current-position">
+                        <span class="current-position-badge">現職</span>
+                        <span class="current-position-text">桃庚診所　腎臟科主治醫師</span>
+                    </div>
                     <div class="credentials">
                         <h4>學經歷</h4>
                         <ul>
