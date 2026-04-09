@@ -42,9 +42,9 @@
             --primary-dark: #0d2d3a;
             --accent: #e58a2c;
             --accent-light: #f5a54a;
-            --bg-light: #f8fafc;
-            --bg-cream: #faf8f5;
-            --bg-white: #ffffff;
+            --bg-light: #faf5ee;
+            --bg-cream: #f9f1e8;
+            --bg-white: #fdf8f2;
             --text-dark: #1a202c;
             --text-body: #374151;
             --text-muted: #6b7280;
@@ -141,11 +141,120 @@
             width: 100%;
         }
 
+        /* QR Code Button */
+        .qr-btn {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+            background: linear-gradient(135deg, var(--primary), var(--primary-light));
+            color: #fff;
+            border: none;
+            border-radius: 10px;
+            padding: 0.45rem 0.85rem;
+            font-size: 0.82rem;
+            font-weight: 600;
+            font-family: inherit;
+            cursor: pointer;
+            transition: all 0.25s ease;
+            box-shadow: 0 2px 8px rgba(26,74,94,0.25);
+            white-space: nowrap;
+            letter-spacing: 0.02em;
+        }
+
+        .qr-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 14px rgba(26,74,94,0.35);
+            background: linear-gradient(135deg, var(--primary-light), var(--primary));
+        }
+
+        .qr-btn svg {
+            flex-shrink: 0;
+        }
+
+        /* QR Modal */
+        .qr-modal-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.55);
+            backdrop-filter: blur(6px);
+            z-index: 9999;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .qr-modal-overlay.active {
+            display: flex;
+            animation: fadeIn 0.2s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to   { opacity: 1; }
+        }
+
+        .qr-modal {
+            background: #fff;
+            border-radius: 20px;
+            padding: 2rem;
+            text-align: center;
+            box-shadow: 0 25px 60px rgba(0,0,0,0.3);
+            max-width: 320px;
+            width: 90%;
+            animation: popIn 0.25s cubic-bezier(0.34,1.56,0.64,1);
+        }
+
+        @keyframes popIn {
+            from { transform: scale(0.8); opacity: 0; }
+            to   { transform: scale(1);   opacity: 1; }
+        }
+
+        .qr-modal h3 {
+            font-size: 1.05rem;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 0.3rem;
+        }
+
+        .qr-modal p {
+            font-size: 0.82rem;
+            color: var(--text-muted);
+            margin-bottom: 1.2rem;
+        }
+
+        .qr-modal img {
+            width: 220px;
+            height: 220px;
+            object-fit: contain;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+        }
+
+        .qr-modal-close {
+            margin-top: 1.2rem;
+            display: block;
+            width: 100%;
+            padding: 0.6rem;
+            background: var(--bg-light);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            font-size: 0.88rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            cursor: pointer;
+            font-family: inherit;
+            transition: background 0.2s;
+        }
+
+        .qr-modal-close:hover {
+            background: var(--border);
+        }
+
         /* Hero Section */
         .hero {
             margin-top: 72px;
             min-height: calc(100vh - 72px);
-            background: linear-gradient(135deg, #e8f4f8 0%, #f5f0eb 50%, #fdf8f3 100%);
+            background: linear-gradient(135deg, #f5ede0 0%, #f7ece0 50%, #fdf2e8 100%);
             position: relative;
             overflow: hidden;
             display: flex;
@@ -338,7 +447,7 @@
 
         /* Comics Section - 衛教漫畫 */
         #comics {
-            background: linear-gradient(180deg, #ffffff 0%, #fef7ed 100%);
+            background: linear-gradient(180deg, #fdf5ec 0%, #faeadb 100%);
         }
 
         .comics-grid {
@@ -439,7 +548,7 @@
 
         /* Expertise Section - 專業領域 */
         #expertise {
-            background: var(--bg-light);
+            background: linear-gradient(180deg, #fdf5ec 0%, #faeadb 100%);
         }
 
         .expertise-grid {
@@ -535,7 +644,7 @@
 
         /* Tools Section - 實用工具 */
         #tools {
-            background: linear-gradient(180deg, #f0f9ff 0%, #e0f2fe 100%);
+            background: linear-gradient(180deg, #fdf5ec 0%, #faeadb 100%);
         }
 
         .tools-grid {
@@ -619,7 +728,7 @@
 
         /* About Section */
         #about {
-            background: white;
+            background: linear-gradient(180deg, #fdf5ec 0%, #faeadb 100%);
         }
 
         .about-content {
@@ -744,7 +853,7 @@
 
         /* Contact Section */
         #contact {
-            background: var(--bg-light);
+            background: linear-gradient(180deg, #fdf5ec 0%, #faeadb 100%);
         }
 
         .contact-cards {
@@ -858,6 +967,14 @@
         @media (max-width: 768px) {
             .nav-links {
                 display: none;
+            }
+
+            .qr-btn span {
+                display: none;
+            }
+
+            .qr-btn {
+                padding: 0.45rem 0.6rem;
             }
 
             .hero-container {
@@ -1238,8 +1355,25 @@
                 <li><a href="#about">關於醫師</a></li>
                 <li><a href="#contact">聯絡資訊</a></li>
             </ul>
+            <button class="qr-btn" id="qrBtn" aria-label="掃描 QR Code">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/>
+                    <rect x="14" y="14" width="3" height="3" rx="0.5"/><rect x="18" y="14" width="3" height="3" rx="0.5"/><rect x="14" y="18" width="3" height="3" rx="0.5"/><rect x="18" y="18" width="3" height="3" rx="0.5"/>
+                </svg>
+                <span>掃碼</span>
+            </button>
         </div>
     </nav>
+
+    <!-- QR Code Modal -->
+    <div class="qr-modal-overlay" id="qrModal">
+        <div class="qr-modal">
+            <h3>掃描 QR Code</h3>
+            <p>用手機掃描，立即開啟本網站</p>
+            <img src="網站QRcode.jpg" alt="網站 QR Code">
+            <button class="qr-modal-close" id="qrModalClose">關閉</button>
+        </div>
+    </div>
 
     <div class="mobile-menu" id="mobileMenu">
         <div class="mobile-menu-panel">
@@ -1642,6 +1776,29 @@
                     });
                 }
             });
+        });
+
+        // Mobile Hamburger Menu
+        // QR Code Modal
+        const qrBtn = document.getElementById('qrBtn');
+        const qrModal = document.getElementById('qrModal');
+        const qrModalClose = document.getElementById('qrModalClose');
+
+        qrBtn.addEventListener('click', () => {
+            qrModal.classList.add('active');
+            document.body.style.overflow = 'hidden';
+        });
+
+        qrModalClose.addEventListener('click', () => {
+            qrModal.classList.remove('active');
+            document.body.style.overflow = '';
+        });
+
+        qrModal.addEventListener('click', (e) => {
+            if (e.target === qrModal) {
+                qrModal.classList.remove('active');
+                document.body.style.overflow = '';
+            }
         });
 
         // Mobile Hamburger Menu
