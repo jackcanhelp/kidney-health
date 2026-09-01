@@ -184,6 +184,64 @@
             -moz-osx-font-smoothing: grayscale;
         }
 
+
+        /* Articles */
+        .articles-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .article-card {
+            background: white;
+            border: 1px solid var(--border);
+            border-left: 4px solid var(--primary-light);
+            border-radius: 16px;
+            padding: 1.75rem;
+            text-decoration: none;
+            color: inherit;
+            display: flex;
+            flex-direction: column;
+            box-shadow: var(--shadow-sm);
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .article-card:hover {
+            transform: translateY(-6px);
+            box-shadow: var(--shadow-xl);
+            border-left-color: var(--accent);
+        }
+
+        .article-card .comic-category {
+            align-self: flex-start;
+        }
+
+        .article-card h3 {
+            font-size: 1.15rem;
+            color: var(--text-dark);
+            font-weight: 700;
+            line-height: 1.55;
+            margin: 0.85rem 0 0.6rem;
+        }
+
+        .article-card p {
+            font-size: 0.93rem;
+            color: var(--text-muted);
+            line-height: 1.8;
+            margin-bottom: 1.25rem;
+            flex-grow: 1;
+        }
+
+        .article-card .comic-meta {
+            border-top: 1px solid var(--border);
+            padding-top: 0.9rem;
+        }
+
+        .articles-cta {
+            text-align: center;
+            margin-top: 2.5rem;
+        }
+
         /* Navigation */
         nav {
             position: fixed;
@@ -1523,6 +1581,7 @@
             <div class="logo">腎臟健康平台</div>
             <ul class="nav-links">
                 <li><a href="#home">首頁</a></li>
+                <li><a href="#articles">衛教文章</a></li>
                 <li><a href="#comics">衛教漫畫</a></li>
                 <li><a href="#expertise">專業領域</a></li>
                 <li><a href="#tools">實用工具</a></li>
@@ -1569,6 +1628,7 @@
     <div class="mobile-menu" id="mobileMenu">
         <div class="mobile-menu-panel">
             <a href="#home" class="mobile-nav-link"><span class="menu-icon">🏠</span>首頁</a>
+            <a href="#articles" class="mobile-nav-link"><span class="menu-icon">📄</span>衛教文章</a>
             <a href="#comics" class="mobile-nav-link"><span class="menu-icon">📖</span>衛教漫畫</a>
             <a href="#expertise" class="mobile-nav-link"><span class="menu-icon">🩺</span>專業領域</a>
             <a href="#tools" class="mobile-nav-link"><span class="menu-icon">🛠️</span>實用工具</a>
@@ -1592,13 +1652,60 @@
                     透過淺顯易懂的衛教文章與生動有趣的漫畫，讓您輕鬆了解腎臟保健知識，預防勝於治療，一起守護健康。
                 </p>
                 <div class="hero-buttons">
-                    <a href="#comics" class="btn btn-primary">
+                    <a href="#articles" class="btn btn-primary">
+                        <span>📄</span> 閱讀衛教文章
+                    </a>
+                    <a href="#comics" class="btn btn-secondary">
                         <span>📚</span> 瀏覽衛教漫畫
                     </a>
                     <a href="#contact" class="btn btn-secondary">
                         <span>💬</span> 聯絡我們
                     </a>
                 </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="articles">
+        <div class="section-container">
+            <div class="section-header">
+                <span class="section-badge">📄 衛教文章</span>
+                <h2 class="section-title">門診裡最常被問的問題</h2>
+                <p class="section-subtitle">每篇都標註參考的國際指引與最後更新日期</p>
+            </div>
+            <div class="articles-grid">
+                <a href="articles/creatinine.html" class="article-card fade-in">
+                    <span class="comic-category">檢驗判讀</span>
+                    <h3>肌酸酐偏高就是腎臟壞了嗎？數值多少要看腎臟科</h3>
+                    <p>健檢紅字不等於腎衰竭。肌酸酐會被肌肉量影響，真正要看的是換算後的 eGFR，而且只驗血不驗尿，等於只看了一半。</p>
+                    <div class="comic-meta">
+                        <span>📅 2026-09-01</span>
+                        <span class="read-more">閱讀更多 →</span>
+                    </div>
+                </a>
+                <a href="articles/proteinuria.html" class="article-card fade-in">
+                    <span class="comic-category">檢驗判讀</span>
+                    <h3>尿有泡泡多久不散要看醫生？真假泡泡尿怎麼分</h3>
+                    <p>大部分的泡泡尿不是蛋白尿。關鍵不是有沒有泡泡，是泡泡細不細、散不散。而蛋白尿其實是最能被治療改善的指標。</p>
+                    <div class="comic-meta">
+                        <span>📅 2026-09-01</span>
+                        <span class="read-more">閱讀更多 →</span>
+                    </div>
+                </a>
+                <a href="articles/hyperkalemia.html" class="article-card fade-in">
+                    <span class="comic-category">電解質異常</span>
+                    <h3>高血鉀有什麼症狀？血鉀多少要立刻就醫</h3>
+                    <p>高血鉀最危險的地方是它通常沒有症狀。門診最常見的原因不是水果，是低鈉鹽——回家先看鹽罐的成分表。</p>
+                    <div class="comic-meta">
+                        <span>📅 2026-09-01</span>
+                        <span class="read-more">閱讀更多 →</span>
+                    </div>
+                </a>
+            </div>
+            <div class="articles-cta">
+                <a href="articles/index.html" class="btn btn-primary">
+                    <span>📚</span> 瀏覽全部 6 篇文章
+                </a>
             </div>
         </div>
     </section>

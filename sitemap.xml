@@ -26,6 +26,11 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://jackcanhelp.github.io/kidney-health/articles/fruit.html</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://jackcanhelp.github.io/kidney-health/articles/ckd-stage-4.html</loc>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
