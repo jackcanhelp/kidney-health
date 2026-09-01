@@ -249,6 +249,39 @@ tr.row-danger td:first-child { color: var(--danger); }
 .refs ul { margin: 0.5rem 0 0 1.2rem; }
 .refs li { margin-bottom: 0.45rem; }
 
+.ref-list { list-style: none; margin: 0.5rem 0 0; padding: 0; counter-reset: ref; }
+.ref-list li {
+    position: relative;
+    padding: 0.85rem 0 0.85rem 2.1rem;
+    border-bottom: 1px solid var(--border);
+    margin: 0;
+    line-height: 1.65;
+}
+.ref-list li:last-child { border-bottom: none; }
+.ref-list li::before {
+    counter-increment: ref;
+    content: counter(ref);
+    position: absolute;
+    left: 0; top: 0.95rem;
+    width: 1.4rem; height: 1.4rem;
+    background: var(--bg-cream);
+    color: var(--primary);
+    border-radius: 50%;
+    font-size: 0.75rem;
+    font-weight: 700;
+    display: flex; align-items: center; justify-content: center;
+}
+.ref-name { display: block; color: var(--text-dark); font-weight: 500; }
+.ref-src { display: block; font-size: 0.83rem; margin-top: 0.15rem; }
+.ref-list a { font-size: 0.83rem; }
+.ref-note {
+    font-size: 0.83rem;
+    color: var(--text-muted);
+    margin: 1rem 0 0;
+    padding-top: 0.9rem;
+    border-top: 1px dashed var(--border);
+}
+
 .disclaimer {
     font-size: 0.85rem;
     color: var(--text-muted);
@@ -269,6 +302,8 @@ footer {
 /* ------------------------------------------------------ 審閱模式標記
  * 正式版：移除 <body> 上的 data-review 屬性，所有標記自動消失。 */
 .review-banner { display: none; }
+.review-only { display: none; }
+[data-review] .review-only { display: inline; }
 [data-review] .review-banner {
     display: block;
     background: #fff8ec;
@@ -300,3 +335,52 @@ footer {
     * { animation: none !important; transition: none !important; }
     html { scroll-behavior: auto; }
 }
+
+/* ------------------------------------------------------ 文章索引頁 */
+.filter-note {
+    font-size: 0.92rem;
+    color: var(--text-muted);
+    padding: 1.4rem 0 0.4rem;
+}
+.post-list { list-style: none; margin: 0.6rem 0 0; padding: 0; }
+.post-list li { margin: 0 0 0.9rem; }
+.post {
+    display: block;
+    background: white;
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 1.4rem 1.6rem;
+    text-decoration: none;
+    color: inherit;
+    transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
+    box-shadow: var(--shadow-sm);
+}
+.post:hover, .post:focus-visible {
+    transform: translateY(-3px);
+    box-shadow: var(--shadow-md);
+    border-color: var(--accent-light);
+}
+.post-tag {
+    display: inline-block;
+    font-size: 0.74rem;
+    font-weight: 700;
+    color: var(--accent);
+    background: var(--bg-cream);
+    padding: 0.2rem 0.7rem;
+    border-radius: 999px;
+    letter-spacing: 0.03em;
+}
+.post h2 {
+    font-size: 1.18rem;
+    margin: 0.6rem 0 0.45rem;
+    color: var(--text-dark);
+    font-weight: 700;
+    line-height: 1.5;
+}
+.post p {
+    font-size: 0.93rem;
+    color: var(--text-muted);
+    margin: 0 0 0.7rem;
+    line-height: 1.75;
+}
+.post-meta { font-size: 0.8rem; color: var(--text-muted); font-variant-numeric: tabular-nums; }
