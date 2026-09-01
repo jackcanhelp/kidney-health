@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<!--
+  文章模板 — 複製這個檔案，改檔名為英文 slug（例如 proteinuria.html），
+  再把所有 {{...}} 佔位符換掉。骨架與寫作規則見 .claude/skills/human-voice/SKILL.md。
+
+  檢查清單：
+  1. {{SLUG}} 要跟檔名一致（不含 .html）
+  2. 臨床數值一律包 <span class="tbc">，由醫師核對後才移除 <body> 的 data-review
+  3. FAQPage 至少放 3 題，答案要能單獨看懂（AI 會整段擷取）
+  4. 發布後把新網址加進 ../sitemap.xml
+-->
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#1a4a5e">
+
+<title>{{標題}} - 張竣傑醫師</title>
+<meta name="description" content="{{摘要，80–120 字，含關鍵數值與「腎臟科醫師張竣傑」}}">
+<meta name="author" content="張竣傑醫師">
+<link rel="canonical" href="https://jackcanhelp.github.io/kidney-health/articles/{{SLUG}}.html">
+
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="腎臟健康衛教平台">
+<meta property="og:locale" content="zh_TW">
+<meta property="og:title" content="{{標題}}">
+<meta property="og:description" content="{{摘要}}">
+<meta property="og:url" content="https://jackcanhelp.github.io/kidney-health/articles/{{SLUG}}.html">
+<meta property="og:image" content="https://jackcanhelp.github.io/kidney-health/og-image.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="{{標題}}">
+<meta name="twitter:description" content="{{摘要}}">
+<meta name="twitter:image" content="https://jackcanhelp.github.io/kidney-health/og-image.jpg">
+
+<link rel="icon" type="image/png" sizes="32x32" href="../icons/icon-32.png">
+<link rel="apple-touch-icon" href="../icons/icon-180.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="article.css">
+<script src="../site.js" defer></script>
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "MedicalWebPage",
+      "@id": "https://jackcanhelp.github.io/kidney-health/articles/{{SLUG}}.html#article",
+      "url": "https://jackcanhelp.github.io/kidney-health/articles/{{SLUG}}.html",
+      "name": "{{標題}}",
+      "headline": "{{標題}}",
+      "inLanguage": "zh-TW",
+      "datePublished": "{{YYYY-MM-DD}}",
+      "dateModified": "{{YYYY-MM-DD}}",
+      "audience": { "@type": "Patient" },
+      "about": {
+        "@type": "MedicalCondition",
+        "name": "{{英文病名，例如 Proteinuria}}",
+        "alternateName": "{{中文病名}}"
+      },
+      "author": { "@id": "https://jackcanhelp.github.io/kidney-health/#physician" },
+      "publisher": { "@id": "https://jackcanhelp.github.io/kidney-health/#physician" },
+      "isPartOf": { "@id": "https://jackcanhelp.github.io/kidney-health/#website" }
+    },
+    {
+      "@type": "FAQPage",
+      "@id": "https://jackcanhelp.github.io/kidney-health/articles/{{SLUG}}.html#faq",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "{{病人會問的問題一}}",
+          "acceptedAnswer": { "@type": "Answer", "text": "{{完整答案，含數值，能單獨看懂}}" }
+        },
+        {
+          "@type": "Question",
+          "name": "{{問題二}}",
+          "acceptedAnswer": { "@type": "Answer", "text": "{{答案二}}" }
+        },
+        {
+          "@type": "Question",
+          "name": "{{問題三}}",
+          "acceptedAnswer": { "@type": "Answer", "text": "{{答案三}}" }
+        }
+      ]
+    }
+  ]
+}
+</script>
+</head>
+
+<body data-review>
+
+<nav>
+  <div class="nav-container">
+    <a href="../index.html" class="logo">腎臟健康平台</a>
+    <a href="../index.html#comics" class="nav-back">← 回衛教專區</a>
+  </div>
+</nav>
+
+<div class="article-wrap">
+
+  <div class="review-banner">
+    <strong>審閱模式</strong>：本頁有 <strong id="tbcCount">若干</strong> 處臨床數值以橘色虛線標示，需醫師逐一核對後才可發布。
+    確認完成後，移除 <code>&lt;body&gt;</code> 上的 <code>data-review</code> 屬性即切換為正式版，所有標記自動消失。
+  </div>
+
+  <p class="breadcrumb">
+    <a href="../index.html">首頁</a> ／ <a href="../index.html#comics">衛教專區</a> ／ {{短標籤}}
+  </p>
+
+  <header class="article-header">
+    <span class="article-tag">{{分類：檢驗判讀／飲食營養／用藥安全／透析照護／疾病認識}}</span>
+    <h1>{{標題}}</h1>
+    <div class="article-meta">
+      <span>張竣傑 醫師｜腎臟科專科醫師</span>
+      <span>最後更新：<time datetime="{{YYYY-MM-DD}}">{{YYYY 年 M 月 D 日}}</time></span>
+      <span>閱讀時間約 {{N}} 分鐘</span>
+    </div>
+  </header>
+
+  <article>
+
+    <!-- 開頭 1–2 句就給結論，含關鍵數值。AI 優先擷取段落前 50–100 字。 -->
+    <div class="quick-answer">
+      <h2>醫師速答</h2>
+      <p>{{結論句，含 <span class="tbc">數值</span>}}</p>
+      <p>{{第二句：什麼情況要立刻行動}}</p>
+    </div>
+
+    <h2>{{為什麼會這樣}}</h2>
+    <p>{{機轉與成因。段落式書寫，門診口吻，不要條列。}}</p>
+
+    <h2>{{數值怎麼判讀}}</h2>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>{{數值}}</th><th>判讀</th><th>建議處置</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><span class="tbc">{{區間}}</span></td><td>{{判讀}}</td><td>{{處置}}</td></tr>
+          <tr class="row-danger"><td><span class="tbc">{{危險區間}}</span></td><td>{{判讀}}</td><td>{{立即處置}}</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="table-note">{{單位、實驗室差異、個別化提醒}}</p>
+
+    <h2>你可以怎麼做</h2>
+    <h3>{{具體做法一}}</h3>
+    <p>{{具體到可執行，用數字不用程度副詞}}</p>
+
+    <!-- 需要特別澄清的迷思用這個框 -->
+    <div class="note">
+      <h3>{{常見誤解}}</h3>
+      <p>{{澄清}}</p>
+    </div>
+
+    <h2>什麼情況要立刻就醫</h2>
+    <div class="alert">
+      <h3>當天就醫或掛急診</h3>
+      <ul>
+        <li>{{紅旗症狀}}</li>
+      </ul>
+    </div>
+    <p>{{補充：症狀不特異、寧可白跑一趟這類門診口吻的話}}</p>
+
+    <h2>相關內容</h2>
+    <div class="related">
+      <a class="related-card" href="../衛教漫畫/{{檔名}}.pdf" target="_blank" rel="noopener">
+        <span class="related-kind">衛教漫畫</span>
+        <h4>{{漫畫標題}}</h4>
+        <p>{{一句說明}}</p>
+      </a>
+      <a class="related-card" href="../tools.html#{{錨點}}">
+        <span class="related-kind">實用工具</span>
+        <h4>{{工具名}}</h4>
+        <p>{{一句說明}}</p>
+      </a>
+    </div>
+
+    <h2>參考依據</h2>
+    <div class="refs">
+      <ul>
+        <li><span class="tbc">{{指引名稱與版本，待確認}}</span></li>
+      </ul>
+    </div>
+
+  </article>
+
+  <div class="author-card">
+    <img class="author-photo" src="../image.jpg" alt="張竣傑醫師">
+    <div class="author-info">
+      <h3>張竣傑 醫師</h3>
+      <div class="author-role">中華民國腎臟科專科醫師｜中華民國內科專科醫師</div>
+      <p>
+        長庚醫學系畢業，於基隆長庚醫院完成內科與腎臟專科訓練，現於桃庚診所擔任腎臟科主治醫師。
+        相信正確的知識能讓腎臟病走得慢一點，因此把門診裡最常被問的問題寫成這個平台。
+      </p>
+      <div class="author-links">
+        <a href="../index.html#about">完整學經歷</a>
+        <a href="mailto:calldrjackhere@gmail.com">來信提問</a>
+        <a href="https://www.facebook.com/profile.php?id=61586867342658" target="_blank" rel="noopener">Facebook 粉絲團</a>
+      </div>
+    </div>
+  </div>
+
+  <p class="disclaimer">
+    本文內容僅供健康教育參考，不能取代醫師的診察與判斷。每個人的腎功能、用藥與共病狀況不同，
+    實際的處理方式請以您的主治醫師建議為準。若出現緊急症狀，請立即就醫。
+  </p>
+
+</div>
+
+<footer>
+  <p>&copy; <span data-current-year>2026</span> 張竣傑醫師 腎臟健康衛教平台</p>
+</footer>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    var el = document.getElementById('tbcCount');
+    if (el) el.textContent = document.querySelectorAll('.tbc').length + ' ';
+  });
+</script>
+
+</body>
+</html>
