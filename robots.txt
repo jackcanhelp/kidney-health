@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://jackcanhelp.github.io/kidney-health/sitemap.xml

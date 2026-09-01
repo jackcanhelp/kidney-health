@@ -1,9 +1,32 @@
 {
-  "short_name": "衛教平台",
   "name": "腎臟健康衛教平台",
-  "start_url": ".",
-  "display": "browser",
-  "background_color": "#f8fafc",
+  "short_name": "腎臟衛教",
+  "description": "張竣傑醫師的腎臟健康衛教平台：衛教漫畫、疾病專區與腎友實用工具。",
+  "lang": "zh-TW",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#faf5ee",
   "theme_color": "#1a4a5e",
-  "icons": []
+  "icons": [
+    {
+      "src": "icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icons/icon-512-maskable.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
 }
