@@ -8,7 +8,7 @@
  * 到 analytics.google.com 建立 GA4 資源，取得「評估 ID」（格式 G-XXXXXXXXXX），
  * 貼進引號中即可。留空的話完全不會載入任何追蹤程式碼。
  */
-var GA_MEASUREMENT_ID = '';
+var GA_MEASUREMENT_ID = 'G-0120HSPY2J';
 
 (function () {
   'use strict';
@@ -43,7 +43,7 @@ var GA_MEASUREMENT_ID = '';
       if (/\.pdf($|[?#])/i.test(href)) {
         track('pdf_open', {
           file_name: decodeURIComponent(href.split('/').pop()),
-          section: href.indexOf('衛教漫畫') === 0 ? '衛教漫畫' : '專業領域'
+          section: href.indexOf('衛教漫畫') > -1 ? '衛教漫畫' : '專業領域'
         });
         return;
       }
