@@ -299,6 +299,18 @@ footer {
     font-size: 0.85rem;
 }
 
+footer .footer-privacy {
+    margin-top: 0.5rem;
+    font-size: 0.78rem;
+    color: rgba(255,255,255,0.5);
+    line-height: 1.6;
+}
+
+footer .footer-privacy a {
+    color: inherit;
+    text-decoration: underline;
+}
+
 /* ------------------------------------------------------ 審閱模式標記
  * 正式版：移除 <body> 上的 data-review 屬性，所有標記自動消失。 */
 .review-banner { display: none; }
