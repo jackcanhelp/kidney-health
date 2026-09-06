@@ -1619,6 +1619,10 @@
             <div class="qr-modal-shortcuts">
                 <span class="qr-shortcuts-label">🔥 熱門工具</span>
                 <div class="qr-shortcuts-icons">
+                    <button class="qr-shortcut-icon" onclick="closeQrModal(); openAimedTool()" title="LDL 心腎決策輔助（專業版）" aria-label="開啟 LDL 心腎決策輔助專業版">
+                        <span class="qr-shortcut-emoji">🫀</span>
+                        <span class="qr-shortcut-text">LDL 專業版</span>
+                    </button>
                     <button class="qr-shortcut-icon" onclick="closeQrModal(); openToolModal('tools.html?solo=1#potassium-tool', '食物鉀含量查詢')" title="食物鉀含量查詢" aria-label="食物鉀含量查詢">
                         <span class="qr-shortcut-emoji">🥬</span>
                         <span class="qr-shortcut-text">鉀含量查詢</span>
@@ -1970,6 +1974,12 @@
                     <p>用手機相機掃描食材，AI 即時辨識並顯示磷含量與磷類型，幫助腎友管理磷攝取。</p>
                     <span class="tool-link">開始使用 →</span>
                 </div>
+                <div class="tool-card fade-in collapsible-item" data-group="tools" onclick="openAimedTool()">
+                    <div class="tool-icon">🫀</div>
+                    <h3>LDL 心腎決策輔助（專業版）</h3>
+                    <p>供醫療專業人員於診間參考風險分層、LDL-C 目標與療程節點；不是一般民眾自我診療工具。</p>
+                    <span class="tool-link">開始使用 →</span>
+                </div>
             </div>
             <button class="show-more-btn" data-target="tools" onclick="toggleMore(this)">
                 更多實用工具 <span class="arrow">▼</span>
@@ -2059,7 +2069,7 @@
                     <button class="tool-modal-btn close-btn" onclick="closeToolModal()" title="關閉">✕</button>
                 </div>
             </div>
-            <iframe id="toolModalIframe" src="" allow="camera"></iframe>
+            <iframe id="toolModalIframe" src="" allow="camera" referrerpolicy="strict-origin-when-cross-origin"></iframe>
         </div>
     </div>
 
@@ -2177,12 +2187,22 @@
         }
 
         // Tool Modal
-        function openToolModal(url, title) {
+        const AIMED_LOCAL_TEST_URL = 'http://localhost:3000/';
+        const AIMED_PRODUCTION_URL = 'https://aimed-ldl-cardiorenal.jackbase.chatgpt.site/';
+
+        function openAimedTool() {
+            const isLocalPreview = location.hostname === 'localhost' || location.hostname === '127.0.0.1';
+            const aimedUrl = isLocalPreview ? AIMED_LOCAL_TEST_URL : AIMED_PRODUCTION_URL;
+            openToolModal(aimedUrl, 'LDL 心腎決策輔助（專業版）', 'unsafe-url');
+        }
+
+        function openToolModal(url, title, referrerPolicy = 'strict-origin-when-cross-origin') {
             const overlay = document.getElementById('toolModalOverlay');
             const iframe = document.getElementById('toolModalIframe');
             const titleEl = document.getElementById('toolModalTitle');
 
             titleEl.textContent = title;
+            iframe.referrerPolicy = referrerPolicy;
             iframe.src = url;
             overlay.classList.add('active');
             document.body.style.overflow = 'hidden';
@@ -2201,7 +2221,12 @@
         function openToolInNewTab() {
             const iframe = document.getElementById('toolModalIframe');
             if (iframe.src) {
-                window.open(iframe.src, '_blank');
+                const link = document.createElement('a');
+                link.href = iframe.src;
+                link.target = '_blank';
+                link.rel = 'noopener';
+                link.referrerPolicy = iframe.referrerPolicy;
+                link.click();
                 closeToolModal();
             }
         }
