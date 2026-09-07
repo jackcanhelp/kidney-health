@@ -2189,11 +2189,52 @@
         // Tool Modal
         const AIMED_LOCAL_TEST_URL = 'http://localhost:3000/';
         const AIMED_PRODUCTION_URL = 'https://aimed-ldl-cardiorenal.jackbase.chatgpt.site/';
+        const AIMED_ENTRY_TICKET_URL = `${AIMED_PRODUCTION_URL}api/entry-ticket`;
+        const AIMED_ENTRY_TIMEOUT_MS = 2500;
+        let aimedLaunchPending = false;
 
-        function openAimedTool() {
+        async function createAimedLaunchUrl() {
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), AIMED_ENTRY_TIMEOUT_MS);
+            try {
+                const response = await fetch(AIMED_ENTRY_TICKET_URL, {
+                    method: 'POST',
+                    cache: 'no-store',
+                    credentials: 'omit',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        sourceUrl: `${window.location.origin}${window.location.pathname}`
+                    }),
+                    signal: controller.signal
+                });
+                if (!response.ok) throw new Error('AIMed entry ticket unavailable');
+                const result = await response.json();
+                if (typeof result.ticket !== 'string' || result.ticket.length > 2048) {
+                    throw new Error('Invalid AIMed entry ticket');
+                }
+                return `${AIMED_PRODUCTION_URL}#entry_ticket=${encodeURIComponent(result.ticket)}`;
+            } catch (error) {
+                console.warn('AIMed signed entry fallback:', error);
+                return AIMED_PRODUCTION_URL;
+            } finally {
+                clearTimeout(timeoutId);
+            }
+        }
+
+        async function openAimedTool() {
+            if (aimedLaunchPending) return;
             const isLocalPreview = location.hostname === 'localhost' || location.hostname === '127.0.0.1';
-            const aimedUrl = isLocalPreview ? AIMED_LOCAL_TEST_URL : AIMED_PRODUCTION_URL;
-            openToolModal(aimedUrl, 'LDL 心腎決策輔助（專業版）', 'unsafe-url');
+            aimedLaunchPending = true;
+            document.body.style.cursor = 'progress';
+            try {
+                const aimedUrl = isLocalPreview
+                    ? AIMED_LOCAL_TEST_URL
+                    : await createAimedLaunchUrl();
+                openToolModal(aimedUrl, 'LDL 心腎決策輔助（專業版）', 'unsafe-url');
+            } finally {
+                aimedLaunchPending = false;
+                document.body.style.cursor = '';
+            }
         }
 
         function openToolModal(url, title, referrerPolicy = 'strict-origin-when-cross-origin') {
