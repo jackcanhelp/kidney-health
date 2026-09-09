@@ -1,6 +1,5 @@
 User-agent: *
 Allow: /
-Disallow: /kidney-health/articles/_template.html
 Disallow: /articles/_template.html
 
-Sitemap: https://jackcanhelp.github.io/kidney-health/sitemap.xml
+Sitemap: https://jackcanhelp.org/sitemap.xml
