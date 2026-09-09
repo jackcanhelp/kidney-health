@@ -35,90 +35,236 @@
 
     <script type="application/ld+json">
 {
-      "@context": "https://schema.org",
-      "@graph": [
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "MedicalWebPage",
+      "@id": "https://jackcanhelp.github.io/kidney-health/#website",
+      "name": "腎臟健康衛教平台",
+      "url": "https://jackcanhelp.github.io/kidney-health/",
+      "inLanguage": "zh-TW",
+      "description": "腎臟科專科醫師張竣傑的衛教平台。以漫畫與圖解說明慢性腎臟病分期、透析治療、腎友飲食與用藥安全，並提供腎功能計算機、食物鉀含量查詢等實用工具。",
+      "about": {
+        "@type": "MedicalCondition",
+        "name": "Chronic Kidney Disease",
+        "alternateName": "慢性腎臟病"
+      },
+      "audience": {
+        "@type": "Patient"
+      },
+      "author": {
+        "@id": "https://jackcanhelp.github.io/kidney-health/#physician"
+      },
+      "publisher": {
+        "@id": "https://jackcanhelp.github.io/kidney-health/#physician"
+      }
+    },
+    {
+      "@type": "Physician",
+      "@id": "https://jackcanhelp.github.io/kidney-health/#physician",
+      "name": "張竣傑",
+      "jobTitle": "腎臟科主治醫師",
+      "url": "https://jackcanhelp.github.io/kidney-health/",
+      "image": "https://jackcanhelp.github.io/kidney-health/doctor-image.png",
+      "email": "calldrjackhere@gmail.com",
+      "medicalSpecialty": "https://schema.org/Renal",
+      "worksFor": [
         {
-          "@type": "MedicalWebPage",
-          "@id": "https://jackcanhelp.github.io/kidney-health/#website",
-          "name": "腎臟健康衛教平台",
-          "url": "https://jackcanhelp.github.io/kidney-health/",
-          "inLanguage": "zh-TW",
-          "description": "腎臟科專科醫師張竣傑的衛教平台。以漫畫與圖解說明慢性腎臟病分期、透析治療、腎友飲食與用藥安全，並提供腎功能計算機、食物鉀含量查詢等實用工具。",
-          "about": {
-            "@type": "MedicalCondition",
-            "name": "Chronic Kidney Disease",
-            "alternateName": "慢性腎臟病"
-          },
-          "audience": {
-            "@type": "Patient"
-          },
-          "author": {
-            "@id": "https://jackcanhelp.github.io/kidney-health/#physician"
-          },
-          "publisher": {
-            "@id": "https://jackcanhelp.github.io/kidney-health/#physician"
+          "@id": "https://jackcanhelp.github.io/kidney-health/#clinic-taoken"
+        },
+        {
+          "@id": "https://jackcanhelp.github.io/kidney-health/#clinic-xinken"
+        },
+        {
+          "@id": "https://jackcanhelp.github.io/kidney-health/#clinic-nankan"
+        }
+      ],
+      "knowsAbout": [
+        "Chronic Kidney Disease",
+        "Hemodialysis",
+        "Peritoneal Dialysis",
+        "Hyperkalemia",
+        "Hyperphosphatemia",
+        "Proteinuria",
+        "Diabetic Kidney Disease",
+        "Hypertensive Nephropathy",
+        "Acute Kidney Injury",
+        "Kidney Transplantation",
+        "Renal Osteodystrophy",
+        "Anemia of Chronic Kidney Disease"
+      ],
+      "alumniOf": [
+        {
+          "@type": "EducationalOrganization",
+          "name": "長庚大學醫學系"
+        }
+      ],
+      "hasCredential": [
+        {
+          "@type": "EducationalOccupationalCredential",
+          "credentialCategory": "degree",
+          "name": "醫學士"
+        },
+        {
+          "@type": "EducationalOccupationalCredential",
+          "credentialCategory": "certification",
+          "name": "中華民國內科專科醫師"
+        },
+        {
+          "@type": "EducationalOccupationalCredential",
+          "credentialCategory": "certification",
+          "name": "中華民國腎臟科專科醫師"
+        }
+      ],
+      "memberOf": {
+        "@type": "Organization",
+        "name": "台灣腎臟醫學會"
+      },
+      "sameAs": [
+        "https://www.facebook.com/profile.php?id=61586867342658",
+        "https://www.drkidney.com.tw/"
+      ]
+    },
+    {
+      "@type": "MedicalClinic",
+      "@id": "https://jackcanhelp.github.io/kidney-health/#clinic-taoken",
+      "name": "桃庚聯合診所",
+      "url": "https://www.drkidney.com.tw/",
+      "parentOrganization": {
+        "@type": "MedicalOrganization",
+        "name": "桃庚醫療事業群",
+        "url": "https://www.drkidney.com.tw/"
+      },
+      "medicalSpecialty": "https://schema.org/Renal",
+      "address": {
+        "@type": "PostalAddress",
+        "streetAddress": "國際路二段36號",
+        "addressLocality": "桃園區",
+        "addressRegion": "桃園市",
+        "addressCountry": "TW"
+      },
+      "telephone": "+886-3-370-5119",
+      "areaServed": {
+        "@type": "City",
+        "name": "桃園市"
+      },
+      "employee": {
+        "@id": "https://jackcanhelp.github.io/kidney-health/#physician"
+      },
+      "availableService": {
+        "@type": "MedicalTherapy",
+        "name": "腎臟內科門診"
+      },
+      "hasMap": "https://www.google.com/maps/search/?api=1&query=%E6%A1%83%E5%BA%9A%E8%81%AF%E5%90%88%E8%A8%BA%E6%89%80%20%E6%A1%83%E5%9C%92%E5%B8%82%E6%A1%83%E5%9C%92%E5%8D%80%E5%9C%8B%E9%9A%9B%E8%B7%AF%E4%BA%8C%E6%AE%B536%E8%99%9F"
+    },
+    {
+      "@type": "MedicalClinic",
+      "@id": "https://jackcanhelp.github.io/kidney-health/#clinic-xinken",
+      "name": "鑫庚內科診所",
+      "url": "https://www.drkidney.com.tw/",
+      "parentOrganization": {
+        "@type": "MedicalOrganization",
+        "name": "桃庚醫療事業群",
+        "url": "https://www.drkidney.com.tw/"
+      },
+      "medicalSpecialty": "https://schema.org/Renal",
+      "address": {
+        "@type": "PostalAddress",
+        "streetAddress": "大興西路二段135號",
+        "addressLocality": "桃園區",
+        "addressRegion": "桃園市",
+        "addressCountry": "TW"
+      },
+      "telephone": "+886-3-302-0185",
+      "areaServed": {
+        "@type": "City",
+        "name": "桃園市"
+      },
+      "employee": {
+        "@id": "https://jackcanhelp.github.io/kidney-health/#physician"
+      },
+      "availableService": {
+        "@type": "MedicalTherapy",
+        "name": "腎臟內科門診"
+      },
+      "hasMap": "https://www.google.com/maps/search/?api=1&query=%E9%91%AB%E5%BA%9A%E5%85%A7%E7%A7%91%E8%A8%BA%E6%89%80%20%E6%A1%83%E5%9C%92%E5%B8%82%E6%A1%83%E5%9C%92%E5%8D%80%E5%A4%A7%E8%88%88%E8%A5%BF%E8%B7%AF%E4%BA%8C%E6%AE%B5135%E8%99%9F"
+    },
+    {
+      "@type": "MedicalClinic",
+      "@id": "https://jackcanhelp.github.io/kidney-health/#clinic-nankan",
+      "name": "南崁桃庚診所",
+      "url": "https://www.drkidney.com.tw/",
+      "parentOrganization": {
+        "@type": "MedicalOrganization",
+        "name": "桃庚醫療事業群",
+        "url": "https://www.drkidney.com.tw/"
+      },
+      "medicalSpecialty": "https://schema.org/Renal",
+      "address": {
+        "@type": "PostalAddress",
+        "streetAddress": "南竹路二段5號",
+        "addressLocality": "蘆竹區",
+        "addressRegion": "桃園市",
+        "addressCountry": "TW"
+      },
+      "telephone": "+886-3-311-8119",
+      "areaServed": {
+        "@type": "City",
+        "name": "桃園市"
+      },
+      "employee": {
+        "@id": "https://jackcanhelp.github.io/kidney-health/#physician"
+      },
+      "availableService": {
+        "@type": "MedicalTherapy",
+        "name": "腎臟內科門診"
+      },
+      "hasMap": "https://www.google.com/maps/search/?api=1&query=%E5%8D%97%E5%B4%81%E6%A1%83%E5%BA%9A%E8%A8%BA%E6%89%80%20%E6%A1%83%E5%9C%92%E5%B8%82%E8%98%86%E7%AB%B9%E5%8D%80%E5%8D%97%E7%AB%B9%E8%B7%AF%E4%BA%8C%E6%AE%B55%E8%99%9F"
+    },
+    {
+      "@type": "FAQPage",
+      "@id": "https://jackcanhelp.github.io/kidney-health/#faq",
+      "inLanguage": "zh-TW",
+      "isPartOf": {
+        "@id": "https://jackcanhelp.github.io/kidney-health/#website"
+      },
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "肌酸酐偏高就是腎臟壞了嗎？",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "不一定。肌酸酐是肌肉代謝的產物，肌肉量大的人本來就偏高；肌肉量少的長者即使數值正常，腎功能也可能已經下降。判斷腎功能要把肌酸酐換算成腎絲球過濾率（eGFR）——依 KDIGO 2024 慢性腎臟病指引，eGFR 低於 60 mL/min/1.73m² 且持續超過三個月，才符合慢性腎臟病定義，單次紅字不能直接診斷。另外只驗血不驗尿等於只看了一半，蛋白尿必須一起檢查。"
           }
         },
         {
-          "@type": "Physician",
-          "@id": "https://jackcanhelp.github.io/kidney-health/#physician",
-          "name": "張竣傑",
-          "jobTitle": "腎臟科主治醫師",
-          "url": "https://jackcanhelp.github.io/kidney-health/",
-          "image": "https://jackcanhelp.github.io/kidney-health/doctor-image.png",
-          "email": "calldrjackhere@gmail.com",
-          "medicalSpecialty": "https://schema.org/Renal",
-          "worksFor": {
-            "@type": "MedicalOrganization",
-            "name": "桃庚診所"
-          },
-          "knowsAbout": [
-            "Chronic Kidney Disease",
-            "Hemodialysis",
-            "Peritoneal Dialysis",
-            "Hyperkalemia",
-            "Hyperphosphatemia",
-            "Proteinuria",
-            "Diabetic Kidney Disease",
-            "Hypertensive Nephropathy",
-            "Acute Kidney Injury",
-            "Kidney Transplantation",
-            "Renal Osteodystrophy",
-            "Anemia of Chronic Kidney Disease"
-          ],
-          "alumniOf": [
-            {
-              "@type": "EducationalOrganization",
-              "name": "長庚大學醫學系"
-            }
-          ],
-          "hasCredential": [
-            {
-              "@type": "EducationalOccupationalCredential",
-              "credentialCategory": "degree",
-              "name": "醫學士"
-            },
-            {
-              "@type": "EducationalOccupationalCredential",
-              "credentialCategory": "certification",
-              "name": "中華民國內科專科醫師"
-            },
-            {
-              "@type": "EducationalOccupationalCredential",
-              "credentialCategory": "certification",
-              "name": "中華民國腎臟科專科醫師"
-            }
-          ],
-          "memberOf": {
-            "@type": "Organization",
-            "name": "台灣腎臟醫學會"
-          },
-          "sameAs": [
-            "https://www.facebook.com/profile.php?id=61586867342658"
-          ]
+          "@type": "Question",
+          "name": "尿有泡泡多久不散要看醫生？",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "大部分的泡泡尿不是蛋白尿。沖水力道、久坐後解尿、喝水太少造成的尿液濃縮，都會產生泡沫。病理性蛋白尿的泡沫特徵是細緻綿密、均勻成層，且靜置十分鐘以上仍不消散。但單靠外觀無法確診：尿液試紙只能初步篩檢，確認要做尿液白蛋白／肌酸酐比值（ACR）定量。蛋白尿其實是慢性腎臟病中最能被治療改善的指標。"
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "血鉀多少要立刻就醫？高血鉀有什麼症狀？",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "一般成人血鉀正常範圍約 3.5 至 5.0 mEq/L，超過 5.5 mEq/L 即為高血鉀；5.6 至 6.0 mEq/L 應於一週內聯絡醫師；超過 6.0 mEq/L 有致命心律不整風險，應當天就醫並接受心電圖檢查。透析病人的可接受範圍不同，須由主治醫師判斷。高血鉀常常完全沒有症狀，這正是它危險的地方；門診最常見的原因不是水果，而是以氯化鉀取代部分氯化鈉的低鈉鹽。"
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "張竣傑醫師在哪裡看診？",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "張竣傑醫師目前於桃園三處院所看診：桃庚聯合診所（桃園市桃園區國際路二段36號，掛號電話 03-370-5119）、鑫庚內科診所（桃園市桃園區大興西路二段135號，掛號電話 03-302-0185）、南崁桃庚診所（桃園市蘆竹區南竹路二段5號，掛號電話 03-311-8119）。三處均隸屬桃庚醫療事業群，門診時段可能異動，建議先電話掛號確認。"
+          }
         }
       ]
     }
+  ]
+}
     </script>
 
 
@@ -527,6 +673,12 @@
             overflow: hidden;
         }
 
+        .doctor-avatar picture {
+            display: block;
+            width: 100%;
+            height: 100%;
+        }
+
         .doctor-avatar img {
             width: 100%;
             height: 100%;
@@ -652,6 +804,10 @@
             text-transform: uppercase;
             margin-bottom: 1rem;
             border: 1px solid rgba(229, 138, 44, 0.2);
+        }
+
+        h2.section-badge {
+            margin-top: 0;
         }
 
         .section-title {
@@ -974,8 +1130,13 @@
             position: relative;
         }
 
+        .about-image picture {
+            display: block;
+        }
+
         .about-image img {
             width: 100%;
+            height: auto;
             border-radius: 20px;
             box-shadow: var(--shadow-xl);
         }
@@ -1081,6 +1242,102 @@
             background: var(--success);
             flex-shrink: 0;
             box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.2);
+        }
+
+        /* Clinic Section */
+        #clinics {
+            background: var(--bg-white);
+        }
+
+        .clinic-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .clinic-card {
+            background: white;
+            padding: 2rem 1.75rem;
+            border-radius: 16px;
+            border: 1px solid var(--border);
+            box-shadow: var(--shadow-sm);
+            transition: all 0.3s ease;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .clinic-card:hover {
+            transform: translateY(-4px);
+            box-shadow: var(--shadow-lg);
+            border-color: var(--accent-light);
+        }
+
+        .clinic-card h3 {
+            color: var(--text-dark);
+            font-size: 1.15rem;
+            font-weight: 700;
+            margin-bottom: 0.35rem;
+        }
+
+        .clinic-specialty {
+            font-size: 0.85rem;
+            color: var(--primary-light);
+            font-weight: 500;
+            margin-bottom: 1rem;
+        }
+
+        .clinic-row {
+            display: flex;
+            gap: 0.6rem;
+            align-items: flex-start;
+            color: var(--text-body);
+            font-size: 0.95rem;
+            line-height: 1.65;
+            margin-bottom: 0.7rem;
+        }
+
+        .clinic-row span[aria-hidden] {
+            flex-shrink: 0;
+        }
+
+        .clinic-row a {
+            color: var(--primary);
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .clinic-row a:hover {
+            text-decoration: underline;
+        }
+
+        .clinic-map {
+            margin-top: auto;
+            padding-top: 1rem;
+        }
+
+        .clinic-map a {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            font-size: 0.9rem;
+            color: var(--primary-light);
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        .clinic-map a:hover {
+            text-decoration: underline;
+        }
+
+        .clinic-note {
+            margin-top: 2rem;
+            padding: 1.15rem 1.4rem;
+            background: var(--bg-cream);
+            border-left: 4px solid var(--accent);
+            border-radius: 8px;
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            line-height: 1.75;
         }
 
         /* Contact Section */
@@ -1598,6 +1855,7 @@
                 <li><a href="#expertise">專業領域</a></li>
                 <li><a href="#tools">實用工具</a></li>
                 <li><a href="#about">關於醫師</a></li>
+                <li><a href="#clinics">門診地點</a></li>
                 <li><a href="#contact">聯絡資訊</a></li>
             </ul>
             <button class="qr-btn" id="qrBtn" aria-label="選單">
@@ -1649,6 +1907,7 @@
             <a href="#expertise" class="mobile-nav-link"><span class="menu-icon">🩺</span>專業領域</a>
             <a href="#tools" class="mobile-nav-link"><span class="menu-icon">🛠️</span>實用工具</a>
             <a href="#about" class="mobile-nav-link"><span class="menu-icon">👨‍⚕️</span>關於醫師</a>
+            <a href="#clinics" class="mobile-nav-link"><span class="menu-icon">🏥</span>門診地點</a>
             <a href="#contact" class="mobile-nav-link"><span class="menu-icon">📬</span>聯絡資訊</a>
         </div>
     </div>
@@ -1657,7 +1916,10 @@
         <div class="hero-container">
             <div class="doctor-card">
                 <div class="doctor-avatar">
-                    <img src="image.jpg?v=2024" alt="張竣傑醫師" style="object-fit: cover; object-position: top center; transform: scale(1.05); transform-origin: top center;" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+                    <picture>
+                        <source srcset="image.webp?v=2026" type="image/webp">
+                        <img src="image.jpg?v=2026" alt="張竣傑醫師，腎臟科專科醫師" fetchpriority="high" style="object-fit: cover; object-position: top center; transform: scale(1.05); transform-origin: top center;" onerror="var p=this.parentElement; p.style.display='none'; p.nextElementSibling.style.display='block';">
+                    </picture>
                     <span class="doctor-avatar-placeholder" style="display:none;">👨‍⚕️</span>
                 </div>
             </div>
@@ -1995,7 +2257,10 @@
             </div>
             <div class="about-content">
                 <div class="about-image fade-in">
-                    <img src="doctor-image.png?v=2024" alt="張竣傑醫師" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                    <picture>
+                        <source srcset="doctor-image.webp?v=2026" type="image/webp">
+                        <img src="doctor-image.png?v=2024" alt="張竣傑醫師看診照片" width="1040" height="1393" loading="lazy" decoding="async" onerror="var p=this.parentElement; p.style.display='none'; p.nextElementSibling.style.display='flex';">
+                    </picture>
                     <div class="about-image-placeholder" style="display:none;">👨‍⚕️</div>
                 </div>
                 <div class="about-text fade-in">
@@ -2029,6 +2294,43 @@
                     </div>
                 </div>
             </div>
+        </div>
+    </section>
+
+    <section id="clinics">
+        <div class="section-container">
+            <div class="section-header">
+                <h2 class="section-badge">🏥 門診地點</h2>
+                <p class="section-subtitle">目前於桃園三處院所看診，請先電話掛號</p>
+            </div>
+            <div class="clinic-cards">
+                <div class="clinic-card fade-in">
+                    <h3>桃庚聯合診所</h3>
+                    <div class="clinic-specialty">張醫師腎臟內科門診</div>
+                    <div class="clinic-row"><span aria-hidden="true">📍</span><span>桃園市桃園區國際路二段 36 號</span></div>
+                    <div class="clinic-row"><span aria-hidden="true">📞</span><span>掛號電話　<a href="tel:+88633705119">03-370-5119</a></span></div>
+                    <div class="clinic-map"><a href="https://www.google.com/maps/search/?api=1&amp;query=%E6%A1%83%E5%BA%9A%E8%81%AF%E5%90%88%E8%A8%BA%E6%89%80%20%E6%A1%83%E5%9C%92%E5%B8%82%E6%A1%83%E5%9C%92%E5%8D%80%E5%9C%8B%E9%9A%9B%E8%B7%AF%E4%BA%8C%E6%AE%B536%E8%99%9F" target="_blank" rel="noopener">🗺️ 在 Google 地圖開啟</a></div>
+                </div>
+                <div class="clinic-card fade-in">
+                    <h3>鑫庚內科診所</h3>
+                    <div class="clinic-specialty">張醫師腎臟內科門診</div>
+                    <div class="clinic-row"><span aria-hidden="true">📍</span><span>桃園市桃園區大興西路二段 135 號</span></div>
+                    <div class="clinic-row"><span aria-hidden="true">📞</span><span>掛號電話　<a href="tel:+88633020185">03-302-0185</a></span></div>
+                    <div class="clinic-map"><a href="https://www.google.com/maps/search/?api=1&amp;query=%E9%91%AB%E5%BA%9A%E5%85%A7%E7%A7%91%E8%A8%BA%E6%89%80%20%E6%A1%83%E5%9C%92%E5%B8%82%E6%A1%83%E5%9C%92%E5%8D%80%E5%A4%A7%E8%88%88%E8%A5%BF%E8%B7%AF%E4%BA%8C%E6%AE%B5135%E8%99%9F" target="_blank" rel="noopener">🗺️ 在 Google 地圖開啟</a></div>
+                </div>
+                <div class="clinic-card fade-in">
+                    <h3>南崁桃庚診所</h3>
+                    <div class="clinic-specialty">張醫師腎臟內科門診</div>
+                    <div class="clinic-row"><span aria-hidden="true">📍</span><span>桃園市蘆竹區南竹路二段 5 號</span></div>
+                    <div class="clinic-row"><span aria-hidden="true">📞</span><span>掛號電話　<a href="tel:+88633118119">03-311-8119</a></span></div>
+                    <div class="clinic-map"><a href="https://www.google.com/maps/search/?api=1&amp;query=%E5%8D%97%E5%B4%81%E6%A1%83%E5%BA%9A%E8%A8%BA%E6%89%80%20%E6%A1%83%E5%9C%92%E5%B8%82%E8%98%86%E7%AB%B9%E5%8D%80%E5%8D%97%E7%AB%B9%E8%B7%AF%E4%BA%8C%E6%AE%B55%E8%99%9F" target="_blank" rel="noopener">🗺️ 在 Google 地圖開啟</a></div>
+                </div>
+            </div>
+            <p class="clinic-note">
+                三處院所均隸屬 <a href="https://www.drkidney.com.tw/" target="_blank" rel="noopener" style="color: var(--primary); font-weight: 600;">桃庚醫療事業群</a>。門診時段可能異動，
+                建議先以上方掛號電話確認，或至桃庚醫療事業群官網查詢最新門診表。
+                本頁僅提供看診地點與掛號資訊，實際診療內容仍以醫師面診評估為準。
+            </p>
         </div>
     </section>
 

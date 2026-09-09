@@ -51,6 +51,21 @@ var GA_MEASUREMENT_ID = 'G-0120HSPY2J';
         track('contact_click', { method: 'email' });
         return;
       }
+      if (href.indexOf('tel:') === 0) {
+        var card = a.closest ? a.closest('.clinic-card') : null;
+        var h3 = card ? card.querySelector('h3') : null;
+        track('contact_click', {
+          method: 'phone',
+          clinic: h3 ? h3.textContent.trim() : href.replace('tel:', '')
+        });
+        return;
+      }
+      if (/google\.[a-z.]+\/maps/.test(href)) {
+        var mcard = a.closest ? a.closest('.clinic-card') : null;
+        var mh3 = mcard ? mcard.querySelector('h3') : null;
+        track('contact_click', { method: 'map', clinic: mh3 ? mh3.textContent.trim() : 'unknown' });
+        return;
+      }
       if (href.indexOf('facebook.com') > -1) {
         track('contact_click', { method: 'facebook' });
         return;
