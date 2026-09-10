@@ -558,6 +558,7 @@
 
         .qr-shortcuts-icons {
             display: flex;
+            flex-wrap: wrap;
             justify-content: center;
             gap: 0.7rem;
         }
@@ -1881,6 +1882,10 @@
                         <span class="qr-shortcut-emoji" aria-hidden="true" style="color: #ffd1dc; text-shadow: 0 1px 2px rgba(122, 30, 52, 0.28);">&#9829;</span>
                         <span class="qr-shortcut-text">LDL 專業版</span>
                     </button>
+                    <button class="qr-shortcut-icon" onclick="closeQrModal(); openKdigoTool()" title="KDIGO 心腎風險圖（實驗版）" aria-label="開啟 KDIGO 心腎風險圖實驗版">
+                        <span class="qr-shortcut-emoji">🫘</span>
+                        <span class="qr-shortcut-text">KDIGO 實驗版</span>
+                    </button>
                     <button class="qr-shortcut-icon" onclick="closeQrModal(); openToolModal('tools.html?solo=1#potassium-tool', '食物鉀含量查詢')" title="食物鉀含量查詢" aria-label="食物鉀含量查詢">
                         <span class="qr-shortcut-emoji">🥬</span>
                         <span class="qr-shortcut-text">鉀含量查詢</span>
@@ -2242,6 +2247,12 @@
                     <p>供醫療專業人員於診間參考風險分層、LDL-C 目標與療程節點；不是一般民眾自我診療工具。</p>
                     <span class="tool-link">開始使用 →</span>
                 </div>
+                <div class="tool-card fade-in collapsible-item" data-group="tools" onclick="openKdigoTool()">
+                    <div class="tool-icon">🫘</div>
+                    <h3>KDIGO 心腎風險圖（實驗版）</h3>
+                    <p>依 eGFR 與尿液 ACR 查看族群心腎相對風險，並探索具研究證據的治療風險變化。</p>
+                    <span class="tool-link">開始使用 →</span>
+                </div>
             </div>
             <button class="show-more-btn" data-target="tools" onclick="toggleMore(this)">
                 更多實用工具 <span class="arrow">▼</span>
@@ -2494,6 +2505,11 @@
         const AIMED_ENTRY_TICKET_URL = `${AIMED_PRODUCTION_URL}api/entry-ticket`;
         const AIMED_ENTRY_TIMEOUT_MS = 2500;
         let aimedLaunchPending = false;
+        const KDIGO_LOCAL_TEST_URL = 'http://localhost:3001/';
+        const KDIGO_PRODUCTION_URL = 'https://kidneyheart-hotspot.jackbase.chatgpt.site/';
+        const KDIGO_ENTRY_TICKET_URL = `${KDIGO_PRODUCTION_URL}api/entry-ticket`;
+        const KDIGO_ENTRY_TIMEOUT_MS = 2500;
+        let kdigoLaunchPending = false;
 
         async function createAimedLaunchUrl() {
             const controller = new AbortController();
@@ -2535,6 +2551,50 @@
                 openToolModal(aimedUrl, 'LDL 心腎決策輔助（專業版）', 'unsafe-url');
             } finally {
                 aimedLaunchPending = false;
+                document.body.style.cursor = '';
+            }
+        }
+
+        async function createKdigoLaunchUrl() {
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), KDIGO_ENTRY_TIMEOUT_MS);
+            try {
+                const response = await fetch(KDIGO_ENTRY_TICKET_URL, {
+                    method: 'POST',
+                    cache: 'no-store',
+                    credentials: 'omit',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        sourceUrl: `${window.location.origin}${window.location.pathname}`
+                    }),
+                    signal: controller.signal
+                });
+                if (!response.ok) throw new Error('KDIGO entry ticket unavailable');
+                const result = await response.json();
+                if (typeof result.ticket !== 'string' || result.ticket.length > 2048) {
+                    throw new Error('Invalid KDIGO entry ticket');
+                }
+                return `${KDIGO_PRODUCTION_URL}#entry_ticket=${encodeURIComponent(result.ticket)}`;
+            } finally {
+                clearTimeout(timeoutId);
+            }
+        }
+
+        async function openKdigoTool() {
+            if (kdigoLaunchPending) return;
+            const isLocalPreview = location.hostname === 'localhost' || location.hostname === '127.0.0.1';
+            kdigoLaunchPending = true;
+            document.body.style.cursor = 'progress';
+            try {
+                const kdigoUrl = isLocalPreview
+                    ? KDIGO_LOCAL_TEST_URL
+                    : await createKdigoLaunchUrl();
+                openToolModal(kdigoUrl, 'KDIGO 心腎風險圖（實驗版）', 'no-referrer');
+            } catch (error) {
+                console.warn('KDIGO signed entry failed:', error);
+                window.alert('KDIGO 心腎風險圖目前無法啟動，請稍後再試。');
+            } finally {
+                kdigoLaunchPending = false;
                 document.body.style.cursor = '';
             }
         }
