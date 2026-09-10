@@ -2589,15 +2589,22 @@
                 }
             }
             if (!WARM_TOOLS_ON_VISIBLE || typeof IntersectionObserver === 'undefined') return;
-            const anchor = document.querySelector('[onclick*="openAimedTool"]');
-            if (!anchor) return;
+            // 四個入口（兩張工具卡、選單裡的兩個捷徑）預設都是 display:none —
+            // 卡片收在「更多實用工具」底下，捷徑收在選單 modal 裡。display:none
+            // 的元素不會觸發 IntersectionObserver，所以主要錨點必須是永遠可見的
+            // #tools 區塊；另外仍觀察那四個入口，涵蓋「直接開選單、沒捲到工具區」
+            // 的路徑（它們一旦顯示出來就會觸發）。
+            const anchors = [document.getElementById('tools')].concat(
+                Array.from(document.querySelectorAll('[onclick*="openAimedTool"], [onclick*="openKdigoTool"]'))
+            ).filter(Boolean);
+            if (!anchors.length) return;
             const observer = new IntersectionObserver(function (entries) {
                 if (!entries.some(function (e) { return e.isIntersecting; })) return;
                 observer.disconnect();         // 每次載入只預熱一次
                 warmEntryTicket('aimed');
                 warmEntryTicket('kdigo');
             }, { rootMargin: '200px' });
-            observer.observe(anchor);
+            for (const el of anchors) observer.observe(el);
         })();
 
         async function openAimedTool() {
