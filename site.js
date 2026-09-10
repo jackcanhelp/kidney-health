@@ -90,5 +90,30 @@ var GA_MEASUREMENT_ID = 'G-0120HSPY2J';
     document.querySelectorAll('[data-current-year]').forEach(function (el) {
       el.textContent = y;
     });
+
+    var release = window.KIDNEY_HEALTH_RELEASE;
+    if (release) {
+      document.querySelectorAll('[data-app-version]').forEach(function (el) {
+        el.textContent = release.productVersion;
+      });
+      document.querySelectorAll('[data-build-id]').forEach(function (el) {
+        el.textContent = release.buildId;
+      });
+    }
   });
+
+  // Keep the worker URL stable. updateViaCache:none ensures every visit checks
+  // the worker and its version metadata directly instead of reusing HTTP cache.
+  if ('serviceWorker' in navigator && window.isSecureContext) {
+    window.addEventListener('load', function () {
+      navigator.serviceWorker.register('/sw.js', {
+        scope: '/',
+        updateViaCache: 'none'
+      }).then(function (registration) {
+        return registration.update();
+      }).catch(function (error) {
+        console.warn('Service Worker 更新檢查失敗；網站將繼續使用網路載入。', error);
+      });
+    });
+  }
 })();
