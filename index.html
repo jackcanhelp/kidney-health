@@ -2539,6 +2539,67 @@
             }
         }
 
+        // --- 入口票券預取 ---------------------------------------------------
+        // 實測（2026-09-10）：簽發端點冷啟動 TTFB 2.48s，熱的只要 0.14s，差 18 倍；
+        // DNS+TLS 只佔 0.07s，所以 preconnect 沒有意義，要解的是「按下去時是冷的」。
+        // 票券有效 90 秒（伺服器端 exp = iat + 90000），因此在使用者「表現出意圖」
+        // 時就先簽發，真的按下去時通常已經拿在手上。簽章與伺服器驗證完全不變。
+        const ENTRY_TICKET_REUSE_MS = 60000;   // 90 秒有效期留 30 秒餘裕給載入與驗證
+        const WARM_TOOLS_ON_VISIBLE = true;    // 手機使用者不會 hover，改用捲動到工具區時預熱
+        const entryTicketCache = { aimed: null, kdigo: null };
+
+        function isLocalToolPreview() {
+            return location.hostname === 'localhost' || location.hostname === '127.0.0.1';
+        }
+
+        function createEntryTicketUrl(kind) {
+            return kind === 'aimed' ? createAimedLaunchUrl() : createKdigoLaunchUrl();
+        }
+
+        function warmEntryTicket(kind) {
+            if (isLocalToolPreview()) return;
+            const cached = entryTicketCache[kind];
+            if (cached && Date.now() - cached.issuedAt < ENTRY_TICKET_REUSE_MS) return;
+            const entry = { issuedAt: Date.now(), promise: createEntryTicketUrl(kind) };
+            entryTicketCache[kind] = entry;
+            // 預取失敗不該冒出 unhandled rejection，也不該把壞掉的票留在快取裡；
+            // 清掉之後，真正點擊時會重新簽一張，走原本的錯誤處理。
+            entry.promise.catch(function () {
+                if (entryTicketCache[kind] === entry) entryTicketCache[kind] = null;
+            });
+        }
+
+        function takeEntryTicket(kind) {
+            const cached = entryTicketCache[kind];
+            entryTicketCache[kind] = null;     // 一張票只用一次
+            if (cached && Date.now() - cached.issuedAt < ENTRY_TICKET_REUSE_MS) {
+                return cached.promise;
+            }
+            return createEntryTicketUrl(kind);
+        }
+
+        (function bindEntryTicketWarmup() {
+            const KINDS = [['aimed', 'openAimedTool'], ['kdigo', 'openKdigoTool']];
+            for (const [kind, fnName] of KINDS) {
+                for (const el of document.querySelectorAll('[onclick*="' + fnName + '"]')) {
+                    const warm = function () { warmEntryTicket(kind); };
+                    el.addEventListener('pointerenter', warm, { passive: true });
+                    el.addEventListener('touchstart', warm, { passive: true });
+                    el.addEventListener('focusin', warm);
+                }
+            }
+            if (!WARM_TOOLS_ON_VISIBLE || typeof IntersectionObserver === 'undefined') return;
+            const anchor = document.querySelector('[onclick*="openAimedTool"]');
+            if (!anchor) return;
+            const observer = new IntersectionObserver(function (entries) {
+                if (!entries.some(function (e) { return e.isIntersecting; })) return;
+                observer.disconnect();         // 每次載入只預熱一次
+                warmEntryTicket('aimed');
+                warmEntryTicket('kdigo');
+            }, { rootMargin: '200px' });
+            observer.observe(anchor);
+        })();
+
         async function openAimedTool() {
             if (aimedLaunchPending) return;
             const isLocalPreview = location.hostname === 'localhost' || location.hostname === '127.0.0.1';
@@ -2547,7 +2608,7 @@
             try {
                 const aimedUrl = isLocalPreview
                     ? AIMED_LOCAL_TEST_URL
-                    : await createAimedLaunchUrl();
+                    : await takeEntryTicket('aimed');
                 openToolModal(aimedUrl, 'LDL 心腎決策輔助（專業版）', 'unsafe-url');
             } finally {
                 aimedLaunchPending = false;
@@ -2588,7 +2649,7 @@
             try {
                 const kdigoUrl = isLocalPreview
                     ? KDIGO_LOCAL_TEST_URL
-                    : await createKdigoLaunchUrl();
+                    : await takeEntryTicket('kdigo');
                 openToolModal(kdigoUrl, 'KDIGO 心腎風險圖（實驗版）', 'no-referrer');
             } catch (error) {
                 console.warn('KDIGO signed entry failed:', error);
