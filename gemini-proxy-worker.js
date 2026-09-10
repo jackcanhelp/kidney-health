@@ -7,15 +7,23 @@
 // 5. 記下 Worker URL: https://gemini-proxy.{你的subdomain}.workers.dev
 // 6. 將該 URL 填入 HTML 檔案中的 WORKER_ENDPOINT 變數
 
+// 正式來源：必須「完全相同」才算數。
+// 2026-09-09 網站搬到自訂網域 jackcanhelp.org，這份清單當時漏了跟著改，
+// 兩支掃描器因此在新網域上一律拿到 403。舊的 github.io 保留，讓當時還開著的分頁不會斷。
 const ALLOWED_ORIGINS = [
+  'https://jackcanhelp.org',
+  'https://www.jackcanhelp.org',
   'https://jackcanhelp.github.io',
-  'http://localhost',
-  'http://127.0.0.1',
 ];
 
-function isOriginAllowed(origin) {
+// 本機開發：只允許 localhost / 127.0.0.1，port 可有可無。
+const LOCAL_ORIGIN = /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/;
+
+export function isOriginAllowed(origin) {
   if (!origin) return false;
-  return ALLOWED_ORIGINS.some(allowed => origin.startsWith(allowed));
+  // 精確比對，不用 startsWith：前綴比對會把 https://jackcanhelp.org.evil.com
+  // 之類的冒充網域一起放行，等於讓任何人拿這支 Worker 燒 Gemini 額度。
+  return ALLOWED_ORIGINS.includes(origin) || LOCAL_ORIGIN.test(origin);
 }
 
 function corsHeaders(origin) {
