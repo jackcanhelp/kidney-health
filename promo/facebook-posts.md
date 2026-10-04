@@ -288,7 +288,7 @@ KDOQI 2019 版**不再一律主張「瘻管優先」**，改成依血管條件�
 
 ## 七、乾體重（洗腎是不是洗過頭）
 
-> 文章 `articles/dry-weight.html` 還在審閱模式，醫師定稿、正式上線後再發這三則。
+> 文章網址：https://jackcanhelp.org/articles/dry-weight.html（2026-10-04 上線）
 > 這篇特別適合透析室：可以把 QR code 印在透析床邊的衛教單上。
 
 ### 7-A｜反直覺事實
