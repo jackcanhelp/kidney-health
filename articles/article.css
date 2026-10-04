@@ -203,6 +203,40 @@ tr.row-danger td:first-child { color: var(--danger); }
 .note h3 { margin: 0 0 0.5rem; font-size: 1rem; color: var(--primary); }
 .note p:last-child { margin-bottom: 0; }
 
+/* ------------------------------------------------------------ 換算說明
+ * 推導出來的數字（不是文獻直接給的），在句尾放一顆「怎麼算的？」按鈕，
+ * 換算過程收在緊接段落之後的 .explain 裡，有興趣的讀者再點開。
+ * 用法見 _template.html；開合由 ../site.js 處理。 */
+.explain-btn {
+    display: inline-block;
+    margin: 0 0.35em;
+    padding: 0 0.6em;
+    font: inherit;
+    font-size: 0.8em;
+    line-height: 1.75;
+    color: var(--primary-light);
+    background: #e8f3f8;
+    border: 1px solid #b9dbe8;
+    border-radius: 999px;
+    cursor: pointer;
+    vertical-align: 0.08em;
+    white-space: nowrap;
+}
+.explain-btn:hover { background: #d9ecf4; }
+.explain-btn:focus-visible { outline: 2px solid var(--primary-light); outline-offset: 2px; }
+.explain-btn[aria-expanded="true"] { color: white; background: var(--primary-light); border-color: var(--primary-light); }
+.explain {
+    background: #f1f8fb;
+    border-left: 3px solid var(--primary-light);
+    border-radius: 0 12px 12px 0;
+    padding: 1.1rem 1.4rem;
+    margin: -0.25rem 0 1.5rem;
+    font-size: 0.95rem;
+}
+.explain h4 { margin: 0 0 0.45rem; font-size: 0.98rem; color: var(--primary); }
+.explain p:last-child { margin-bottom: 0; }
+.explain .explain-src { font-size: 0.85rem; color: var(--text-muted); }
+
 /* ------------------------------------------------------------ 相關內容 */
 .related { display: grid; gap: 0.9rem; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); margin: 1.5rem 0; }
 .related-card {

@@ -3,6 +3,7 @@
  * 1. Google Analytics 4（填入評估 ID 後才會啟用）
  * 2. 三個關鍵行為的事件追蹤：開啟 PDF、使用工具、點擊聯絡方式
  * 3. 頁尾年份自動更新
+ * 4. 文章裡「怎麼算的？」換算說明的開合
  *
  * ── 要開始收集數據，只需要改下面這一行 ──
  * 到 analytics.google.com 建立 GA4 資源，取得「評估 ID」（格式 G-XXXXXXXXXX），
@@ -83,6 +84,20 @@ var GA_MEASUREMENT_ID = 'G-0120HSPY2J';
       track('tool_open', { tool_name: h ? h.textContent.trim() : 'unknown' });
     }
   }, true);
+
+  // ---------------------------------------------------------- 換算說明開合
+  // <button class="explain-btn" aria-controls="…" data-explain="主題"> 控制同 id 的 .explain。
+  // 開啟時記一筆 explain_open，之後可以從 GA4 看出讀者對哪些推導有興趣。
+  document.addEventListener('click', function (e) {
+    var btn = e.target.closest ? e.target.closest('.explain-btn') : null;
+    if (!btn) return;
+    var panel = document.getElementById(btn.getAttribute('aria-controls'));
+    if (!panel) return;
+    var open = btn.getAttribute('aria-expanded') !== 'true';
+    btn.setAttribute('aria-expanded', String(open));
+    panel.hidden = !open;
+    if (open) track('explain_open', { topic: btn.getAttribute('data-explain') || panel.id });
+  });
 
   // -------------------------------------------------------------- 頁尾年份
   document.addEventListener('DOMContentLoaded', function () {
