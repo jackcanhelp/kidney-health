@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="app-version" content="1.0.0">
+    <meta name="app-version" content="1.1.0">
     
     <meta name="theme-color" content="#1a4a5e">
 
@@ -29,8 +29,8 @@
 
     <link rel="icon" type="image/png" sizes="32x32" href="icons/icon-32.png">
     <link rel="apple-touch-icon" href="icons/icon-180.png">
-    <script src="version.js?v=1.0.0"></script>
-    <script src="site.js?v=1.0.0" defer></script>
+    <script src="version.js?v=1.1.0"></script>
+    <script src="site.js?v=1.1.0" defer></script>
 
 
     <link rel="manifest" href="manifest.json">
@@ -1039,6 +1039,71 @@
             height: 6px;
             background: var(--accent);
             border-radius: 50%;
+        }
+
+        /* Gear Section - 居家運動好物（含推薦連結） */
+        #gear {
+            background: var(--bg-white, #fdf8f2);
+        }
+
+        .gear-card {
+            display: grid;
+            grid-template-columns: 220px 1fr;
+            gap: 2rem;
+            align-items: center;
+            max-width: 860px;
+            margin: 0 auto;
+            background: white;
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: 1.5rem;
+            box-shadow: var(--shadow-sm);
+            text-decoration: none;
+            color: inherit;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .gear-card:hover {
+            transform: translateY(-4px);
+            box-shadow: var(--shadow-lg);
+            border-color: var(--primary-light);
+        }
+
+        .gear-card img {
+            display: block;
+            width: 100%;
+            height: auto;
+            border-radius: 14px;
+        }
+
+        .gear-card h3 {
+            font-size: 1.3rem;
+            color: var(--text-dark);
+            margin-bottom: 0.6rem;
+            font-weight: 700;
+        }
+
+        .gear-card p {
+            color: var(--text-muted);
+            font-size: 0.95rem;
+            line-height: 1.8;
+            margin-bottom: 0.9rem;
+        }
+
+        .gear-card .gear-note {
+            font-size: 0.82rem;
+            margin: 0.6rem 0 0;
+        }
+
+        @media (max-width: 640px) {
+            .gear-card {
+                grid-template-columns: 1fr;
+                gap: 1.2rem;
+            }
+            .gear-card img {
+                max-width: 240px;
+                margin: 0 auto;
+            }
         }
 
         /* Tools Section - 實用工具 */
@@ -2295,6 +2360,25 @@
             <button class="show-more-btn" data-target="tools" onclick="toggleMore(this)">
                 更多實用工具 <span class="arrow">▼</span>
             </button>
+        </div>
+    </section>
+
+    <section id="gear">
+        <div class="section-container">
+            <div class="section-header">
+                <span class="section-badge">🚲 居家運動</span>
+                <h2 class="section-title">醫師推薦好物</h2>
+                <p class="section-subtitle">在家坐著也能動，從每天踩幾分鐘開始</p>
+            </div>
+            <a class="gear-card fade-in" href="shop/foot-pedal.html">
+                <img src="shop/img/pedal-feet.webp" alt="長輩坐在沙發上踩腳踏器，卡通張醫師在旁邊比讚" width="765" height="1024" loading="lazy">
+                <div>
+                    <h3>手足兩用腳踏器</h3>
+                    <p>看電視、聊天的時候，腳底下踩一踩；腳不方便也可以放桌上用手搖，洗腎時還能抵著床尾躺著踩。我整理了怎麼開始、誰要先問醫師，以及什麼情況要停下來。</p>
+                    <span class="tool-link">看使用方式與購買資訊 →</span>
+                    <p class="gear-note">頁面內含廠商推薦連結，我會獲得分潤。</p>
+                </div>
+            </a>
         </div>
     </section>
 
