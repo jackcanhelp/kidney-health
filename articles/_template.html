@@ -158,6 +158,15 @@
       <p>{{澄清}}</p>
     </div>
 
+    <!-- 推導出來的數字（換算、估算，不是文獻直接給的）：句尾放「怎麼算的？」按鈕，
+         換算過程收在緊接段落之後的 .explain，id 要和 aria-controls 一致，data-explain 是 GA4 記錄用的主題名 -->
+    <p>{{含推導數字的句子}}<button type="button" class="explain-btn" aria-expanded="false" aria-controls="explain-{{主題}}" data-explain="{{主題}}">怎麼算的？</button></p>
+    <div class="explain" id="explain-{{主題}}" hidden>
+      <h4>{{這個數字怎麼來的}}</h4>
+      <p>{{一步一步的換算}}</p>
+      <p class="explain-src">{{說明這是換算而非單一研究結果，並指向文末參考依據}}</p>
+    </div>
+
     <h2>什麼情況要立刻就醫</h2>
     <div class="alert">
       <h3>當天就醫或掛急診</h3>

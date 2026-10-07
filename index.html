@@ -1041,71 +1041,6 @@
             border-radius: 50%;
         }
 
-        /* Gear Section - 居家運動好物（含推薦連結） */
-        #gear {
-            background: var(--bg-white, #fdf8f2);
-        }
-
-        .gear-card {
-            display: grid;
-            grid-template-columns: 220px 1fr;
-            gap: 2rem;
-            align-items: center;
-            max-width: 860px;
-            margin: 0 auto;
-            background: white;
-            border: 1px solid var(--border);
-            border-radius: 20px;
-            padding: 1.5rem;
-            box-shadow: var(--shadow-sm);
-            text-decoration: none;
-            color: inherit;
-            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-
-        .gear-card:hover {
-            transform: translateY(-4px);
-            box-shadow: var(--shadow-lg);
-            border-color: var(--primary-light);
-        }
-
-        .gear-card img {
-            display: block;
-            width: 100%;
-            height: auto;
-            border-radius: 14px;
-        }
-
-        .gear-card h3 {
-            font-size: 1.3rem;
-            color: var(--text-dark);
-            margin-bottom: 0.6rem;
-            font-weight: 700;
-        }
-
-        .gear-card p {
-            color: var(--text-muted);
-            font-size: 0.95rem;
-            line-height: 1.8;
-            margin-bottom: 0.9rem;
-        }
-
-        .gear-card .gear-note {
-            font-size: 0.82rem;
-            margin: 0.6rem 0 0;
-        }
-
-        @media (max-width: 640px) {
-            .gear-card {
-                grid-template-columns: 1fr;
-                gap: 1.2rem;
-            }
-            .gear-card img {
-                max-width: 240px;
-                margin: 0 auto;
-            }
-        }
-
         /* Tools Section - 實用工具 */
         #tools {
             background: linear-gradient(180deg, #fdf5ec 0%, #faeadb 100%);
@@ -2032,8 +1967,26 @@
                 <p class="section-subtitle">每篇都標註參考的國際指引與最後更新日期</p>
             </div>
             <div class="articles-grid">
+                <a href="articles/heart-failure.html" class="article-card fade-in">
+                    <span class="card-tags"><span class="comic-category">心臟與腎臟</span><span class="badge-new">最新</span></span>
+                    <h3>胸好悶，喘不停，我是不是有心臟衰竭？</h3>
+                    <p>胸悶加上喘不一定是心臟衰竭。躺平會喘、半夜喘醒、腳踝水腫通常才是心衰竭的線索，確診要抽血加做心臟超音波。</p>
+                    <div class="comic-meta">
+                        <span>📅 2026-10-08</span>
+                        <span class="read-more">閱讀更多 →</span>
+                    </div>
+                </a>
+                <a href="articles/dry-weight.html" class="article-card fade-in">
+                    <span class="comic-category">透析照護</span>
+                    <h3>洗腎是不是洗過頭？乾體重是怎麼定出來的</h3>
+                    <p>洗完腎抽筋、頭暈，多半不是洗太多，而是水拿得太快。乾體重是一點一點試出來的，胖了、瘦了都要重新調整。</p>
+                    <div class="comic-meta">
+                        <span>📅 2026-10-04</span>
+                        <span class="read-more">閱讀更多 →</span>
+                    </div>
+                </a>
                 <a href="articles/dialysis-exercise.html" class="article-card fade-in">
-                    <span class="card-tags"><span class="comic-category">透析照護</span><span class="badge-new">最新</span></span>
+                    <span class="comic-category">透析照護</span>
                     <h3>洗腎皮膚癢怎麼辦？透析中踩腳踏車能改善搔癢嗎</h3>
                     <p>癢的來源在血液裡，不在皮膚表面。透析中踩臥式腳踏車能把躲在組織裡的毒素帶出來給機器清除，還能壓下發炎。</p>
                     <div class="comic-meta">
@@ -2068,29 +2021,11 @@
                         <span class="read-more">閱讀更多 →</span>
                     </div>
                 </a>
-                <a href="articles/hyperkalemia.html" class="article-card fade-in">
-                    <span class="comic-category">電解質異常</span>
-                    <h3>高血鉀有什麼症狀？血鉀多少要立刻就醫</h3>
-                    <p>高血鉀最危險的地方是它通常沒有症狀。門診最常見的原因不是水果，而是低鈉鹽，建議先回家看鹽罐的成分表。</p>
-                    <div class="comic-meta">
-                        <span>📅 2026-09-01</span>
-                        <span class="read-more">閱讀更多 →</span>
-                    </div>
-                </a>
-                <a href="articles/fruit.html" class="article-card fade-in">
-                    <span class="comic-category">飲食營養</span>
-                    <h3>腎友的水果到底能不能吃？別再背禁食清單了</h3>
-                    <p>一律禁蔬果可能弊大於利，真正該避開的是低鈉鹽與加工食品的鉀添加物。楊桃則是唯一沒有討論空間的例外。</p>
-                    <div class="comic-meta">
-                        <span>📅 2026-09-01</span>
-                        <span class="read-more">閱讀更多 →</span>
-                    </div>
-                </a>
             </div>
 
             <div class="articles-cta">
                 <a href="articles/index.html" class="btn btn-primary">
-                    <span>📚</span> 瀏覽全部 8 篇文章
+                    <span>📚</span> 瀏覽全部 10 篇文章
                 </a>
             </div>
         </div>
@@ -2360,25 +2295,6 @@
             <button class="show-more-btn" data-target="tools" onclick="toggleMore(this)">
                 更多實用工具 <span class="arrow">▼</span>
             </button>
-        </div>
-    </section>
-
-    <section id="gear">
-        <div class="section-container">
-            <div class="section-header">
-                <span class="section-badge">🚲 居家運動</span>
-                <h2 class="section-title">醫師推薦好物</h2>
-                <p class="section-subtitle">在家坐著也能動，從每天踩幾分鐘開始</p>
-            </div>
-            <a class="gear-card fade-in" href="shop/foot-pedal.html">
-                <img src="shop/img/pedal-feet.webp" alt="長輩坐在沙發上踩腳踏器，卡通張醫師在旁邊比讚" width="765" height="1024" loading="lazy">
-                <div>
-                    <h3>手足兩用腳踏器</h3>
-                    <p>看電視、聊天的時候，腳底下踩一踩；腳不方便也可以放桌上用手搖，洗腎時還能抵著床尾躺著踩。我整理了怎麼開始、誰要先問醫師，以及什麼情況要停下來。</p>
-                    <span class="tool-link">看使用方式與購買資訊 →</span>
-                    <p class="gear-note">頁面內含廠商推薦連結，我會獲得分潤。</p>
-                </div>
-            </a>
         </div>
     </section>
 
