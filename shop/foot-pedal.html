@@ -118,6 +118,14 @@
   .use-card h3 { margin: 0.6rem 0 0.2rem; font-size: 1.05rem; }
   .use-card p { font-size: 0.92rem; margin: 0; }
   .use-card-wide { grid-column: 1 / -1; }
+
+  /* 狀況表：每格拆成短行，手機上不必左右滑 */
+  .cond-table { min-width: 0; }
+  .cond-table td { line-height: 1.75; }
+  .cond-table td:first-child { width: 38%; white-space: normal; }
+  @media (max-width: 640px) {
+    .cond-table th, .cond-table td { padding: 0.75rem 0.7rem; }
+  }
   .use-card-wide img { max-width: 661px; margin: 0 auto; }
   .use-card-wide p { max-width: 36em; margin: 0 auto; }
 
@@ -175,7 +183,7 @@
     <div>
       <span class="article-tag">醫師用過覺得可以</span>
       <h1>坐著也能動：手足兩用健身車</h1>
-      <p class="lead">看電視、聊天的時候，腳隨時動一動。對很多慢性病或長者來說，這比「出門快走 30 分鐘」容易開始得多。</p>
+      <p class="lead">看電視、聊天的時候，腳隨時動一動。對很多慢性病或長者來說，這比「風雨無阻出門快走 30 分鐘」更容易培養運動習慣。</p>
       <div class="hero-cta">
         <a class="buy-btn" href="https://www.seniormagichouse.com/products/foldable-rehabilitation-foot-pedal?sl-ref=00267501" target="_blank" rel="sponsored noopener">前往耆妙屋購買 →</a>
         <span class="buy-note">外部連結（耆妙屋官網），含推薦碼，見下方利益揭露</span>
@@ -200,13 +208,13 @@
 
     <div class="quick-answer">
       <h2>醫師速答</h2>
-      <p>腎友常見的困難是「體力差、怕跌倒、天氣不好不想出門」。坐在椅子上踩踏器，重心穩、不用出門，可以從每次 <span class="tbc">5 到 10 分鐘</span>開始，慢慢加到每次 <span class="tbc">20 到 30 分鐘</span>、每週 <span class="tbc">3 到 5 次</span>。強度以「有點喘、但還能講完整句子」為原則。</p>
-      <p>開始之前先問過你的主治醫師，特別是有心臟病、最近跌倒過、血壓忽高忽低，或是洗腎的腎友。</p>
+      <p>腎友常見的困難是「體力差、怕跌倒、天氣不好不想出門」。坐在椅子上踩踏，有重心穩、不用出門的優點，建議從每次 <span class="tbc">5 到 10 分鐘</span>開始，慢慢加到每次 <span class="tbc">20 到 30 分鐘</span>、每週 <span class="tbc">3 到 5 次</span>。強度以「有點喘、但還能講完整句子」為原則。</p>
+      <p>開始之前先問過你的主治醫師，尤其是有心臟病、最近曾跌倒、血壓忽高忽低，或洗腎中的腎友。</p>
     </div>
 
     <h2>為什麼我會建議腎友「坐著踩」</h2>
     <p>
-      門診裡我很常聽到：「醫生，我知道要運動，可是走一下就累，膝蓋也痛。」腎臟病走到中後期，肌肉量會慢慢流失，貧血也比較容易喘。這時候叫病人去快走，常常第一週就放棄了。
+      門診時我很常聽到：「醫生，我知道要運動，可是走一下就累，膝蓋也痛。」腎臟病走到中後期，肌肉量會慢慢流失，貧血也比較容易喘。這時候叫病人去快走，常常第一週就放棄了。
     </p>
     <p>
       坐著踩踏的好處是門檻低。膝蓋不用承受全身體重，旁邊有椅背靠，累了腳一停就休息。我在<a href="../articles/dialysis-exercise.html">透析中踩腳踏車那篇</a>提過，洗腎室裡躺著踩的臥式腳踏車是有研究基礎的；回到家裡，這台小小的健身車是同一個概念的簡化版，強度比較低，但每天都做得到。
@@ -214,20 +222,17 @@
     <p>
       坐著踩還有一個常被忽略的好處：練心肺。踩到有點喘的時候，心跳和呼吸都會跟著加快，規律踩上幾週，心肺耐力會慢慢進步，同樣走一段路就沒那麼喘。<span class="tbc">針對慢性腎臟病病人的系統性回顧也發現，規律的有氧運動可以提升最大攝氧量，也就是心肺耐力的指標</span><!-- 出處：Heiwe S, Jacobson SH. Exercise training for adults with chronic kidney disease. Cochrane Database Syst Rev. 2011;(10):CD003236。待醫師確認 -->。心衰竭的病人也一樣，病情穩定之後，指引建議接受運動訓練，改善活動能力與生活品質；證據和起步方式我寫在<a href="../articles/heart-failure.html">心衰竭那篇</a>。
     </p>
-    <p>
-      要說清楚的是，它是運動器材，不是治療。它不會讓腎功能變好，能做到的是幫你維持腿部肌力、讓久坐的時間不要完全靜止。能這樣持續下去，就已經很不錯了。
-    </p>
 
     <h2>三種用法</h2>
     <div class="use-grid">
       <figure class="use-card">
         <img src="img/pedal-hands.webp" alt="長輩坐在桌前，雙手轉動放在桌上的健身車，護理師在旁邊說明" width="765" height="1024" loading="lazy">
-        <h3>放桌上，手搖</h3>
+        <h3>放桌上，用手搖</h3>
         <p>腳不方便、或想順便活動肩膀與手臂時用。</p>
       </figure>
       <figure class="use-card">
         <img src="img/pedal-feet.webp" alt="長輩坐在沙發上，雙腳踩著放在地上的健身車，卡通醫師在旁邊比讚" width="765" height="1024" loading="lazy">
-        <h3>放地上，腳踩</h3>
+        <h3>放地上，用腳踩</h3>
         <p>椅子或穩固的沙發都可以，不要坐有輪子的椅子。</p>
       </figure>
       <figure class="use-card use-card-wide">
@@ -239,17 +244,17 @@
 
     <h2>誰可以直接開始，誰要先問醫師</h2>
     <div class="table-wrap">
-      <table>
+      <table class="cond-table">
         <thead>
           <tr><th>你的狀況</th><th>建議</th></tr>
         </thead>
         <tbody>
-          <tr><td>慢性腎臟病，平常能自己走路、沒有心臟問題</td><td>可以從低阻力、每次 <span class="tbc">5 到 10 分鐘</span>開始</td></tr>
-          <tr><td>有心臟病、心衰竭，或最近住過院</td><td>先問主治醫師，確認可以運動的強度</td></tr>
-          <tr><td>血液透析</td><td>避免在洗腎剛結束、血壓偏低或頭暈時踩</td></tr>
-          <tr><td>腹膜透析</td><td>腹部有透析液時，以不會覺得肚子脹痛的姿勢為準，有疑問先問透析護理師</td></tr>
-          <tr><td>最近跌倒過、站起來會頭暈</td><td>一定要坐有椅背、不會滑動的椅子；第一次旁邊要有家人</td></tr>
-          <tr class="row-danger"><td>胸痛、休息時也喘、血壓控制不穩</td><td>先不要開始，回診處理</td></tr>
+          <tr><td>慢性腎臟病<br>平常能自己走路<br>沒有心臟問題</td><td>從低阻力開始<br>每次 <span class="tbc">5 到 10 分鐘</span></td></tr>
+          <tr><td>有心臟病<br>心衰竭<br>或最近住過院</td><td>先問主治醫師<br>確認可以運動的強度</td></tr>
+          <tr><td>血液透析</td><td>洗腎剛結束時先不要踩<br>血壓偏低或頭暈時也不要踩</td></tr>
+          <tr><td>腹膜透析</td><td>腹部有透析液時<br>以不會肚子脹痛的姿勢為準<br>有疑問先問透析護理師</td></tr>
+          <tr><td>最近跌倒過<br>站起來會頭暈</td><td>坐有椅背<br>不會滑動的椅子<br>第一次旁邊要有家人</td></tr>
+          <tr class="row-danger"><td>胸痛<br>休息時也喘<br>血壓控制不穩</td><td>先不要開始<br>回診處理</td></tr>
         </tbody>
       </table>
     </div>
@@ -259,7 +264,7 @@
       我通常會建議第一週先把阻力調到最鬆，每次踩 <span class="tbc">5 到 10 分鐘</span>就好。這週的目標只有一個：讓它變成習慣，例如固定在看晚間新聞的時候踩。
     </p>
     <p>
-      第二週以後，每次多加幾分鐘，慢慢拉到 <span class="tbc">20 到 30 分鐘</span>。踩到微微出汗、有點喘但還能講完整句子，強度就剛好。再往上調阻力之前，先確認隔天腿不會痠到走不動。健身車上的計數器可以拿來記錄，下次回診帶來給我看，比「有啦有在動」具體得多。
+      第二週以後，每次多加幾分鐘，慢慢拉到 <span class="tbc">20 到 30 分鐘</span>。踩到微微出汗、有點喘但還能講完整句子，強度就剛好。再往上調阻力之前，先確認隔天腿不會痠到走不動。健身車上的計數器可以拿來記錄，下次回診帶來給醫師看，比「有啦有在動」具體得多。
     </p>
 
     <h2>商品資訊</h2>
