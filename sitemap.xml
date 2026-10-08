@@ -62,9 +62,15 @@
   </url>
   <url>
     <loc>https://jackcanhelp.org/articles/dialysis-exercise.html</loc>
-    <lastmod>2026-09-10</lastmod>
+    <lastmod>2026-10-08</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://jackcanhelp.org/shop/foot-pedal.html</loc>
+    <lastmod>2026-10-08</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
   </url>
   <url>
     <loc>https://jackcanhelp.org/articles/renal-bone-disease.html</loc>

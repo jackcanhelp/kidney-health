@@ -3,5 +3,5 @@
  */
 globalThis.KIDNEY_HEALTH_RELEASE = Object.freeze({
   productVersion: '1.1.1',
-  buildId: '20261008.2'
+  buildId: '20261008.3'
 });
