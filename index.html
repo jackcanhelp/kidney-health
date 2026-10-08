@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="app-version" content="1.1.1">
+    <meta name="app-version" content="1.1.2">
     
     <meta name="theme-color" content="#1a4a5e">
 
@@ -29,8 +29,8 @@
 
     <link rel="icon" type="image/png" sizes="32x32" href="icons/icon-32.png">
     <link rel="apple-touch-icon" href="icons/icon-180.png">
-    <script src="version.js?v=1.1.1"></script>
-    <script src="site.js?v=1.1.1" defer></script>
+    <script src="version.js?v=1.1.2"></script>
+    <script src="site.js?v=1.1.2" defer></script>
 
 
     <link rel="manifest" href="manifest.json">
@@ -416,6 +416,7 @@
             transition: all 0.3s ease;
             position: relative;
             padding: 0.5rem 0;
+            white-space: nowrap;
         }
 
         .nav-links a::after {
@@ -1745,6 +1746,40 @@
             }
         }
 
+        /* 選單項目變多後，中等寬度放不下一整排：先縮間距，再提早切換成漢堡選單 */
+        @media (max-width: 1240px) {
+            .nav-links {
+                gap: 1.5rem;
+            }
+        }
+
+        @media (max-width: 1080px) {
+            .nav-links {
+                display: none;
+            }
+
+            .qr-btn span {
+                display: none;
+            }
+
+            .qr-btn {
+                padding: 0.45rem 0.6rem;
+            }
+
+            .hamburger {
+                display: block;
+            }
+
+            .mobile-menu {
+                display: block;
+                pointer-events: none;
+            }
+
+            .mobile-menu.active {
+                pointer-events: auto;
+            }
+        }
+
         /* Show More Button */
         .show-more-btn {
             display: flex;
@@ -1930,6 +1965,7 @@
                 <li><a href="#comics">衛教漫畫</a></li>
                 <li><a href="#expertise">專業領域</a></li>
                 <li><a href="#tools">實用工具</a></li>
+                <li><a href="#gear">推薦好物</a></li>
                 <li><a href="#about">關於醫師</a></li>
                 <li><a href="#clinics">門診地點</a></li>
                 <li><a href="#contact">聯絡資訊</a></li>
@@ -1986,6 +2022,7 @@
             <a href="#comics" class="mobile-nav-link"><span class="menu-icon">📖</span>衛教漫畫</a>
             <a href="#expertise" class="mobile-nav-link"><span class="menu-icon">🩺</span>專業領域</a>
             <a href="#tools" class="mobile-nav-link"><span class="menu-icon">🛠️</span>實用工具</a>
+            <a href="#gear" class="mobile-nav-link"><span class="menu-icon">🚲</span>推薦好物</a>
             <a href="#about" class="mobile-nav-link"><span class="menu-icon">👨‍⚕️</span>關於醫師</a>
             <a href="#clinics" class="mobile-nav-link"><span class="menu-icon">🏥</span>門診地點</a>
             <a href="#contact" class="mobile-nav-link"><span class="menu-icon">📬</span>聯絡資訊</a>
