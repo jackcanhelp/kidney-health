@@ -431,3 +431,15 @@ footer .footer-privacy a {
     line-height: 1.75;
 }
 .post-meta { font-size: 0.8rem; color: var(--text-muted); font-variant-numeric: tabular-nums; }
+
+/* 狀況表：每格拆成短行，手機上不必左右滑（與 shop/foot-pedal.html 相同） */
+.cond-table { min-width: 0; }
+.cond-table td { line-height: 1.75; }
+.table-wrap:has(.cond-table) { border-color: #b8c4cc; }
+.cond-table th, .cond-table td { border-bottom: 1px solid #b8c4cc; }
+.cond-table tr:last-child td { border-bottom: none; }
+.cond-table th + th, .cond-table td + td { border-left: 1px solid #b8c4cc; }
+.cond-table td:first-child { width: 38%; white-space: normal; }
+@media (max-width: 640px) {
+  .cond-table th, .cond-table td { padding: 0.75rem 0.7rem; }
+}
