@@ -23,4 +23,12 @@ assert.match(siteScript, /updateViaCache:\s*'none'/);
 assert.match(serviceWorker, /CACHE_PREFIX = 'kidney-health-build-'/);
 assert.doesNotMatch(serviceWorker, /addEventListener\s*\(\s*['"]fetch['"]/);
 
+const { syncArticles } = await import('./sync-articles.mjs');
+const articleSync = await syncArticles({ write: false });
+assert.deepEqual(
+  articleSync.changed,
+  [],
+  `Article lists are out of sync (${articleSync.changed.join(', ')}); run node scripts/sync-articles.mjs`,
+);
+
 console.log(`Static website version checks passed for v${release.productVersion}, build ${release.buildId}.`);
