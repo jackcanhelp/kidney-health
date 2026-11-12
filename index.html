@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="app-version" content="1.1.14">
+    <meta name="app-version" content="1.1.15">
     
     <meta name="theme-color" content="#1a4a5e">
 
@@ -29,8 +29,9 @@
 
     <link rel="icon" type="image/png" sizes="32x32" href="icons/icon-32.png">
     <link rel="apple-touch-icon" href="icons/icon-180.png">
-    <script src="version.js?v=1.1.14"></script>
-    <script src="site.js?v=1.1.14" defer></script>
+    <script src="version.js?v=1.1.15"></script>
+    <script src="site.js?v=1.1.15" defer></script>
+    <script src="search.js?v=1.1.15" defer></script>
 
 
     <link rel="manifest" href="manifest.json">
@@ -1757,6 +1758,141 @@
             }
         }
 
+        /* 站內搜尋 */
+        .nav-search-btn {
+            background: none;
+            border: none;
+            font-size: 1.05rem;
+            line-height: 1;
+            padding: 0.4rem;
+            margin: -0.4rem 0;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background 0.2s ease;
+        }
+
+        .nav-search-btn:hover,
+        .nav-search-btn:focus-visible {
+            background: var(--bg-cream);
+        }
+
+        .site-search {
+            border: none;
+            padding: 0;
+            background: transparent;
+            width: min(640px, calc(100vw - 32px));
+            max-width: none;
+            max-height: none;
+            margin: 10vh auto auto;
+        }
+
+        .site-search::backdrop {
+            background: rgba(13, 45, 58, 0.45);
+        }
+
+        .site-search-panel {
+            background: var(--bg-white);
+            border-radius: 16px;
+            box-shadow: 0 20px 50px rgba(13, 45, 58, 0.3);
+            display: flex;
+            flex-direction: column;
+            max-height: 75vh;
+            overflow: hidden;
+        }
+
+        .site-search-bar {
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+            padding: 0.9rem 1rem;
+            border-bottom: 1px solid rgba(26, 74, 94, 0.12);
+        }
+
+        .site-search-bar input {
+            flex: 1;
+            min-width: 0;
+            border: none;
+            outline: none;
+            background: transparent;
+            font: inherit;
+            font-size: 1.05rem;
+            color: var(--text-dark);
+        }
+
+        .site-search-close {
+            background: none;
+            border: none;
+            font-size: 1rem;
+            color: var(--text-muted);
+            cursor: pointer;
+            padding: 0.3rem 0.5rem;
+            border-radius: 8px;
+        }
+
+        .site-search-close:hover {
+            background: var(--bg-cream);
+        }
+
+        .site-search-status {
+            margin: 0;
+            padding: 0.7rem 1.1rem 0.3rem;
+            font-size: 0.88rem;
+            color: var(--text-muted);
+        }
+
+        .site-search-status a {
+            color: var(--primary-light);
+        }
+
+        .site-search-results {
+            list-style: none;
+            margin: 0;
+            padding: 0.3rem 0.5rem 0.8rem;
+            overflow-y: auto;
+        }
+
+        .search-result {
+            display: block;
+            padding: 0.7rem 0.6rem;
+            border-radius: 10px;
+            text-decoration: none;
+            color: var(--text-body);
+        }
+
+        .search-result:hover,
+        .search-result:focus-visible {
+            background: var(--bg-cream);
+            outline: none;
+        }
+
+        .search-kind {
+            display: block;
+            font-size: 0.75rem;
+            color: var(--primary-light);
+            font-weight: 600;
+        }
+
+        .search-title {
+            display: block;
+            font-weight: 700;
+            color: var(--text-dark);
+            margin: 0.15rem 0 0.25rem;
+        }
+
+        .search-snippet {
+            display: block;
+            font-size: 0.85rem;
+            line-height: 1.6;
+            color: var(--text-muted);
+        }
+
+        .search-result mark {
+            background: rgba(229, 138, 44, 0.25);
+            color: inherit;
+            border-radius: 3px;
+            padding: 0 1px;
+        }
+
         /* 選單項目變多後，中等寬度放不下一整排：先縮間距，再提早切換成漢堡選單 */
         @media (max-width: 1240px) {
             .nav-links {
@@ -1980,6 +2116,7 @@
                 <li><a href="#about">關於醫師</a></li>
                 <li><a href="#clinics">門診地點</a></li>
                 <li><a href="#contact">聯絡資訊</a></li>
+                <li><button type="button" class="nav-search-btn" data-open-search aria-label="搜尋網站" title="搜尋">🔍</button></li>
             </ul>
             <button class="qr-btn" id="qrBtn" aria-label="選單">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
@@ -2028,6 +2165,7 @@
 
     <div class="mobile-menu" id="mobileMenu">
         <div class="mobile-menu-panel">
+            <a href="#siteSearch" class="mobile-nav-link" data-open-search><span class="menu-icon">🔍</span>搜尋</a>
             <a href="#home" class="mobile-nav-link"><span class="menu-icon">🏠</span>首頁</a>
             <a href="#articles" class="mobile-nav-link"><span class="menu-icon">📄</span>衛教文章</a>
             <a href="#comics" class="mobile-nav-link"><span class="menu-icon">📖</span>衛教漫畫</a>
@@ -2556,6 +2694,18 @@
             <iframe id="toolModalIframe" src="" allow="camera" referrerpolicy="strict-origin-when-cross-origin"></iframe>
         </div>
     </div>
+
+    <dialog class="site-search" id="siteSearch" aria-label="搜尋網站">
+        <div class="site-search-panel">
+            <div class="site-search-bar">
+                <span class="site-search-icon" aria-hidden="true">🔍</span>
+                <input type="search" id="siteSearchInput" placeholder="搜尋文章、漫畫、工具" autocomplete="off" enterkeyhint="search" aria-describedby="siteSearchStatus">
+                <button type="button" class="site-search-close" id="siteSearchClose" aria-label="關閉搜尋">✕</button>
+            </div>
+            <p class="site-search-status" id="siteSearchStatus" aria-live="polite"></p>
+            <ul class="site-search-results" id="siteSearchResults"></ul>
+        </div>
+    </dialog>
 
     <footer>
         <p>&copy; <span data-current-year>2026</span> 張竣傑醫師 腎臟健康衛教平台 | 本網站內容僅供參考，實際診療請諮詢專業醫師</p>

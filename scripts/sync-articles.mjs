@@ -3,6 +3,7 @@
 //   - 索引頁的篇數、CollectionPage ItemList
 //   - 首頁「衛教文章」區塊的最新 6 張卡片（第一張掛「最新」）與「瀏覽全部 N 篇」
 //   - sitemap.xml 缺的文章網址，以及首頁、索引頁的 lastmod
+//   - search-index.json：站內搜尋用（文章全文、漫畫、專業領域、工具），search.js 讀取
 //
 // 用法：
 //   node scripts/sync-articles.mjs          寫入
@@ -21,6 +22,18 @@ const read = async (rel) => {
 const toDisk = (file, text) => (file.crlf ? text.replace(/\n/g, '\r\n') : text);
 const decode = (s) =>
   s.replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"').replace(/&amp;/g, '&');
+
+// 去掉註解（含待醫師確認的出處）、script/style、標籤，只留讀者看得到的字
+const plainText = (html) =>
+  decode(
+    html
+      .replace(/<!--[\s\S]*?-->/g, '')
+      .replace(/<(script|style)[\s\S]*?<\/\1>/g, '')
+      .replace(/<[^>]+>/g, ' ')
+      .replace(/&nbsp;/g, ' '),
+  )
+    .replace(/\s+/g, ' ')
+    .trim();
 
 function replaceOnce(text, pattern, replacement, label) {
   if (!pattern.test(text)) throw new Error(`找不到 ${label}`);
@@ -142,11 +155,61 @@ export async function syncArticles({ write = true } = {}) {
     mapOut = mapOut.replace(re, (m, head, d) => (d < newest ? `${head}${newest}` : m));
   }
 
-  // 5. 比對、寫入
+  // 5. 站內搜尋索引：文章全文（到「參考依據」為止）＋首頁的漫畫、專業領域、工具卡片
+  const searchItems = [];
+  for (const a of articles) {
+    const html = (await read(`articles/${a.href}`)).text;
+    const body = html.match(/<article>([\s\S]*?)(?:<h2>參考依據|<\/article>)/);
+    if (!body) throw new Error(`articles/${a.href} 找不到 <article> 內文`);
+    searchItems.push({
+      type: '文章',
+      tag: decode(a.tag),
+      title: decode(a.title),
+      desc: decode(a.desc),
+      url: `articles/${a.href}`,
+      // 「延伸閱讀」與段落跳轉卡片是導覽，不算內文
+      text: plainText(body[1].replace(/<div class="related">[\s\S]*?<\/div>/g, '')),
+    });
+  }
+  const section = (id) => {
+    const m = homeOut.match(new RegExp(`<section id="${id}"[\\s\\S]*?</section>`));
+    if (!m) throw new Error(`首頁找不到 #${id}`);
+    return m[0];
+  };
+  const collect = (id, re, build) => {
+    const found = [...section(id).matchAll(re)].map(build);
+    if (found.length === 0) throw new Error(`首頁 #${id} 解析不到任何卡片`);
+    searchItems.push(...found);
+  };
+  collect(
+    'comics',
+    /<a href="([^"]+\.pdf)"[^>]*class="comic-card[\s\S]*?<span class="comic-category">(.*?)<\/span>\s*<h3>(.*?)<\/h3>\s*<p>(.*?)<\/p>/g,
+    ([, url, tag, title, desc]) => ({ type: '衛教漫畫', tag: decode(tag), title: decode(title), desc: decode(desc), url }),
+  );
+  collect(
+    'expertise',
+    /<a href="([^"]+\.pdf)"[^>]*class="expertise-card[\s\S]*?<h3>(.*?)<\/h3>\s*<p>(.*?)<\/p>\s*<ul class="expertise-list">([\s\S]*?)<\/ul>/g,
+    ([, url, title, desc, list]) => ({ type: '專業領域', title: decode(title), desc: decode(desc), url, text: plainText(list) }),
+  );
+  collect(
+    'tools',
+    /<div class="tool-card[^"]*"[^>]*>\s*<div class="tool-icon">[\s\S]*?<\/div>\s*<h3>(.*?)<\/h3>\s*<p>(.*?)<\/p>/g,
+    ([, title, desc]) => ({ type: '實用工具', title: decode(title), desc: decode(desc), tool: decode(title) }),
+  );
+  const searchOut = `${JSON.stringify({ items: searchItems })}\n`;
+  let search;
+  try {
+    search = await read('search-index.json');
+  } catch {
+    search = { raw: '', text: null, crlf: false };
+  }
+
+  // 6. 比對、寫入
   const outputs = [
     ['articles/index.html', idx, idxOut],
     ['index.html', home, homeOut],
     ['sitemap.xml', map, mapOut],
+    ['search-index.json', search, searchOut],
   ];
   const changed = outputs.filter(([, file, out]) => out !== file.text).map(([rel]) => rel);
   if (write) {

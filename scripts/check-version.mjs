@@ -16,6 +16,7 @@ assert.match(
 );
 assert.match(indexHtml, new RegExp(`version\\.js\\?v=${release.productVersion.replaceAll('.', '\\.')}`));
 assert.match(indexHtml, new RegExp(`site\\.js\\?v=${release.productVersion.replaceAll('.', '\\.')}`));
+assert.match(indexHtml, new RegExp(`search\\.js\\?v=${release.productVersion.replaceAll('.', '\\.')}`));
 assert.match(indexHtml, /data-app-version/);
 assert.match(indexHtml, /data-build-id/);
 assert.doesNotMatch(indexHtml, /\.unregister\s*\(/);
