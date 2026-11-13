@@ -93,9 +93,141 @@ function corsHeaders(origin) {
   return {
     'Access-Control-Allow-Origin': origin,
     'Access-Control-Allow-Methods': 'POST, OPTIONS',
-    'Access-Control-Allow-Headers': 'Content-Type',
+    'Access-Control-Allow-Headers': 'Content-Type, X-Provider',
+    'Access-Control-Expose-Headers': 'X-Provider-Used',
     'Access-Control-Max-Age': '86400',
   };
+}
+
+// flash-lite 額度用完（429）或模型不存在（404）時，同一把 key 改試下一個免費模型。
+// Gemini 額度依「專案 × 模型」計算（官方：Limits vary depending on the specific model being used），
+// 所以這是同一個專案內換模型，不是多帳號輪替。清單只放定價頁標示免費、可看圖的 flash-lite。
+export const GEMINI_FALLBACK_MODELS = ['gemini-3.5-flash-lite', 'gemini-3.1-flash-lite'];
+
+async function callGeminiModel(model, body, env) {
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${env.GEMINI_API_KEY}`;
+  const res = await fetch(url, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body),
+  });
+  return { status: res.status, body: await res.text(), provider: model === MODEL ? 'gemini' : 'gemini:' + model };
+}
+
+async function callGemini(body, env) {
+  // 模型清單寫死，忽略任何 ?model= 參數
+  let result;
+  for (const model of [MODEL, ...GEMINI_FALLBACK_MODELS]) {
+    result = await callGeminiModel(model, body, env);
+    if (result.status !== 429 && result.status !== 404) return result;
+  }
+  return result;
+}
+
+// ---- Cloudflare Workers AI 備援：Worker 綁定名稱 AI，不需金鑰；免費 10,000 neurons／日，不拿輸入訓練 ----
+export const CF_MODELS = ['@cf/google/gemma-4-26b-a4b-it', '@cf/meta/llama-4-scout-17b-16e-instruct'];
+
+export function toCfInput(geminiBody) {
+  const z = toZaiRequest(geminiBody);
+  const input = { messages: z.messages, max_tokens: z.max_tokens };
+  if (z.temperature !== undefined) input.temperature = z.temperature;
+  return input;
+}
+
+/* Workers AI 回應有兩種形狀：{response} 或 OpenAI 的 {choices}；response 在 JSON 模式可能已是物件。 */
+export function fromCfResponse(out) {
+  if (!out) return null;
+  let text = out.response;
+  if (text && typeof text === 'object') text = JSON.stringify(text);
+  if (typeof text !== 'string' || !text) return fromZaiResponse(out);
+  return { candidates: [{ content: { parts: [{ text }] } }] };
+}
+
+async function callCf(geminiBody, env) {
+  if (!env.AI) return { status: 500, body: JSON.stringify({ error: 'Workers AI not bound' }), provider: 'cf' };
+  const input = toCfInput(geminiBody);
+  let last;
+  for (const model of CF_MODELS) {
+    try {
+      const shaped = fromCfResponse(await env.AI.run(model, input));
+      if (shaped) return { status: 200, body: JSON.stringify(shaped), provider: 'cf:' + model };
+      last = { status: 502, body: JSON.stringify({ error: 'Workers AI returned no text' }), provider: 'cf:' + model };
+    } catch (e) {
+      // 每日 neurons 用完也會拋錯；只回錯誤訊息，不含任何憑證
+      last = { status: 429, body: JSON.stringify({ error: 'Workers AI: ' + String(e && e.message || e).slice(0, 200) }), provider: 'cf:' + model };
+    }
+  }
+  return last;
+}
+
+// ---- Z.ai（智譜 GLM）備援：只用免費方案的模型 ----
+export const ZAI_URL = 'https://api.z.ai/api/paas/v4/chat/completions';
+// 都是價格表上標 Free 的模型。依序嘗試：前一個過載（1305）或失敗就換下一個。
+// 2026-11-13 13:20 實測 glm-4.7-flash、glm-4.6v-flash 連 5 次 1305，所以文字改以 glm-4.5-flash 優先。
+export const ZAI_VISION_MODELS = ['glm-4.6v-flash'];
+export const ZAI_TEXT_MODELS = ['glm-4.5-flash', 'glm-4.7-flash'];
+
+export function hasImage(geminiBody) {
+  return geminiBody.contents[0].parts.some((p) => p.inline_data);
+}
+
+/* 已清理過的 Gemini 格式請求 → Z.ai（OpenAI 相容）格式。 */
+export function toZaiRequest(geminiBody, model) {
+  const parts = geminiBody.contents[0].parts;
+  const text = parts.find((p) => p.text !== undefined).text;
+  const img = parts.find((p) => p.inline_data);
+  const gc = geminiBody.generationConfig || {};
+  const req = {
+    model: model || (img ? ZAI_VISION_MODELS[0] : ZAI_TEXT_MODELS[0]),
+    messages: [{
+      role: 'user',
+      content: img
+        ? [
+            { type: 'image_url', image_url: { url: `data:${img.inline_data.mime_type};base64,${img.inline_data.data}` } },
+            { type: 'text', text },
+          ]
+        : text,
+    }],
+    max_tokens: gc.maxOutputTokens,
+    thinking: { type: 'disabled' }, // 不要先「思考」：會吃掉 max_tokens 又變慢
+  };
+  if (gc.temperature !== undefined) req.temperature = gc.temperature;
+  // 文件寫明只有文字模型支援 response_format
+  if (!img && gc.responseMimeType === 'application/json') req.response_format = { type: 'json_object' };
+  return req;
+}
+
+/* Z.ai 回應 → 前端認得的 Gemini 形狀；取不到文字回 null。 */
+export function fromZaiResponse(data) {
+  const text = data && data.choices && data.choices[0] && data.choices[0].message && data.choices[0].message.content;
+  if (typeof text !== 'string' || !text) return null;
+  return { candidates: [{ content: { parts: [{ text }] } }] };
+}
+
+async function callZai(geminiBody, env) {
+  if (!env.ZAI_API_KEY) return { status: 500, body: JSON.stringify({ error: 'Backup provider not configured' }), provider: 'zai' };
+  const models = hasImage(geminiBody) ? ZAI_VISION_MODELS : ZAI_TEXT_MODELS;
+  let last;
+  for (const model of models) {
+    const res = await fetch(ZAI_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${env.ZAI_API_KEY}` },
+      body: JSON.stringify(toZaiRequest(geminiBody, model)),
+    });
+    const raw = await res.text();
+    if (res.status === 401) return { status: 500, body: JSON.stringify({ error: 'Backup provider auth failed' }), provider: 'zai:' + model };
+    if (!res.ok) {
+      // 錯誤內容原樣保留（不含金鑰），換下一個模型；全部失敗才回傳最後一個錯誤
+      last = { status: res.status, body: raw, provider: 'zai:' + model };
+      continue;
+    }
+    let data;
+    try { data = JSON.parse(raw); } catch (e) { data = null; }
+    const shaped = fromZaiResponse(data);
+    if (!shaped) { last = { status: 502, body: JSON.stringify({ error: 'Backup provider returned no text' }), provider: 'zai:' + model }; continue; }
+    return { status: 200, body: JSON.stringify(shaped), provider: 'zai:' + model };
+  }
+  return last;
 }
 
 export default {
@@ -156,21 +288,25 @@ export default {
         });
       }
 
-      // 模型固定，忽略任何 ?model= 參數
-      const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:generateContent?key=${env.GEMINI_API_KEY}`;
+      // 供應商：預設 Gemini（flash-lite → 其他免費 flash-lite）→ 仍 429 才依序改打 Workers AI、Z.ai。
+      // X-Provider 只能指定這三家免費模型之一（品質對比測試用），換不到較貴的模型。
+      const want = (request.headers.get('X-Provider') || '').toLowerCase();
+      let result;
+      if (want === 'zai') {
+        result = await callZai(clean.body, env);
+      } else if (want === 'cf') {
+        result = await callCf(clean.body, env);
+      } else {
+        result = await callGemini(clean.body, env);
+        if (want !== 'gemini' && result.status === 429 && env.AI) result = await callCf(clean.body, env);
+        if (want !== 'gemini' && result.status === 429 && env.ZAI_API_KEY) result = await callZai(clean.body, env);
+      }
 
-      const geminiResponse = await fetch(geminiUrl, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(clean.body),
-      });
-
-      const responseBody = await geminiResponse.text();
-
-      return new Response(responseBody, {
-        status: geminiResponse.status,
+      return new Response(result.body, {
+        status: result.status,
         headers: {
           'Content-Type': 'application/json',
+          'X-Provider-Used': result.provider,
           ...corsHeaders(origin),
         },
       });
