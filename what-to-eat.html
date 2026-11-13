@@ -27,8 +27,8 @@
     <link rel="apple-touch-icon" href="icons/icon-180.png">
     <script src="site.js" defer></script>
     <script src="food-lookup.js?v=1.1.21"></script>
-    <script src="what-to-eat-rules.js?v=1.1.24"></script>
-    <script src="what-to-eat-recipes.js?v=1.1.24"></script>
+    <script src="what-to-eat-rules.js?v=1.1.25"></script>
+    <script src="what-to-eat-recipes.js?v=1.1.25"></script>
 
     <script type="application/ld+json">
 {
@@ -317,8 +317,8 @@
         .src-badge { display: inline-block; font-size: .72rem; font-weight: 700; border-radius: 999px; padding: .1rem .55rem; margin-bottom: .35rem; }
         .src-badge.lib { background: #dcfce7; color: #166534; }
         .src-badge.ai { background: #ede9fe; color: #5b21b6; }
-        .recipe-actions { display: flex; gap: .5rem; margin-top: .2rem; }
-        .recipe-actions button { flex: 1; border: 1.5px solid var(--border); background: #fff; border-radius: 12px; padding: .65rem .4rem; font-size: .9rem; color: var(--text-dark); font-weight: 500; }
+        .recipe-actions { display: flex; flex-wrap: wrap; gap: .5rem; margin-top: .2rem; }
+        .recipe-actions button { flex: 1 1 calc(50% - .5rem);border: 1.5px solid var(--border); background: #fff; border-radius: 12px; padding: .65rem .4rem; font-size: .9rem; color: var(--text-dark); font-weight: 500; }
         .recipe-actions button.ai { border-color: #c4b5fd; color: #5b21b6; }
         [hidden] { display: none !important; }
     </style>
@@ -858,7 +858,322 @@
             html += '<h3>沒有放進這道菜的食材</h3><div class="omitted">' + skipped.map(esc).join('<br>') + '</div>';
         }
         html += '</div>' + (opts.actions || '');
+        stopSpeaking(); // 換了一道菜就不要繼續念舊的
         $('recipe').innerHTML = html;
+        shown = { r: r, avoidNames: avoidNames, skipped: skipped, flags: flags,
+            meta: (r.servings || '') + (r.time ? ' · ' + r.time : '') + ' · ' + { default: '預設', chinese: '中式', western: '西式' }[opts.style || style] + ' · ' + FoodLookup.MODES[mode].label };
+    }
+
+    // ---------- 食譜下載：畫成一張 PNG（手機存相簿、傳 LINE 都方便，不用外部套件） ----------
+    var shown = null; // 畫面上這道食譜，下載時照它畫
+    var lastTrigger = null; // 最後按的食譜按鈕：對話框關掉後把焦點還給它
+    var CAN_SPEAK = 'speechSynthesis' in window && typeof SpeechSynthesisUtterance === 'function';
+    var DL_BTN = '<button type="button" data-cook="share">📤 分享食譜</button><button type="button" data-cook="dl">📥 下載食譜</button>' +
+        (CAN_SPEAK ? '<button type="button" data-cook="speak">🔊 念食譜</button>' : '');
+
+    // ---------- 念食譜：瀏覽器內建語音（不花 AI 額度、不連網） ----------
+    var speaking = false;
+    var speakSeq = 0; // 每輪朗讀一個序號；舊一輪延遲送來的 onend/onerror 一律不理
+    var cachedVoices = [];
+    function refreshVoices() { try { cachedVoices = speechSynthesis.getVoices() || []; } catch (e) { cachedVoices = []; } }
+    function speakLabel() {
+        var b = document.querySelector('#recipe button[data-cook="speak"]');
+        if (b) b.textContent = speaking ? '⏹ 停止朗讀' : '🔊 念食譜';
+    }
+    function stopSpeaking() {
+        if (!CAN_SPEAK) return;
+        speakSeq++;
+        speaking = false;
+        speechSynthesis.cancel();
+        speakLabel();
+    }
+    // 朗讀前把畫面寫法改成念得順的說法：g → 公克、1/4 → 4分之1、3–4 → 3到4
+    function forSpeech(t) {
+        return String(t)
+            .replace(/(\d)\s*g(?![A-Za-z])/g, '$1公克')
+            .replace(/(\d+)\/(\d+)/g, '$2分之$1')
+            .replace(/(\d)\s*[–~-]\s*(\d)/g, '$1到$2')
+            .replace(/[·・●]/g, '，');
+    }
+    // 畫面上標 ✕ 的材料，朗讀也要講出來：只用聽的長輩看不到紅字
+    function badAt(s, ing, i) {
+        return !!((s.flags[i] && s.flags[i].avoid) || s.avoidNames.some(function (n) { return n && String(ing.name).indexOf(n) >= 0; }));
+    }
+    var SPEAK_MAX = 80;
+    function chunk(p) { // 先依句號、分號切；還太長就在逗號切；再不行硬切
+        var out = [];
+        (p.match(/[^。；]+[。；]?/g) || []).forEach(function (sent) {
+            sent = sent.trim();
+            if (!sent) return;
+            if (sent.length <= SPEAK_MAX) { out.push(sent); return; }
+            var cur = '';
+            (sent.match(/[^，、]+[，、]?/g) || [sent]).forEach(function (piece) {
+                while (piece.length > SPEAK_MAX) { if (cur) { out.push(cur); cur = ''; } out.push(piece.slice(0, SPEAK_MAX)); piece = piece.slice(SPEAK_MAX); }
+                if ((cur + piece).length > SPEAK_MAX) { out.push(cur); cur = ''; }
+                cur += piece;
+            });
+            if (cur) out.push(cur);
+        });
+        return out;
+    }
+    function speechParts(s) {
+        var r = s.r, parts = [r.title || '食譜'];
+        if (r.intro) parts.push(r.intro);
+        parts.push('材料');
+        var anyBad = false;
+        (r.ingredients || []).forEach(function (ing, i) {
+            var bad = badAt(s, ing, i);
+            if (bad) anyBad = true;
+            parts.push(ing.name + '，' + (ing.amount || '') + (bad ? '。注意，這一樣不建議使用，請拿掉或換掉。' : ''));
+        });
+        if (anyBad) parts.push('材料裡有不建議的項目，請拿掉，或換成一般調味料。');
+        parts.push('步驟');
+        (r.steps || []).forEach(function (st, i) { parts.push('第' + (i + 1) + '步，' + st); });
+        if (r.kidney_tips && r.kidney_tips.length) { parts.push('腎友重點'); parts = parts.concat(r.kidney_tips); }
+        // 一小段一小段送出：Chrome 一段念太久會被截斷，也方便中途停止
+        return parts.map(forSpeech).reduce(function (acc, p) { return acc.concat(chunk(p)); }, []);
+    }
+    var SPEAK_ERRORS = {
+        'language-unavailable': '這支手機沒有中文語音，可以到手機的「設定 → 語言／文字轉語音」加裝中文語音。',
+        'voice-unavailable': '這支手機沒有中文語音，可以到手機的「設定 → 語言／文字轉語音」加裝中文語音。',
+        'not-allowed': '瀏覽器不讓這個網頁出聲音，請再按一次「念食譜」。',
+        'synthesis-unavailable': '這個瀏覽器目前不能朗讀，請改用手機內建瀏覽器開啟。',
+        'synthesis-failed': '朗讀失敗，請再按一次「念食譜」。'
+    };
+    function speakRecipe() {
+        if (!CAN_SPEAK || !shown) return;
+        if (speaking) { stopSpeaking(); return; }
+        stopSpeaking();
+        var my = speakSeq;
+        if (!cachedVoices.length) refreshVoices(); // 有些手機第一次讀是空的；空的也照樣指定 zh-TW 試念
+        var voice = cachedVoices.filter(function (v) { return /zh[-_]TW/i.test(v.lang); })[0] ||
+            cachedVoices.filter(function (v) { return /^zh/i.test(v.lang); })[0] || null;
+        var parts = speechParts(shown);
+        function finish(msg) {
+            if (my !== speakSeq) return;
+            stopSpeaking();
+            if (msg) alert(msg);
+        }
+        speaking = true;
+        speakLabel();
+        parts.forEach(function (p, i) {
+            var u = new SpeechSynthesisUtterance(p);
+            u.lang = voice ? voice.lang : 'zh-TW';
+            if (voice) u.voice = voice;
+            u.rate = 0.9; // 長輩聽得清楚一點
+            if (i === parts.length - 1) u.onend = function () { finish(); };
+            // 被別的程式或系統打斷（interrupted/canceled）也要收尾，不然按鈕會一直停在「停止」
+            u.onerror = function (e) { finish(SPEAK_ERRORS[e && e.error] || null); };
+            speechSynthesis.speak(u);
+        });
+    }
+    if (CAN_SPEAK) {
+        refreshVoices();
+        if (typeof speechSynthesis.addEventListener === 'function') speechSynthesis.addEventListener('voiceschanged', refreshVoices);
+        // 離開頁面或切到背景就停，回來要再按一次才念，不自動續念
+        document.addEventListener('visibilitychange', function () { if (document.hidden) stopSpeaking(); });
+        window.addEventListener('pagehide', stopSpeaking);
+    }
+    function recipeImage(s) {
+        var W_ = 1080, PAD = 72, IN = W_ - PAD * 2;
+        var FONT = "'Noto Sans TC', 'PingFang TC', 'Microsoft JhengHei', sans-serif";
+        var cv = document.createElement('canvas'), cx = cv.getContext('2d');
+        var ops = [], y = PAD;
+        function wrap(text, width) { // 中文逐字斷行
+            var out = [], line = '';
+            Array.from(String(text)).forEach(function (ch) {
+                if (cx.measureText(line + ch).width > width && line) { out.push(line); line = ''; }
+                line += ch;
+            });
+            if (line) out.push(line);
+            return out.length ? out : [''];
+        }
+        function text(str, size, color, opt) {
+            opt = opt || {};
+            cx.font = (opt.bold ? '700 ' : '400 ') + size + 'px ' + FONT;
+            var indent = opt.indent || 0, lh = Math.round(size * 1.55);
+            wrap(str, IN - indent - (opt.reserve || 0)).forEach(function (ln, i) {
+                ops.push({ t: ln, x: PAD + indent, y: y + size, size: size, color: color, bold: opt.bold });
+                if (i === 0 && opt.prefix) ops.push({ t: opt.prefix, x: PAD + indent - (opt.prefixW || 40), y: y + size, size: size, color: opt.prefixColor || color, bold: true });
+                if (i === 0 && opt.right) ops.push({ t: opt.right, x: W_ - PAD, y: y + size, size: size, color: '#4a5568', align: 'right' });
+                y += lh;
+            });
+        }
+        function head(str) { y += 28; text(str, 38, '#1a4a5e', { bold: true }); y += 6; ops.push({ rule: true, y: y - 10 }); y += 8; }
+        var r = s.r;
+        text('今天吃甚麼？腎友低鉀食譜', 28, '#2d7a9c', { bold: true }); y += 10;
+        text(r.title || '食譜', 60, '#1a202c', { bold: true });
+        text(s.meta, 30, '#4a5568');
+        if (r.intro) { y += 10; text(r.intro, 34, '#1a202c'); }
+        head('材料');
+        (r.ingredients || []).forEach(function (ing, i) {
+            var bad = s.flags[i].avoid || s.avoidNames.some(function (n) { return n && String(ing.name).indexOf(n) >= 0; });
+            cx.font = '400 34px ' + FONT;
+            var amt = String(ing.amount || ''), aw = cx.measureText(amt).width;
+            var label = '・' + ing.name + (bad ? '（✕ 不建議）' : ''), color = bad ? '#c53030' : '#1a202c';
+            if (aw <= IN * 0.45) {
+                text(label, 34, color, { right: amt, reserve: aw + 24 });
+            } else { // 份量太長（AI 食譜可能寫一長串）：另起一行，免得蓋住材料名稱
+                text(label, 34, color);
+                text(amt, 30, '#4a5568', { indent: 40 });
+            }
+        });
+        head('步驟');
+        (r.steps || []).forEach(function (st, i) { text(st, 34, '#1a202c', { indent: 56, prefix: (i + 1) + '.', prefixW: 56, prefixColor: '#2d7a9c' }); y += 8; });
+        if (r.kidney_tips && r.kidney_tips.length) {
+            head('腎友重點');
+            r.kidney_tips.forEach(function (t) { text(t, 32, '#1a202c', { indent: 40, prefix: '●', prefixW: 40, prefixColor: '#38a169' }); y += 4; });
+        }
+        if (s.skipped.length) { head('沒有放進這道菜的食材'); s.skipped.forEach(function (t) { text(t, 30, '#4a5568'); }); }
+        y += 36; ops.push({ rule: true, y: y }); y += 20;
+        text('不能取代醫師或營養師的個別建議；鉀、蛋白質份量請照你的抽血報告與營養師建議。', 26, '#718096');
+        text('張竣傑醫師 · 腎臟健康衛教平台 jackcanhelp.org/what-to-eat.html', 26, '#718096');
+        y += PAD - 30;
+        cv.width = W_; cv.height = Math.ceil(y);
+        cx.fillStyle = '#ffffff'; cx.fillRect(0, 0, cv.width, cv.height);
+        cx.fillStyle = '#1a4a5e'; cx.fillRect(0, 0, W_, 12);
+        ops.forEach(function (o) {
+            if (o.rule) { cx.fillStyle = '#e5e7eb'; cx.fillRect(PAD, o.y, IN, 2); return; }
+            cx.font = (o.bold ? '700 ' : '400 ') + o.size + 'px ' + FONT;
+            cx.fillStyle = o.color; cx.textAlign = o.align || 'left';
+            cx.fillText(o.t, o.x, o.y);
+        });
+        cx.textAlign = 'left';
+        return cv;
+    }
+    function downloadRecipe() {
+        if (!shown) return;
+        var base = String(shown.r.title || '').replace(/[\\/:*?"<>|\s\x00-\x1f\x7f]+/g, '').slice(0, 40) || '食譜';
+        var name = '腎友食譜-' + base + '.png';
+        // 全程同步：iOS Safari 的 navigator.share 必須在點擊當下呼叫，中間不能等 toBlob 或 fonts.ready。
+        // 頁面文字本來就用同一套字型，按下按鈕時字型已經載入。
+        var cv = recipeImage(shown), dataUrl = cv.toDataURL('image/png');
+        cv.width = cv.height = 0; // 立刻釋放畫布記憶體（手機上限較低）
+        if (!/^data:image\/png;base64,./.test(dataUrl)) { alert('圖片產生失敗，請改用截圖保存。'); return; }
+        var blob = dataUrlToBlob(dataUrl);
+        var file = typeof File === 'function' ? new File([blob], name, { type: 'image/png' }) : null;
+        var touch = window.matchMedia && window.matchMedia('(pointer: coarse)').matches;
+        if (!touch) { saveBlob(blob, name); return; } // 電腦：直接下載
+        // 手機：能分享就叫出系統分享（存相簿、傳 LINE）；不能分享或失敗（LINE 內建瀏覽器、舊 iOS）就開圖讓使用者長按儲存。
+        // blob 的 <a download> 在這些環境常常沒反應，所以手機不走它。
+        try {
+            if (file && typeof navigator.canShare === 'function' && typeof navigator.share === 'function' && navigator.canShare({ files: [file] })) {
+                navigator.share({ files: [file], title: shown.r.title || '食譜' }).catch(function (e) {
+                    if (!e || e.name !== 'AbortError') showImagePreview(dataUrl);
+                });
+                return;
+            }
+        } catch (e) { /* 有些瀏覽器 canShare/share 會直接拋錯：改開圖 */ }
+        showImagePreview(dataUrl);
+    }
+    // 共用對話框：深色遮罩、Esc 關閉、Tab 只在框內的按鈕間移動、關閉後焦點回到原按鈕
+    function openDialog(label, html) {
+        var box = document.createElement('div');
+        box.setAttribute('role', 'dialog');
+        box.setAttribute('aria-modal', 'true');
+        box.setAttribute('aria-label', label);
+        box.style.cssText = 'position:fixed;top:0;right:0;bottom:0;left:0;z-index:9999;background:rgba(0,0,0,.82);display:flex;flex-direction:column;align-items:center;justify-content:flex-start;justify-content:safe center;padding:1rem;gap:.75rem;overflow:auto;';
+        box.innerHTML = html + '<button type="button" data-close style="border:0;border-radius:12px;padding:.7rem 2rem;font-size:1rem;background:#fff;color:#1a202c;">關閉</button>';
+        // Safari 點按鈕不一定會讓按鈕拿到焦點，所以優先用點擊時記下的那顆按鈕
+        var opener = lastTrigger || document.activeElement;
+        function focusables() { return Array.prototype.slice.call(box.querySelectorAll('button, a[href]')); }
+        function close() {
+            document.removeEventListener('keydown', onKey);
+            box.remove();
+            if (opener && opener.focus) opener.focus();
+        }
+        function onKey(e) {
+            if (e.key === 'Escape') { e.preventDefault(); close(); return; }
+            if (e.key !== 'Tab') return;
+            var f = focusables(), i = f.indexOf(document.activeElement);
+            e.preventDefault();
+            f[(i + (e.shiftKey ? f.length - 1 : 1)) % f.length].focus();
+        }
+        box.querySelector('[data-close]').addEventListener('click', close);
+        document.addEventListener('keydown', onKey);
+        document.body.appendChild(box);
+        focusables()[0].focus();
+        return { box: box, close: close };
+    }
+    function showImagePreview(dataUrl) {
+        var d = openDialog('食譜圖片', '<p style="color:#fff;margin:0;text-align:center;font-size:1rem;line-height:1.6;">長按圖片，選「儲存」或「分享」<br><small>在 LINE 裡打開的話，圖片存不了時請改用瀏覽器開啟本頁</small></p>' +
+            '<img alt="食譜圖片" style="max-width:100%;border-radius:8px;background:#fff;">');
+        d.box.querySelector('img').src = dataUrl;
+    }
+
+    // ---------- 分享食譜：文字版食譜＋網站連結（LINE 帶得了全文；FB 只收連結） ----------
+    var SHARE_URL = 'https://jackcanhelp.org/what-to-eat.html?utm_source=recipe_share&utm_medium=social';
+    function shareText(s) {
+        var r = s.r, lines = ['【' + (r.title || '食譜') + '】腎友低鉀食譜（' + s.meta + '）'];
+        if (r.intro) lines.push(r.intro);
+        lines.push('', '材料：' + (r.ingredients || []).map(function (ing, i) {
+            return ing.name + (ing.amount ? ' ' + ing.amount : '') + (badAt(s, ing, i) ? '（✕ 不建議，請拿掉）' : '');
+        }).join('、'));
+        lines.push('', '做法：');
+        (r.steps || []).forEach(function (st, i) { lines.push((i + 1) + '. ' + st); });
+        if (r.kidney_tips && r.kidney_tips.length) {
+            lines.push('', '腎友重點：');
+            r.kidney_tips.forEach(function (t) { lines.push('・' + t); });
+        }
+        lines.push('', '份量請照醫師、營養師給你的建議。',
+            '更多腎友低鉀食譜，拍照就能查「今天吃甚麼？」：', SHARE_URL, '張竣傑醫師 · 腎臟健康衛教平台');
+        return lines.join('\n');
+    }
+    function copyLegacy(t) { // 舊瀏覽器、LINE 內建瀏覽器，或剪貼簿 API 被拒時
+        var ta = document.createElement('textarea'), done = false;
+        ta.value = t; ta.setAttribute('readonly', ''); ta.style.cssText = 'position:fixed;top:0;left:0;opacity:0;';
+        var prev = document.activeElement;
+        document.body.appendChild(ta); ta.focus(); ta.select();
+        try { ta.setSelectionRange(0, ta.value.length); } catch (e) {} // 舊 iOS 只 select() 會選不完整
+        try { done = document.execCommand('copy'); } catch (e) {}
+        ta.remove();
+        if (prev && prev.focus) prev.focus();
+        return done;
+    }
+    function copyText(t) {
+        // 先同步試舊方法（還在點擊當下，成功率最高），不行再用剪貼簿 API
+        if (copyLegacy(t)) return Promise.resolve();
+        if (navigator.clipboard && navigator.clipboard.writeText) return navigator.clipboard.writeText(t);
+        return Promise.reject(new Error('copy'));
+    }
+    function shareRecipe() {
+        if (!shown) return;
+        var text = shareText(shown), title = (shown.r.title || '食譜') + '｜腎友低鉀食譜';
+        var touch = window.matchMedia && window.matchMedia('(pointer: coarse)').matches;
+        // 手機：系統分享選單（LINE、FB、Messenger…都在裡面）。連結放在文字裡，不另外傳 url：有些 App 收到 url 就把文字丟掉
+        if (touch && typeof navigator.share === 'function') {
+            try {
+                navigator.share({ title: title, text: text }).catch(function (e) {
+                    if (!e || e.name !== 'AbortError') shareMenu(text);
+                });
+                return;
+            } catch (e) { /* 改開選單 */ }
+        }
+        shareMenu(text);
+    }
+    function shareMenu(text) {
+        var btn = 'display:block;width:min(320px,100%);box-sizing:border-box;border:0;border-radius:12px;padding:.85rem 1rem;font-size:1.05rem;font-weight:600;text-align:center;text-decoration:none;';
+        var d = openDialog('分享食譜',
+            '<p style="color:#fff;margin:0 0 .25rem;font-size:1.05rem;font-weight:600;">分享這道食譜</p>' +
+            '<a target="_blank" rel="noopener" style="' + btn + 'background:#06c755;color:#fff;" href="https://line.me/R/share?text=' + encodeURIComponent(text) + '">LINE 傳給朋友</a>' +
+            '<a target="_blank" rel="noopener" style="' + btn + 'background:#1877f2;color:#fff;" href="https://www.facebook.com/sharer/sharer.php?u=' + encodeURIComponent(SHARE_URL) + '">分享到 Facebook</a>' +
+            '<button type="button" data-copy style="' + btn + 'background:#fff;color:#1a202c;">📋 複製食譜文字</button>' +
+            '<p data-msg style="color:#e2e8f0;margin:0;max-width:320px;text-align:center;font-size:.85rem;line-height:1.6;">Facebook 只會帶網站連結；想貼食譜內容，先按「複製食譜文字」再貼到貼文裡。</p>');
+        d.box.querySelector('[data-copy]').addEventListener('click', function () {
+            var msg = d.box.querySelector('[data-msg]');
+            copyText(text).then(function () { msg.textContent = '✅ 已複製，可以貼到 LINE、FB 或簡訊裡。'; },
+                function () { msg.textContent = '這個瀏覽器不讓網頁複製文字，請改用 LINE 按鈕或截圖。'; });
+        });
+    }
+    function dataUrlToBlob(url) {
+        var bin = atob(url.split(',')[1]), buf = new Uint8Array(bin.length);
+        for (var i = 0; i < bin.length; i++) buf[i] = bin.charCodeAt(i);
+        return new Blob([buf], { type: 'image/png' });
+    }
+    function saveBlob(blob, name) {
+        var url = URL.createObjectURL(blob), a = document.createElement('a');
+        a.href = url; a.download = name; document.body.appendChild(a); a.click(); a.remove();
+        setTimeout(function () { URL.revokeObjectURL(url); }, 10000);
     }
 
     function renderEdu() {
@@ -895,17 +1210,19 @@
         var n = cook.matches.length;
         var actions = '<div class="recipe-actions">' +
             (n > 1 ? '<button type="button" data-cook="next">🔄 換一道（' + (cook.idx + 1) + '/' + n + '）</button>' : '') +
-            '<button type="button" class="ai" data-cook="ai">✨ 讓 AI 設計</button></div>';
+            DL_BTN + '<button type="button" class="ai" data-cook="ai">✨ 讓 AI 設計</button></div>';
         renderRecipe(r, cook.avoided, { badge: '<span class="src-badge lib">📗 常備食譜</span>', style: m.recipe.style, actions: actions });
     }
     function runAi() {
         $('cookBtn').disabled = true;
         var timer = startCookingAnim();
         var minShow = new Promise(function (r) { setTimeout(r, 2600); }); // 讓動畫至少跑完一輪
-        var back = cook.matches.length ? '<div class="recipe-actions"><button type="button" data-cook="lib">📗 回到常備食譜</button></div>' : '';
+        var backBtn = cook.matches.length ? '<button type="button" data-cook="lib">📗 回到常備食譜</button>' : '';
+        var back = backBtn ? '<div class="recipe-actions">' + backBtn + '</div>' : '';
         Promise.all([callGemini([{ text: recipePrompt(cook.usable, cook.avoided) }], 1600), minShow]).then(function (res) {
-            renderRecipe(res[0], cook.avoided, { badge: '<span class="src-badge ai">✨ AI 設計</span>', actions: back });
+            renderRecipe(res[0], cook.avoided, { badge: '<span class="src-badge ai">✨ AI 設計</span>', actions: '<div class="recipe-actions">' + backBtn + DL_BTN + '</div>' });
         }).catch(function (err) {
+            shown = null; stopSpeaking();
             $('recipe').innerHTML = (err.quota
                 ? '<div class="error-box">⏳ ' + esc(err.message) + '<br>下面的各食材飲食建議不需要額度，仍可參考。</div>'
                 : '<div class="error-box">食譜產生失敗：' + esc(err.message) + '<br>請稍後再按一次「怎麼煮？」。</div>') + back;
@@ -919,9 +1236,13 @@
     $('recipe').addEventListener('click', function (e) {
         var b = e.target.closest('button[data-cook]');
         if (!b || !cook) return;
+        lastTrigger = b;
         if (b.dataset.cook === 'next') { cook.idx = (cook.idx + 1) % cook.matches.length; saveRot(cook.sig, cook.idx); renderLibrary(); }
         if (b.dataset.cook === 'lib') renderLibrary();
         if (b.dataset.cook === 'ai') runAi();
+        if (b.dataset.cook === 'dl') downloadRecipe();
+        if (b.dataset.cook === 'speak') speakRecipe();
+        if (b.dataset.cook === 'share') shareRecipe();
     });
 
     $('cookBtn').addEventListener('click', function () {
@@ -930,7 +1251,7 @@
         var usable = items.filter(function (x) { return R.verdict(x).code !== 'avoid'; });
         renderEdu();
         if (!usable.length) {
-            cook = null;
+            cook = null; shown = null; stopSpeaking();
             $('recipe').innerHTML = '<div class="error-box">拍到的食材都標為「✕ 不建議」，沒辦法組成一道適合腎友的菜。換幾樣低鉀食材再試試，下面有各食材的說明。</div>';
             showRecipeSection();
             return;
