@@ -38,7 +38,7 @@
     { key: '青江菜', emoji: '🥬', group: 'veg', alias: ['湯匙菜'] },
     { key: '空心菜', emoji: '🥬', group: 'veg', alias: ['蕹菜'] },
     { key: '綠豆芽', emoji: '🌱', group: 'veg', alias: ['豆芽', '豆芽菜'] },
-    { key: '冬瓜', emoji: '🍈', group: 'veg', alias: [] },
+    { key: '冬瓜', emoji: '🥒', group: 'veg', alias: [] },
     { key: '絲瓜', emoji: '🥒', group: 'veg', alias: [] },
     { key: '小黃瓜', emoji: '🥒', group: 'veg', alias: ['花胡瓜', '小胡瓜', '黃瓜'] },
     { key: '洋蔥', emoji: '🧅', group: 'veg', alias: ['黃洋蔥', '白洋蔥', '紫洋蔥'] },
