@@ -42,7 +42,7 @@ async function call(parts, maxTokens) {
   if (!res.ok) return { ok: false, status: res.status, used, ms, error: raw.slice(0, 300) };
   let text;
   try { text = JSON.parse(raw).candidates[0].content.parts[0].text; } catch (e) { return { ok: false, status: res.status, used, ms, error: 'no text: ' + raw.slice(0, 200) }; }
-  try { return { ok: true, used, ms, json: JSON.parse(text.replace(/```json\s*|```/g, '').trim()), text }; }
+  try { return { ok: true, used, ms, json: R.parseAiJson(text), text }; } // 與前端同一套解析
   catch (e) { return { ok: false, status: 200, used, ms, error: 'bad JSON', text: text.slice(0, 300) }; }
 }
 

@@ -111,4 +111,21 @@ t('alias matching', () => {
   assert.equal(R.matchFood(['板豆腐'], db).best.name, '傳統豆腐');
 });
 
+// AI 回覆解析：正常、圍欄、尾巴多殘字（2026-11-13 flash-lite 實際回傳）、字串內含大括號、整段壞掉
+t('parseAiJson', () => {
+  assert.deepEqual(R.parseAiJson('{"a":1}'), { a: 1 });
+  assert.deepEqual(R.parseAiJson('```json\n{"a":1}\n```'), { a: 1 });
+  const spinach = '{"items":[{"name":"莧菜","tfda_terms":["莧菜"],"category":"蔬菜類","est_potassium":230}]}\n}]}';
+  assert.equal(R.parseAiJson(spinach).items[0].name, '莧菜');
+  assert.deepEqual(R.parseAiJson('前言 {"s":"a}b{\\"c"} 後記'), { s: 'a}b{"c' });
+  const star = '{"items":[{"name":"楊桃","est_potassium":11750":1170}]}\nassium":117200":100}]}';
+  assert.throws(() => R.parseAiJson(star));
+  assert.throws(() => R.parseAiJson('沒有 JSON'));
+  assert.throws(() => R.parseAiJson('{"a":'));
+  // Codex 審查反例：字串內含 ```json 不能被改寫；前言有 {範例} 時要找到後面的完整物件
+  assert.equal(R.parseAiJson('{"s":"看 ```json 這段"}').s, '看 ```json 這段');
+  assert.equal(R.parseAiJson('{"s":"看 ```json 這段"} 尾巴').s, '看 ```json 這段');
+  assert.equal(R.parseAiJson('說明 {範例} {"items":[{"name":"雞蛋"}]}').items[0].name, '雞蛋');
+});
+
 console.log(`what-to-eat rules: ${n} groups passed.`);

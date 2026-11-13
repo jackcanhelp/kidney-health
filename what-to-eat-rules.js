@@ -101,7 +101,22 @@
     '米飯': ['白飯'],
     '飯': ['白飯'],
     '鯛魚': ['台灣鯛魚片(水煮)'],
-    '牛肉': ['牛前胸肉', '去骨牛小排']
+    '牛肉': ['牛前胸肉', '去骨牛小排'],
+    // 2026-11-13 補：原名會撞到別的品項（地瓜→豆薯、小黃瓜→醃漬、米粉→玉米粉）或查無
+    '地瓜': ['白皮甘藷'],
+    '番薯': ['白皮甘藷'],
+    '小黃瓜': ['花胡瓜(有機)'],
+    '米粉': ['細米粉'],
+    '吐司': ['土司'],
+    '雞腿肉': ['清腿平均值'],
+    '雞腿': ['清腿平均值'],
+    '綠花椰菜': ['青花菜(2021年取樣)'],
+    '青花菜': ['青花菜(2021年取樣)'],
+    '蝦仁': ['白對蝦平均值'],
+    '蝦子': ['白對蝦平均值'],
+    '蔥': ['青蔥平均值'],
+    '豬里肌': ['豬大里肌'],
+    '義大利麵': ['通心麵']
   };
 
   // 加工品字樣：使用者拍的是生鮮食材時，這些不該被選中。
@@ -216,6 +231,38 @@
     });
   }
 
+  /* AI 回的 JSON 文字 → 物件。先原樣解析；失敗才拿掉「包住整份回覆」的 ``` 圍欄（不動字串內容），
+   * 再失敗就從每個 { 開始找完整物件，第一個解析得了的就用。
+   * 2026-11-13 實測 flash-lite 偶爾在正確 JSON 後面多吐一段殘字，整段 JSON.parse 會失敗。 */
+  function balancedFrom(t, start) {
+    var depth = 0, inStr = false, esc = false;
+    for (var i = start; i < t.length; i++) {
+      var ch = t[i];
+      if (inStr) {
+        if (esc) esc = false;
+        else if (ch === '\\') esc = true;
+        else if (ch === '"') inStr = false;
+        continue;
+      }
+      if (ch === '"') inStr = true;
+      else if (ch === '{') depth++;
+      else if (ch === '}' && --depth === 0) return t.slice(start, i + 1);
+    }
+    return null;
+  }
+  function parseAiJson(text) {
+    var raw = String(text || '');
+    try { return JSON.parse(raw); } catch (e) { /* 往下 */ }
+    var t = raw.trim().replace(/^```(?:json)?\s*/i, '').replace(/\s*```\s*$/, '');
+    try { return JSON.parse(t); } catch (e) { /* 往下找完整物件 */ }
+    for (var s = t.indexOf('{'); s >= 0; s = t.indexOf('{', s + 1)) {
+      var cand = balancedFrom(t, s);
+      if (!cand) continue;
+      try { return JSON.parse(cand); } catch (e) { /* 試下一個 { */ }
+    }
+    throw new Error('AI 回覆的 JSON 不完整');
+  }
+
   var api = {
     LOW_MAX_EXCLUSIVE: LOW_MAX_EXCLUSIVE,
     MEDIUM_MAX_INCLUSIVE: MEDIUM_MAX_INCLUSIVE,
@@ -230,7 +277,8 @@
     isProteinRich: isProteinRich,
     recipeProteinRule: recipeProteinRule,
     adviceFor: adviceFor,
-    flagRecipeIngredients: flagRecipeIngredients
+    flagRecipeIngredients: flagRecipeIngredients,
+    parseAiJson: parseAiJson
   };
   root.WhatToEatRules = Object.freeze(api);
 })(typeof globalThis !== 'undefined' ? globalThis : this);
