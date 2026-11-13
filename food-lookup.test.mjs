@@ -75,4 +75,15 @@ assert.equal(L.phosphorusPerProtein({ p: 39, pr: null }), null);
 assert.equal(L.phosphorusPerProtein({ p: null, pr: 3 }), null);
 assert.ok(db.foods.every((f) => f.pr === null || (typeof f.pr === 'number' && f.pr >= 0)), 'protein values');
 
+// 額度用完訊息：只有 429 才有；retryDelay 換成本機時間；沒有 retryDelay 就不寫時間
+const NOW = new Date(2026, 10, 13, 12, 0, 0);
+const BODY_429 = '{"error":{"code":429,"details":[{"@type":"type.googleapis.com/google.rpc.RetryInfo","retryDelay": "12159s"}]}}';
+assert.equal(L.quotaMessage(429, BODY_429, NOW), '目前額度用完，請等待重置（約 15:22 後可再使用）');
+assert.equal(L.quotaMessage(429, '{"retryDelay":"59.5s"}', NOW), '目前額度用完，請等待重置（約 12:00 後可再使用）');
+assert.equal(L.quotaMessage(429, '', NOW), '目前額度用完，請等待重置');
+assert.equal(L.quotaMessage(429, 'not json', NOW), '目前額度用完，請等待重置');
+assert.equal(L.quotaMessage(400, BODY_429, NOW), null);
+assert.equal(L.quotaMessage(403, '', NOW), null);
+assert.equal(L.quotaMessage(500, '', NOW), null);
+
 console.log(`food-lookup checks passed (${db.foods.length} foods).`);

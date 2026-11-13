@@ -130,7 +130,23 @@
     return candidates[n - 1];
   }
 
+  /* Gemini 免費額度用完（HTTP 429）時給使用者看的訊息；不是 429 回傳 null。
+   * Google 的錯誤內容帶 retryDelay（例如 "12159s"），換算成本機時間告訴使用者大約幾點重置。 */
+  function quotaMessage(status, bodyText, now) {
+    if (status !== 429) return null;
+    var msg = '目前額度用完，請等待重置';
+    var m = /"retryDelay"\s*:\s*"(\d+(?:\.\d+)?)s"/.exec(String(bodyText || ''));
+    if (m) {
+      var at = new Date((now instanceof Date ? now.getTime() : Date.now()) + Number(m[1]) * 1000);
+      var hh = String(at.getHours()).padStart(2, '0');
+      var mm = String(at.getMinutes()).padStart(2, '0');
+      msg += '（約 ' + hh + ':' + mm + ' 後可再使用）';
+    }
+    return msg;
+  }
+
   root.FoodLookup = Object.freeze({
+    quotaMessage: quotaMessage,
     NUTRIENTS: NUTRIENTS,
     MODES: MODES,
     modeOf: modeOf,

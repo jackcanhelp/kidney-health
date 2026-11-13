@@ -26,8 +26,8 @@
     <link rel="icon" type="image/png" sizes="32x32" href="icons/icon-32.png">
     <link rel="apple-touch-icon" href="icons/icon-180.png">
     <script src="site.js" defer></script>
-    <script src="food-lookup.js"></script>
-    <script src="what-to-eat-rules.js"></script>
+    <script src="food-lookup.js?v=1.1.21"></script>
+    <script src="what-to-eat-rules.js?v=1.1.21"></script>
 
     <script type="application/ld+json">
 {
@@ -129,7 +129,7 @@
         .scan-label {
             display: none; position: absolute; left: 50%; bottom: 12px; transform: translateX(-50%);
             background: rgba(0,0,0,.6); color: #fff; padding: .35rem .9rem; border-radius: 999px; font-size: .85rem;
-            white-space: nowrap;
+            width: max-content; max-width: 90%; text-align: center; line-height: 1.5;
         }
         .camera-box.scanning .scan-label, .camera-box.toast .scan-label { display: block; }
         .retake-banner {
@@ -450,8 +450,13 @@
                 generationConfig: { temperature: 0.3, maxOutputTokens: maxTokens, responseMimeType: 'application/json' }
             })
         }).then(function (res) {
-            if (!res.ok) throw new Error('連線失敗（' + res.status + '）');
-            return res.json();
+            if (res.ok) return res.json();
+            return res.text().catch(function () { return ''; }).then(function (t) {
+                var quota = FoodLookup.quotaMessage(res.status, t);
+                var err = new Error(quota || ('連線失敗（' + res.status + '）'));
+                err.quota = !!quota;
+                throw err;
+            });
         }).then(function (data) {
             var text = data && data.candidates && data.candidates[0] && data.candidates[0].content && data.candidates[0].content.parts[0].text;
             if (!text) throw new Error('AI 沒有回應內容');
@@ -514,8 +519,8 @@
             unfreeze(1100);
         }).catch(function (err) {
             cameraBox.classList.remove('scanning'); cameraBox.classList.add('toast');
-            $('scanLabel').textContent = '⚠️ ' + err.message;
-            unfreeze(2200);
+            $('scanLabel').textContent = (err.quota ? '⏳ ' : '⚠️ ') + err.message;
+            unfreeze(err.quota ? 4500 : 2200);
         }).then(function () { shutter.disabled = false; });
     }
 
@@ -738,7 +743,9 @@
         Promise.all([callGemini([{ text: recipePrompt(usable, avoided) }], 1600), minShow]).then(function (res) {
             renderRecipe(res[0], avoided);
         }).catch(function (err) {
-            $('recipe').innerHTML = '<div class="error-box">食譜產生失敗：' + esc(err.message) + '<br>請稍後再按一次「怎麼煮？」。</div>';
+            $('recipe').innerHTML = err.quota
+                ? '<div class="error-box">⏳ ' + esc(err.message) + '<br>下面的各食材飲食建議不需要額度，仍可參考。</div>'
+                : '<div class="error-box">食譜產生失敗：' + esc(err.message) + '<br>請稍後再按一次「怎麼煮？」。</div>';
         }).then(function () {
             clearInterval(timer);
             $('cooking').classList.remove('active');

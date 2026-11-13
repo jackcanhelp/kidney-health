@@ -26,7 +26,7 @@
     <link rel="icon" type="image/png" sizes="32x32" href="icons/icon-32.png">
     <link rel="apple-touch-icon" href="icons/icon-180.png">
     <script src="site.js" defer></script>
-    <script src="food-lookup.js?v=1.1.20"></script>
+    <script src="food-lookup.js?v=1.1.21"></script>
 
     <script type="application/ld+json">
 {
@@ -761,7 +761,10 @@
             });
 
             if (!response.ok) {
-                throw new Error('API 請求失敗 (' + response.status + ')');
+                var quota = FoodLookup.quotaMessage(response.status, await response.text().catch(function() { return ''; }));
+                var apiErr = new Error(quota || ('API 請求失敗 (' + response.status + ')'));
+                apiErr.quota = !!quota;
+                throw apiErr;
             }
 
             var data = await response.json();
@@ -807,6 +810,7 @@
                     generationConfig: { temperature: 0, maxOutputTokens: 400 }
                 });
             } catch (e) {
+                if (e.quota) throw e;
                 return aiOnly('資料庫比對失敗');
             }
             var food = FoodLookup.pickCandidate(candidates, pick && pick.index);
@@ -1013,7 +1017,9 @@
                 renderResult(result);
                 resultPanel.classList.add('active');
             } catch (err) {
-                resultContent.innerHTML = '<div class="error-msg">分析失敗：' + escapeHtml(err.message) + '<br>請再試一次</div>';
+                resultContent.innerHTML = err.quota
+                    ? '<div class="error-msg">⏳ ' + escapeHtml(err.message) + '</div>'
+                    : '<div class="error-msg">分析失敗：' + escapeHtml(err.message) + '<br>請再試一次</div>';
                 resultPanel.classList.add('active');
             } finally {
                 loadingOverlay.classList.remove('active');
