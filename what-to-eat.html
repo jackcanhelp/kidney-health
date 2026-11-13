@@ -1,0 +1,723 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>今天吃甚麼？（實驗版）- 腎臟健康衛教平台</title>
+    <meta name="description" content="把冰箱裡的食材一個一個拍下來，AI 辨識食材、對照食藥署資料庫標出鉀含量，再給一份腎友低鉀食譜。由腎臟科專科醫師張竣傑製作，結果僅供參考。">
+    <meta name="author" content="張竣傑醫師">
+    <link rel="canonical" href="https://jackcanhelp.org/what-to-eat.html">
+
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="腎臟健康衛教平台">
+    <meta property="og:locale" content="zh_TW">
+    <meta property="og:title" content="今天吃甚麼？（實驗版）- 腎臟健康衛教平台">
+    <meta property="og:description" content="把食材一個一個拍下來，AI 辨識、標出鉀含量，再給一份腎友低鉀食譜。結果僅供參考。">
+    <meta property="og:url" content="https://jackcanhelp.org/what-to-eat.html">
+    <meta property="og:image" content="https://jackcanhelp.org/og-image.jpg">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta property="og:image:alt" content="張竣傑醫師 腎臟健康衛教平台">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="今天吃甚麼？（實驗版）- 腎臟健康衛教平台">
+    <meta name="twitter:description" content="把食材一個一個拍下來，AI 辨識、標出鉀含量，再給一份腎友低鉀食譜。結果僅供參考。">
+    <meta name="twitter:image" content="https://jackcanhelp.org/og-image.jpg">
+
+    <link rel="icon" type="image/png" sizes="32x32" href="icons/icon-32.png">
+    <link rel="apple-touch-icon" href="icons/icon-180.png">
+    <script src="site.js" defer></script>
+    <script src="what-to-eat-rules.js"></script>
+
+    <script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "SoftwareApplication",
+      "@id": "https://jackcanhelp.org/what-to-eat.html#app",
+      "name": "今天吃甚麼？（實驗版）",
+      "description": "逐一拍攝食材，AI 辨識名稱後對照衛福部食藥署食品營養成分資料庫標示鉀含量，並產生適合限鉀腎友的食譜與各食材飲食建議。結果僅供參考，不能取代醫師或營養師的評估。",
+      "url": "https://jackcanhelp.org/what-to-eat.html",
+      "applicationCategory": "HealthApplication",
+      "operatingSystem": "Web browser",
+      "browserRequirements": "需支援 JavaScript 的現代瀏覽器",
+      "inLanguage": "zh-TW",
+      "isAccessibleForFree": true,
+      "author": { "@id": "https://jackcanhelp.org/#physician" },
+      "publisher": {
+        "@type": "MedicalOrganization",
+        "name": "腎臟健康衛教平台",
+        "url": "https://jackcanhelp.org/"
+      },
+      "offers": { "@type": "Offer", "price": "0", "priceCurrency": "TWD" }
+    },
+    {
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        { "@type": "ListItem", "position": 1, "name": "首頁", "item": "https://jackcanhelp.org/" },
+        { "@type": "ListItem", "position": 2, "name": "實用工具", "item": "https://jackcanhelp.org/tools.html" },
+        { "@type": "ListItem", "position": 3, "name": "今天吃甚麼？", "item": "https://jackcanhelp.org/what-to-eat.html" }
+      ]
+    }
+  ]
+}
+    </script>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #1a4a5e;
+            --primary-light: #2d7a9c;
+            --accent: #e58a2c;
+            --bg: #f8fafc;
+            --card: #ffffff;
+            --text-dark: #1a202c;
+            --text-body: #374151;
+            --text-muted: #6b7280;
+            --border: #e5e7eb;
+            --low: #10b981;
+            --medium: #f59e0b;
+            --high: #ef4444;
+            --avoid-bg: #fef2f2;
+            --avoid-fg: #b91c1c;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Noto Sans TC', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--bg);
+            color: var(--text-body);
+            -webkit-font-smoothing: antialiased;
+            overflow-x: hidden;
+        }
+        button { font-family: inherit; cursor: pointer; }
+        .wrap { max-width: 640px; margin: 0 auto; }
+
+        /* Header */
+        .app-header {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
+            color: #fff; padding: 1rem 3rem; text-align: center; position: relative;
+        }
+        .app-header h1 { font-size: 1.3rem; font-weight: 900; }
+        .app-header p { font-size: .85rem; opacity: .85; margin-top: .2rem; }
+        .back-link {
+            position: absolute; left: 1rem; top: 50%; transform: translateY(-50%);
+            color: #fff; text-decoration: none; font-size: 1.4rem;
+        }
+
+        /* Camera */
+        .camera-box { background: #0d1b21; position: relative; aspect-ratio: 4 / 3; overflow: hidden; }
+        .camera-box video, .camera-box canvas.freeze {
+            position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover;
+        }
+        .camera-box canvas.freeze { display: none; }
+        .camera-box.frozen canvas.freeze { display: block; }
+        .cam-placeholder {
+            position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center;
+            justify-content: center; color: rgba(255,255,255,.75); text-align: center; padding: 1rem; gap: .5rem;
+        }
+        .cam-placeholder .icon { font-size: 2.5rem; }
+        .scan-line {
+            display: none; position: absolute; left: 0; right: 0; height: 3px;
+            background: linear-gradient(90deg, transparent, #5eead4, transparent);
+            box-shadow: 0 0 12px #5eead4; top: 0;
+        }
+        .camera-box.scanning .scan-line { display: block; animation: scan 1.4s ease-in-out infinite alternate; }
+        @keyframes scan { from { top: 4%; } to { top: 94%; } }
+        .scan-label {
+            display: none; position: absolute; left: 50%; bottom: 12px; transform: translateX(-50%);
+            background: rgba(0,0,0,.6); color: #fff; padding: .35rem .9rem; border-radius: 999px; font-size: .85rem;
+            white-space: nowrap;
+        }
+        .camera-box.scanning .scan-label, .camera-box.toast .scan-label { display: block; }
+        .retake-banner {
+            display: none; position: absolute; top: 10px; left: 50%; transform: translateX(-50%);
+            background: var(--accent); color: #fff; padding: .35rem .5rem .35rem .9rem; border-radius: 999px;
+            font-size: .85rem; align-items: center; gap: .5rem; white-space: nowrap; z-index: 2;
+        }
+        .retake-banner.show { display: flex; }
+        .retake-banner button { background: rgba(255,255,255,.25); border: 0; color: #fff; border-radius: 999px; padding: .1rem .6rem; }
+
+        .cam-controls {
+            background: #0d1b21; display: flex; align-items: center; justify-content: space-around;
+            padding: .9rem 1rem 1.1rem;
+        }
+        .side-btn {
+            background: rgba(255,255,255,.1); color: #fff; border: 1px solid rgba(255,255,255,.2);
+            border-radius: 12px; padding: .55rem .8rem; font-size: .8rem; min-width: 84px;
+        }
+        .shutter {
+            width: 72px; height: 72px; border-radius: 50%; border: 4px solid #fff; background: rgba(255,255,255,.15);
+            display: flex; align-items: center; justify-content: center;
+        }
+        .shutter::after { content: ''; width: 54px; height: 54px; border-radius: 50%; background: #fff; transition: transform .1s; }
+        .shutter:active::after { transform: scale(.9); }
+        .shutter:disabled { opacity: .4; }
+
+        /* Sections */
+        section { padding: 1.1rem 1rem 0; }
+        h2 { font-size: 1.1rem; color: var(--text-dark); font-weight: 700; margin-bottom: .7rem; display: flex; align-items: center; gap: .4rem; }
+        .count-pill { background: var(--primary); color: #fff; border-radius: 999px; font-size: .75rem; padding: 0 .55rem; }
+        .empty {
+            border: 2px dashed var(--border); border-radius: 14px; padding: 1.2rem; text-align: center;
+            color: var(--text-muted); font-size: .9rem; line-height: 1.7;
+        }
+
+        /* Ingredient list */
+        .item {
+            background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: .7rem;
+            display: grid; grid-template-columns: 56px 1fr; gap: .7rem; margin-bottom: .6rem;
+        }
+        .item.avoid { border-color: #fecaca; background: var(--avoid-bg); }
+        .thumb { width: 56px; height: 56px; border-radius: 10px; object-fit: cover; background: #e2e8f0; display: flex; align-items: center; justify-content: center; font-size: 1.6rem; }
+        .item-top { display: flex; align-items: center; gap: .4rem; flex-wrap: wrap; }
+        .item-name { font-weight: 700; color: var(--text-dark); font-size: 1rem; }
+        .dot { width: 10px; height: 10px; border-radius: 50%; flex: none; }
+        .dot.low { background: var(--low); } .dot.medium { background: var(--medium); } .dot.high { background: var(--high); } .dot.unknown { background: #9ca3af; }
+        .badge { font-size: .75rem; font-weight: 700; border-radius: 6px; padding: .05rem .45rem; }
+        .badge.avoid { background: var(--avoid-fg); color: #fff; }
+        .badge.caution { background: #fef3c7; color: #92400e; }
+        .badge.ok { background: #d1fae5; color: #065f46; }
+        .item-k { font-size: .82rem; color: var(--text-muted); margin-top: .15rem; line-height: 1.5; }
+        .item-k b { color: var(--text-dark); }
+        .est { color: #b45309; }
+        .item-reason { font-size: .8rem; color: var(--avoid-fg); margin-top: .2rem; }
+        .item-actions { display: flex; gap: .4rem; margin-top: .45rem; }
+        .item-actions button {
+            border: 1px solid var(--border); background: #fff; border-radius: 8px; padding: .25rem .7rem; font-size: .8rem; color: var(--text-body);
+        }
+        .item-actions button.del { margin-left: auto; color: var(--text-muted); }
+        .item.pending { opacity: .6; }
+
+        /* Style selector + cook button */
+        .seg { display: flex; background: #e2e8f0; border-radius: 12px; padding: 4px; gap: 4px; }
+        .seg button { flex: 1; border: 0; background: transparent; padding: .55rem; border-radius: 9px; font-size: .95rem; color: var(--text-body); }
+        .seg button[aria-pressed="true"] { background: #fff; color: var(--primary); font-weight: 700; box-shadow: 0 1px 3px rgba(0,0,0,.12); }
+        .cook-btn {
+            width: 100%; margin-top: .9rem; border: 0; border-radius: 14px; padding: 1rem;
+            background: linear-gradient(135deg, var(--accent), #d9701a); color: #fff; font-size: 1.15rem; font-weight: 900;
+            box-shadow: 0 4px 14px rgba(229,138,44,.35);
+        }
+        .cook-btn:disabled { background: #cbd5e1; box-shadow: none; }
+        .hint { font-size: .8rem; color: var(--text-muted); margin-top: .5rem; text-align: center; }
+
+        /* Cooking overlay */
+        .cooking {
+            position: fixed; inset: 0; background: rgba(13,27,33,.92); z-index: 50; display: none;
+            flex-direction: column; align-items: center; justify-content: center; color: #fff; gap: 1rem;
+        }
+        .cooking.active { display: flex; }
+        .cooking svg { width: 240px; max-width: 70vw; height: auto; overflow: visible; }
+        .cook-text { font-size: 1.05rem; font-weight: 500; min-height: 1.5em; }
+        .lid { animation: lid .5s ease-in-out infinite alternate; transform-origin: 120px 92px; }
+        @keyframes lid { from { transform: translateY(0) rotate(0); } to { transform: translateY(-6px) rotate(-3deg); } }
+        .steam path { stroke: rgba(255,255,255,.7); stroke-width: 5; fill: none; stroke-linecap: round; opacity: 0; animation: steam 2.2s ease-out infinite; }
+        .steam path:nth-child(2) { animation-delay: .7s; }
+        .steam path:nth-child(3) { animation-delay: 1.4s; }
+        @keyframes steam { 0% { opacity: 0; transform: translateY(10px); } 30% { opacity: .9; } 100% { opacity: 0; transform: translateY(-30px); } }
+        .flame { animation: flame .25s ease-in-out infinite alternate; transform-box: fill-box; transform-origin: 50% 100%; }
+        .flame:nth-child(2) { animation-delay: .1s; } .flame:nth-child(3) { animation-delay: .18s; }
+        @keyframes flame { from { transform: scaleY(1); } to { transform: scaleY(1.3); } }
+        .drop { font-size: 28px; opacity: 0; animation: drop 2.4s ease-in infinite; }
+        @keyframes drop { 0% { opacity: 0; transform: translateY(-60px) rotate(0); } 15% { opacity: 1; } 55% { opacity: 1; transform: translateY(40px) rotate(160deg); } 65%, 100% { opacity: 0; transform: translateY(48px) rotate(180deg); } }
+
+        /* Recipe */
+        .card { background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 1rem; margin-bottom: .8rem; }
+        .recipe-title { font-size: 1.3rem; font-weight: 900; color: var(--text-dark); }
+        .recipe-meta { font-size: .85rem; color: var(--text-muted); margin-top: .2rem; }
+        .recipe-intro { margin-top: .6rem; line-height: 1.7; }
+        .card h3 { font-size: 1rem; color: var(--primary); margin: .9rem 0 .45rem; }
+        .ing-list { list-style: none; }
+        .ing-list li { display: flex; justify-content: space-between; gap: .5rem; padding: .35rem 0; border-bottom: 1px dashed var(--border); font-size: .95rem; }
+        .ing-list li.avoid { color: var(--avoid-fg); }
+        .steps { padding-left: 1.3rem; line-height: 1.75; }
+        .steps li { margin-bottom: .45rem; }
+        .tips { list-style: none; }
+        .tips li { padding-left: 1.4rem; position: relative; line-height: 1.7; margin-bottom: .3rem; }
+        .tips li::before { content: '💡'; position: absolute; left: 0; }
+        .omitted { background: var(--avoid-bg); border-radius: 10px; padding: .6rem .8rem; font-size: .9rem; line-height: 1.7; color: var(--avoid-fg); }
+        .warn-box { background: #fffbeb; border: 1px solid #fde68a; color: #92400e; border-radius: 10px; padding: .6rem .8rem; font-size: .88rem; line-height: 1.6; margin-top: .6rem; }
+        .error-box { background: var(--avoid-bg); border: 1px solid #fecaca; color: #991b1b; border-radius: 12px; padding: .9rem; line-height: 1.6; }
+
+        /* Education */
+        .edu { border-left: 5px solid #9ca3af; }
+        .edu.low { border-left-color: var(--low); } .edu.medium { border-left-color: var(--medium); } .edu.high { border-left-color: var(--high); }
+        .edu-head { display: flex; align-items: center; gap: .45rem; flex-wrap: wrap; }
+        .edu-head .name { font-weight: 700; color: var(--text-dark); }
+        .edu-k { font-size: .85rem; color: var(--text-muted); margin: .2rem 0 .4rem; }
+        .edu ul { padding-left: 1.2rem; line-height: 1.7; font-size: .92rem; }
+        .legend { display: flex; gap: .9rem; flex-wrap: wrap; font-size: .8rem; color: var(--text-muted); margin-bottom: .7rem; }
+        .legend span { display: inline-flex; align-items: center; gap: .3rem; }
+
+        .disclaimer { font-size: .8rem; color: var(--text-muted); line-height: 1.7; padding: 1rem; }
+        .copyright { text-align: center; font-size: .75rem; color: var(--text-muted); padding: .5rem 1rem 2rem; }
+
+        /* Edit sheet */
+        .sheet-bg { position: fixed; inset: 0; background: rgba(0,0,0,.45); z-index: 40; display: none; align-items: flex-end; justify-content: center; }
+        .sheet-bg.active { display: flex; }
+        .sheet { background: #fff; width: 100%; max-width: 640px; border-radius: 18px 18px 0 0; padding: 1rem 1rem 1.4rem; max-height: 80vh; display: flex; flex-direction: column; }
+        .sheet h3 { font-size: 1.05rem; color: var(--text-dark); margin-bottom: .6rem; }
+        .sheet input { width: 100%; font-size: 1rem; padding: .7rem .8rem; border: 1px solid var(--border); border-radius: 10px; font-family: inherit; }
+        .sheet .cands { overflow-y: auto; margin-top: .6rem; flex: 1; }
+        .cand { display: flex; justify-content: space-between; align-items: center; width: 100%; text-align: left; border: 0; border-bottom: 1px solid var(--border); background: #fff; padding: .65rem .3rem; font-size: .95rem; color: var(--text-body); gap: .5rem; }
+        .cand small { color: var(--text-muted); }
+        .cand.free { color: var(--primary); }
+        .sheet .close { margin-top: .7rem; border: 0; background: #e2e8f0; border-radius: 10px; padding: .7rem; font-size: .95rem; }
+        [hidden] { display: none !important; }
+    </style>
+</head>
+<body>
+<div class="wrap">
+    <header class="app-header">
+        <a href="./" class="back-link" aria-label="返回首頁">&larr;</a>
+        <h1>🍳 今天吃甚麼？</h1>
+        <p>把食材一個一個拍下來，幫你想一道腎友低鉀料理</p>
+    </header>
+
+    <div class="camera-box" id="cameraBox">
+        <video id="video" autoplay playsinline muted></video>
+        <canvas class="freeze" id="freeze"></canvas>
+        <div class="cam-placeholder" id="camPlaceholder"><div class="icon">📷</div><p>正在啟動相機…</p></div>
+        <div class="scan-line"></div>
+        <div class="scan-label" id="scanLabel">辨識中…</div>
+        <div class="retake-banner" id="retakeBanner"><span id="retakeText">重拍</span><button type="button" id="retakeCancel">取消</button></div>
+    </div>
+    <div class="cam-controls">
+        <button type="button" class="side-btn" id="pickBtn">🖼️ 從相簿</button>
+        <button type="button" class="shutter" id="shutter" aria-label="拍照辨識"></button>
+        <button type="button" class="side-btn" id="typeBtn">⌨️ 打字輸入</button>
+        <input type="file" id="fileInput" accept="image/*" hidden>
+    </div>
+
+    <section>
+        <h2>🧺 已拍食材 <span class="count-pill" id="count">0</span></h2>
+        <div id="list"><div class="empty">還沒有食材。<br>對準一樣食材按下快門，畫面會定格並辨識；<br>拍完一樣再拍下一樣。</div></div>
+    </section>
+
+    <section>
+        <h2>🍽️ 料理風格</h2>
+        <div class="seg" role="group" aria-label="料理風格">
+            <button type="button" data-style="default" aria-pressed="true">預設</button>
+            <button type="button" data-style="chinese" aria-pressed="false">中式</button>
+            <button type="button" data-style="western" aria-pressed="false">西式</button>
+        </div>
+        <button type="button" class="cook-btn" id="cookBtn" disabled>🍳 怎麼煮？</button>
+        <p class="hint">食譜一律套用低鉀烹調；標「✕ 不建議」的食材不會放進食譜。</p>
+    </section>
+
+    <section id="recipeSection" hidden>
+        <h2>📖 食譜</h2>
+        <div id="recipe"></div>
+    </section>
+
+    <section id="eduSection" hidden>
+        <h2>🩺 各食材飲食建議</h2>
+        <div class="legend">
+            <span><i class="dot low"></i>低鉀 &lt; 150</span>
+            <span><i class="dot medium"></i>中鉀 150–300</span>
+            <span><i class="dot high"></i>高鉀 &gt; 300</span>
+            <span>（mg / 100 g）</span>
+        </div>
+        <div id="edu"></div>
+        <div class="card">
+            <h3 style="margin-top:0">所有腎友都適用的三件事</h3>
+            <ul class="tips">
+                <li>蔬菜切小塊、汆燙後撈起再炒，燙菜水、菜湯、滷汁都不要喝或拌飯。</li>
+                <li>不要用低鈉鹽、薄鹽醬油、代鹽，裡面多半是氯化鉀。</li>
+                <li>每天能吃多少鉀因人而異，要看抽血報告，請照醫師、營養師給的份量。</li>
+            </ul>
+        </div>
+    </section>
+
+    <p class="disclaimer">
+        實驗版工具。食材由 AI 從照片辨識，可能認錯，請用「修改」更正。鉀含量優先採用衛生福利部食品藥物管理署「食品營養成分資料庫」（每 100 g 可食部分）；
+        標「估計」的是查不到資料時的 AI 推估，僅供參考。食譜由 AI 產生，已要求套用低鉀烹調原則，但仍不能取代醫師或營養師的個別建議。
+        照片只在你的手機上處理與送去辨識，本站不保存。
+    </p>
+    <div class="copyright">© 張竣傑醫師 · 腎臟健康衛教平台</div>
+</div>
+
+<div class="cooking" id="cooking" role="status" aria-live="polite">
+    <svg viewBox="0 0 240 220" aria-hidden="true">
+        <g class="steam" transform="translate(0,-4)">
+            <path d="M95 60 q-10 -15 0 -30 q10 -15 0 -30"/>
+            <path d="M120 60 q-10 -15 0 -30 q10 -15 0 -30"/>
+            <path d="M145 60 q-10 -15 0 -30 q10 -15 0 -30"/>
+        </g>
+        <g id="drops"></g>
+        <g class="lid">
+            <ellipse cx="120" cy="92" rx="78" ry="12" fill="#94a3b8"/>
+            <rect x="110" y="72" width="20" height="12" rx="5" fill="#475569"/>
+        </g>
+        <path d="M44 98 h152 v54 a26 26 0 0 1 -26 26 h-100 a26 26 0 0 1 -26 -26 z" fill="#e58a2c"/>
+        <rect x="24" y="104" width="22" height="10" rx="5" fill="#b45309"/>
+        <rect x="194" y="104" width="22" height="10" rx="5" fill="#b45309"/>
+        <rect x="60" y="186" width="120" height="8" rx="4" fill="#334155"/>
+        <g>
+            <path class="flame" d="M85 210 q-8 -12 0 -22 q8 10 0 22z" fill="#f97316"/>
+            <path class="flame" d="M120 212 q-10 -15 0 -28 q10 13 0 28z" fill="#fb923c"/>
+            <path class="flame" d="M155 210 q-8 -12 0 -22 q8 10 0 22z" fill="#f97316"/>
+        </g>
+    </svg>
+    <div class="cook-text" id="cookText">洗菜中…</div>
+</div>
+
+<div class="sheet-bg" id="sheetBg">
+    <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="sheetTitle">
+        <h3 id="sheetTitle">修改食材</h3>
+        <input type="search" id="sheetInput" placeholder="輸入食材名稱，例如：高麗菜" autocomplete="off">
+        <div class="cands" id="sheetCands"></div>
+        <button type="button" class="close" id="sheetClose">取消</button>
+    </div>
+</div>
+
+<script>
+(function () {
+    'use strict';
+    var WORKER_ENDPOINT = 'https://gemini-proxy.a5170159.workers.dev';
+    var R = window.WhatToEatRules;
+    var STYLE_TEXT = { default: '不限菜系，以台灣家常、做法簡單為主', chinese: '中式（台式家常、快炒、清蒸、燉煮皆可）', western: '西式（煎、烤、沙拉、義大利麵、燉菜皆可）' };
+    var TFDA_CATEGORIES = ['蔬菜類', '水果類', '肉類', '魚貝類', '蛋類', '豆類', '穀物類', '澱粉類', '菇類', '藻類', '乳品類', '堅果及種子類', '調味料及香辛料類', '油脂類', '加工調理食品及其他類', '飲料類', '糕餅點心類', '糖類'];
+    var CAT_EMOJI = { '蔬菜類': '🥬', '水果類': '🍎', '肉類': '🍖', '魚貝類': '🐟', '蛋類': '🥚', '豆類': '🫘', '穀物類': '🍚', '澱粉類': '🥔', '菇類': '🍄', '藻類': '🌿', '乳品類': '🥛', '堅果及種子類': '🥜', '調味料及香辛料類': '🧂', '油脂類': '🫒' };
+
+    var $ = function (id) { return document.getElementById(id); };
+    var video = $('video'), freeze = $('freeze'), cameraBox = $('cameraBox'), shutter = $('shutter');
+    var db = [];
+    var dbReady = fetch('potassium_data.json').then(function (r) { return r.json(); }).then(function (d) { db = d; }).catch(function () { db = []; });
+    var items = [];       // { id, name, aiName, thumb, potassium, dbName, category, estimated, pending }
+    var retakeId = null;  // 正在重拍的食材 id
+    var editId = null;
+    var style = 'default';
+    var nextId = 1;
+
+    function esc(s) { var d = document.createElement('div'); d.textContent = s == null ? '' : String(s); return d.innerHTML; }
+
+    // ---------- Camera ----------
+    function startCamera() {
+        if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+            $('camPlaceholder').innerHTML = '<div class="icon">📷</div><p>這個瀏覽器無法開相機<br>請用「從相簿」或「打字輸入」</p>';
+            return;
+        }
+        navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment', width: { ideal: 1280 }, height: { ideal: 960 } } })
+            .then(function (stream) {
+                video.srcObject = stream;
+                video.onloadedmetadata = function () { $('camPlaceholder').style.display = 'none'; };
+            })
+            .catch(function () {
+                $('camPlaceholder').innerHTML = '<div class="icon">⚠️</div><p>無法啟動相機（可能沒有允許權限）<br>可以改用「從相簿」或「打字輸入」</p>';
+            });
+    }
+
+    // 把影像畫到定格畫布，並回傳縮小後的 JPEG（最長邊 1024，省流量）與縮圖
+    function drawFrozen(source, w, h) {
+        freeze.width = w; freeze.height = h;
+        freeze.getContext('2d').drawImage(source, 0, 0, w, h);
+        cameraBox.classList.add('frozen');
+        var scale = Math.min(1, 1024 / Math.max(w, h));
+        var c = document.createElement('canvas');
+        c.width = Math.round(w * scale); c.height = Math.round(h * scale);
+        c.getContext('2d').drawImage(source, 0, 0, c.width, c.height);
+        var t = document.createElement('canvas'), side = Math.min(w, h);
+        t.width = 120; t.height = 120;
+        t.getContext('2d').drawImage(source, (w - side) / 2, (h - side) / 2, side, side, 0, 0, 120, 120);
+        return { base64: c.toDataURL('image/jpeg', 0.82).split(',')[1], thumb: t.toDataURL('image/jpeg', 0.7) };
+    }
+
+    function unfreeze(delay) {
+        setTimeout(function () { cameraBox.classList.remove('frozen', 'scanning', 'toast'); }, delay || 0);
+    }
+
+    // ---------- Gemini ----------
+    function callGemini(parts, maxTokens) {
+        return fetch(WORKER_ENDPOINT, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                contents: [{ parts: parts }],
+                generationConfig: { temperature: 0.3, maxOutputTokens: maxTokens, responseMimeType: 'application/json' }
+            })
+        }).then(function (res) {
+            if (!res.ok) throw new Error('連線失敗（' + res.status + '）');
+            return res.json();
+        }).then(function (data) {
+            var text = data && data.candidates && data.candidates[0] && data.candidates[0].content && data.candidates[0].content.parts[0].text;
+            if (!text) throw new Error('AI 沒有回應內容');
+            return JSON.parse(text.replace(/```json\s*|```/g, '').trim());
+        });
+    }
+
+    function identify(base64) {
+        var prompt = '你是台灣的腎臟科營養師。辨識照片裡的「食材」（生鮮或包裝食品、調味料皆可）。只回傳 JSON：\n' +
+            '{"items":[{"name":"台灣常用中文名稱","tfda_terms":["衛福部食藥署食品營養成分資料庫裡可能的品名，1到3個，例如香蕉寫北蕉、高麗菜寫甘藍"],' +
+            '"category":"從以下擇一：' + TFDA_CATEGORIES.join('、') + '","est_potassium":每100公克可食部分的鉀含量估計值(mg，數字)}]}\n' +
+            '規則：照片通常只有一樣主要食材，就只回一項；明顯有多樣才各列一項，最多 4 項。調味料要寫出完整品名（例如「薄鹽醬油」不要只寫「醬油」）。' +
+            '看不出食材時回傳 {"items":[],"error":"看不出是什麼食材，請靠近一點再拍一次"}。';
+        return callGemini([{ text: prompt }, { inline_data: { mime_type: 'image/jpeg', data: base64 } }], 400);
+    }
+
+    // ---------- Items ----------
+    function resolveItem(item, terms) {
+        var m = R.matchFood(terms, db);
+        if (m.best) {
+            item.potassium = m.best.potassium; item.dbName = m.best.name; item.category = m.best.category; item.estimated = false;
+        } else {
+            item.dbName = '';
+            item.estimated = typeof item.estPotassium === 'number';
+            item.potassium = item.estimated ? item.estPotassium : null;
+        }
+    }
+
+    function addFromAi(aiItem, thumb) {
+        var item = {
+            id: nextId++, name: aiItem.name || '未命名', aiName: aiItem.name, thumb: thumb,
+            category: TFDA_CATEGORIES.indexOf(aiItem.category) >= 0 ? aiItem.category : '',
+            estPotassium: typeof aiItem.est_potassium === 'number' ? aiItem.est_potassium : null
+        };
+        resolveItem(item, [aiItem.name].concat(aiItem.tfda_terms || []));
+        return item;
+    }
+
+    function analyzeImage(source, w, h) {
+        if (shutter.disabled) return;
+        var shot = drawFrozen(source, w, h);
+        var replacing = retakeId;
+        shutter.disabled = true;
+        cameraBox.classList.add('scanning');
+        $('scanLabel').textContent = '辨識中…';
+        Promise.all([identify(shot.base64), dbReady]).then(function (res) {
+            var r = res[0];
+            if (!r.items || !r.items.length) throw new Error(r.error || '看不出是什麼食材，請再拍一次');
+            var newItems = r.items.slice(0, 4).map(function (x) { return addFromAi(x, shot.thumb); });
+            if (replacing != null) {
+                var idx = items.findIndex(function (x) { return x.id === replacing; });
+                if (idx >= 0) items.splice.apply(items, [idx, 1].concat(newItems)); else items = items.concat(newItems);
+                setRetake(null);
+            } else {
+                items = items.concat(newItems);
+            }
+            renderList();
+            cameraBox.classList.remove('scanning'); cameraBox.classList.add('toast');
+            $('scanLabel').textContent = '✓ 已加入：' + newItems.map(function (x) { return x.name; }).join('、');
+            unfreeze(1100);
+        }).catch(function (err) {
+            cameraBox.classList.remove('scanning'); cameraBox.classList.add('toast');
+            $('scanLabel').textContent = '⚠️ ' + err.message;
+            unfreeze(2200);
+        }).then(function () { shutter.disabled = false; });
+    }
+
+    function setRetake(id) {
+        retakeId = id;
+        var it = items.find(function (x) { return x.id === id; });
+        $('retakeBanner').classList.toggle('show', !!it);
+        if (it) $('retakeText').textContent = '重拍：' + it.name;
+    }
+
+    function itemRow(it) {
+        var level = R.levelOf(it.potassium);
+        var v = R.verdict(it);
+        var kLine;
+        if (it.potassium == null) kLine = '鉀含量：查不到資料';
+        else if (it.estimated) kLine = '每 100 g 約 <b>' + Math.round(it.potassium) + '</b> mg <span class="est">（AI 估計，資料庫查無）</span>';
+        else kLine = '每 100 g 含鉀 <b>' + Math.round(it.potassium) + '</b> mg · 食藥署：' + esc(it.dbName);
+        var thumb = it.thumb ? '<img class="thumb" src="' + it.thumb + '" alt="">' : '<div class="thumb">' + (CAT_EMOJI[it.category] || '🍽️') + '</div>';
+        return '<div class="item ' + (v.code === 'avoid' ? 'avoid' : '') + '">' + thumb +
+            '<div><div class="item-top"><i class="dot ' + level + '"></i><span class="item-name">' + esc(it.name) + '</span>' +
+            '<span class="badge ' + v.code + '">' + esc(v.label) + '</span></div>' +
+            '<div class="item-k">' + kLine + '</div>' +
+            (v.code === 'avoid' ? '<div class="item-reason">' + esc(v.reason) + '</div>' : '') +
+            '<div class="item-actions"><button type="button" data-act="edit" data-id="' + it.id + '">✏️ 修改</button>' +
+            '<button type="button" data-act="retake" data-id="' + it.id + '">📷 重拍</button>' +
+            '<button type="button" class="del" data-act="del" data-id="' + it.id + '" aria-label="刪除 ' + esc(it.name) + '">✕</button></div></div></div>';
+    }
+
+    function renderList() {
+        $('count').textContent = items.length;
+        $('cookBtn').disabled = items.length === 0;
+        $('list').innerHTML = items.length ? items.map(itemRow).join('') :
+            '<div class="empty">還沒有食材。<br>對準一樣食材按下快門，畫面會定格並辨識；<br>拍完一樣再拍下一樣。</div>';
+    }
+
+    $('list').addEventListener('click', function (e) {
+        var b = e.target.closest('button[data-act]');
+        if (!b) return;
+        var id = Number(b.dataset.id);
+        if (b.dataset.act === 'del') { items = items.filter(function (x) { return x.id !== id; }); if (retakeId === id) setRetake(null); renderList(); }
+        if (b.dataset.act === 'retake') { setRetake(id); cameraBox.scrollIntoView({ behavior: 'smooth' }); }
+        if (b.dataset.act === 'edit') openSheet(id);
+    });
+    $('retakeCancel').addEventListener('click', function () { setRetake(null); });
+
+    // ---------- Edit sheet（修改 / 打字輸入共用）----------
+    function openSheet(id) {
+        editId = id;
+        var it = items.find(function (x) { return x.id === id; });
+        $('sheetTitle').textContent = it ? '修改食材' : '打字新增食材';
+        $('sheetInput').value = it ? it.name : '';
+        $('sheetBg').classList.add('active');
+        renderCands();
+        setTimeout(function () { $('sheetInput').focus(); }, 50);
+    }
+    function closeSheet() { $('sheetBg').classList.remove('active'); editId = null; }
+    function renderCands() {
+        var q = $('sheetInput').value.trim();
+        if (!q) { $('sheetCands').innerHTML = ''; return; }
+        var m = R.matchFood([q], db, 12);
+        var html = m.candidates.map(function (c, i) {
+            return '<button type="button" class="cand" data-i="' + i + '"><span>' + esc(c.name) + '</span><small>' + Math.round(c.potassium) + ' mg · ' + esc(c.category) + '</small></button>';
+        }).join('');
+        html += '<button type="button" class="cand free" data-free="1"><span>只用「' + esc(q) + '」這個名稱</span><small>不對照資料庫</small></button>';
+        $('sheetCands').innerHTML = html;
+        $('sheetCands')._cands = m.candidates;
+    }
+    $('sheetInput').addEventListener('input', renderCands);
+    $('sheetCands').addEventListener('click', function (e) {
+        var b = e.target.closest('button.cand');
+        if (!b) return;
+        var q = $('sheetInput').value.trim();
+        var it = items.find(function (x) { return x.id === editId; });
+        if (!it) { it = { id: nextId++, thumb: null }; items.push(it); }
+        if (b.dataset.free) {
+            it.name = q; it.dbName = ''; it.potassium = null; it.estimated = false; it.category = '';
+        } else {
+            var c = $('sheetCands')._cands[Number(b.dataset.i)];
+            it.name = q; it.dbName = c.name; it.potassium = c.potassium; it.category = c.category; it.estimated = false;
+        }
+        closeSheet(); renderList();
+    });
+    $('sheetClose').addEventListener('click', closeSheet);
+    $('sheetBg').addEventListener('click', function (e) { if (e.target === $('sheetBg')) closeSheet(); });
+
+    // ---------- Capture sources ----------
+    shutter.addEventListener('click', function () {
+        if (!video.videoWidth) { $('fileInput').click(); return; }
+        analyzeImage(video, video.videoWidth, video.videoHeight);
+    });
+    $('pickBtn').addEventListener('click', function () { $('fileInput').click(); });
+    $('fileInput').addEventListener('change', function () {
+        var f = this.files && this.files[0];
+        this.value = '';
+        if (!f) return;
+        var img = new Image();
+        img.onload = function () { analyzeImage(img, img.naturalWidth, img.naturalHeight); URL.revokeObjectURL(img.src); };
+        img.src = URL.createObjectURL(f);
+    });
+    $('typeBtn').addEventListener('click', function () { dbReady.then(function () { openSheet(null); }); });
+
+    // ---------- Style ----------
+    document.querySelectorAll('.seg button').forEach(function (b) {
+        b.addEventListener('click', function () {
+            style = b.dataset.style;
+            document.querySelectorAll('.seg button').forEach(function (x) { x.setAttribute('aria-pressed', String(x === b)); });
+        });
+    });
+
+    // ---------- Cooking ----------
+    var COOK_LINES = ['洗菜中…', '切小塊…', '滾水汆燙去鉀…', '瀝乾，燙菜水倒掉…', '下鍋拌炒…', '少油少鹽調味…', '快好了，擺盤中…'];
+    function startCookingAnim() {
+        var emojis = items.map(function (x) { return CAT_EMOJI[x.category] || '🥘'; }).slice(0, 5);
+        if (!emojis.length) emojis = ['🥬'];
+        $('drops').innerHTML = emojis.map(function (e, i) {
+            return '<text class="drop" x="' + (78 + i * 22) + '" y="70" style="animation-delay:' + (i * 0.45) + 's">' + e + '</text>';
+        }).join('');
+        var i = 0;
+        $('cookText').textContent = COOK_LINES[0];
+        $('cooking').classList.add('active');
+        return setInterval(function () { i = (i + 1) % COOK_LINES.length; $('cookText').textContent = COOK_LINES[i]; }, 1300);
+    }
+
+    function recipePrompt(usable, avoided) {
+        var list = usable.map(function (x) {
+            var lv = R.levelLabel(R.levelOf(x.potassium));
+            var v = R.verdict(x);
+            return '- ' + x.name + '（' + lv + (v.code === 'caution' ? '，需限量' : '') + '）';
+        }).join('\n');
+        return '你是台灣的腎臟科營養師，也很會做菜。用下列食材設計一道給「需要限鉀的慢性腎臟病患者」吃的家常料理，1 到 2 人份。\n' +
+            '料理風格：' + STYLE_TEXT[style] + '\n可用食材：\n' + list + '\n' +
+            (avoided.length ? '以下食材已判定不建議腎友食用，絕對不要放進食譜：' + avoided.map(function (x) { return x.name; }).join('、') + '\n' : '') +
+            '必須遵守：\n' +
+            '1. 標「高鉀」或「需限量」的食材份量要少，步驟裡要寫出「切小塊、滾水汆燙約 3 分鐘、撈起瀝乾、燙菜水倒掉」再烹調。中鉀蔬菜也建議汆燙。\n' +
+            '2. 絕對不要使用低鈉鹽、薄鹽醬油、代鹽、雞精塊、高湯塊、楊桃、果汁、肉汁或湯汁拌飯；不要設計成要喝湯的湯品。\n' +
+            '3. 可自行加入少量基本配料：食用油、少量鹽或一般醬油、糖、白醋、蔥、薑、蒜、白胡椒，並在材料中列出。\n' +
+            '4. 不必用完所有食材；不適合放在同一道菜的可以不用，並在 not_used 說明。\n' +
+            '5. 不要寫任何鉀含量數字，也不要給醫療建議。\n' +
+            '只回傳 JSON：{"title":"菜名","intro":"一句介紹，40字內","servings":"1-2人份","time":"約20分鐘",' +
+            '"ingredients":[{"name":"材料名","amount":"份量"}],"steps":["步驟"],"kidney_tips":["這道菜對腎友的低鉀重點，2到3條"],' +
+            '"not_used":[{"name":"沒用到的食材","reason":"原因"}]}';
+    }
+
+    function renderRecipe(r, avoided) {
+        var flags = R.flagRecipeIngredients(r.ingredients);
+        var avoidNames = avoided.map(function (x) { return x.name; });
+        var html = '<div class="card"><div class="recipe-title">' + esc(r.title) + '</div>' +
+            '<div class="recipe-meta">' + esc(r.servings || '') + (r.time ? ' · ' + esc(r.time) : '') + ' · ' + esc({ default: '預設', chinese: '中式', western: '西式' }[style]) + '</div>' +
+            (r.intro ? '<p class="recipe-intro">' + esc(r.intro) + '</p>' : '');
+        html += '<h3>材料</h3><ul class="ing-list">' + (r.ingredients || []).map(function (ing, i) {
+            var bad = flags[i].avoid || avoidNames.some(function (n) { return n && String(ing.name).indexOf(n) >= 0; });
+            return '<li class="' + (bad ? 'avoid' : '') + '"><span>' + esc(ing.name) + (bad ? ' <span class="badge avoid">✕ 不建議</span>' : '') + '</span><span>' + esc(ing.amount || '') + '</span></li>';
+        }).join('') + '</ul>';
+        if (flags.some(function (f) { return f.avoid; })) {
+            html += '<div class="warn-box">AI 產生的材料裡出現了不建議的項目（已標 ✕），請拿掉或換成一般調味料。</div>';
+        }
+        html += '<h3>步驟</h3><ol class="steps">' + (r.steps || []).map(function (s) { return '<li>' + esc(s) + '</li>'; }).join('') + '</ol>';
+        if (r.kidney_tips && r.kidney_tips.length) {
+            html += '<h3>腎友重點</h3><ul class="tips">' + r.kidney_tips.map(function (s) { return '<li>' + esc(s) + '</li>'; }).join('') + '</ul>';
+        }
+        var skipped = avoided.map(function (x) { return x.name + '：' + R.verdict(x).reason; })
+            .concat((r.not_used || []).map(function (x) { return x.name + '：' + (x.reason || ''); }));
+        if (skipped.length) {
+            html += '<h3>沒有放進這道菜的食材</h3><div class="omitted">' + skipped.map(esc).join('<br>') + '</div>';
+        }
+        html += '</div>';
+        $('recipe').innerHTML = html;
+    }
+
+    function renderEdu() {
+        $('edu').innerHTML = items.map(function (it) {
+            var level = R.levelOf(it.potassium);
+            var v = R.verdict(it);
+            var k = it.potassium == null ? '查不到鉀含量資料' :
+                (it.estimated ? '每 100 g 約 ' + Math.round(it.potassium) + ' mg（AI 估計）' : '每 100 g 含鉀 ' + Math.round(it.potassium) + ' mg（食藥署：' + it.dbName + '）');
+            var tips = R.adviceFor(it);
+            return '<div class="card edu ' + level + '"><div class="edu-head"><i class="dot ' + level + '"></i><span class="name">' + esc(it.name) + '</span>' +
+                '<span class="badge ' + v.code + '">' + esc(R.levelLabel(level)) + ' · ' + esc(v.label) + '</span></div>' +
+                '<div class="edu-k">' + esc(k) + '</div>' +
+                (tips.length ? '<ul>' + tips.map(function (t) { return '<li>' + esc(t) + '</li>'; }).join('') + '</ul>' : '') + '</div>';
+        }).join('');
+        $('eduSection').hidden = false;
+    }
+
+    $('cookBtn').addEventListener('click', function () {
+        if (!items.length) return;
+        var avoided = items.filter(function (x) { return R.verdict(x).code === 'avoid'; });
+        var usable = items.filter(function (x) { return R.verdict(x).code !== 'avoid'; });
+        renderEdu();
+        if (!usable.length) {
+            $('recipe').innerHTML = '<div class="error-box">拍到的食材都標為「✕ 不建議」，沒辦法組成一道適合腎友的菜。換幾樣低鉀食材再試試，下面有各食材的說明。</div>';
+            $('recipeSection').hidden = false;
+            $('recipeSection').scrollIntoView({ behavior: 'smooth' });
+            return;
+        }
+        $('cookBtn').disabled = true;
+        var timer = startCookingAnim();
+        var minShow = new Promise(function (r) { setTimeout(r, 2600); }); // 讓動畫至少跑完一輪
+        Promise.all([callGemini([{ text: recipePrompt(usable, avoided) }], 1600), minShow]).then(function (res) {
+            renderRecipe(res[0], avoided);
+        }).catch(function (err) {
+            $('recipe').innerHTML = '<div class="error-box">食譜產生失敗：' + esc(err.message) + '<br>請稍後再按一次「怎麼煮？」。</div>';
+        }).then(function () {
+            clearInterval(timer);
+            $('cooking').classList.remove('active');
+            $('cookBtn').disabled = false;
+            $('recipeSection').hidden = false;
+            $('recipeSection').scrollIntoView({ behavior: 'smooth' });
+        });
+    });
+
+    renderList();
+    startCamera();
+})();
+</script>
+</body>
+</html>
