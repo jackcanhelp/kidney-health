@@ -26,6 +26,7 @@
     <link rel="icon" type="image/png" sizes="32x32" href="icons/icon-32.png">
     <link rel="apple-touch-icon" href="icons/icon-180.png">
     <script src="site.js" defer></script>
+    <script src="food-lookup.js?v=1.1.18"></script>
 
     <script type="application/ld+json">
 {
@@ -576,6 +577,34 @@
             color: rgba(255,255,255,0.4);
             background: #0d1b21;
         }
+
+        /* Patient mode toggle */
+        .mode-toggle {
+            display: inline-flex;
+            margin-top: 0.5rem;
+            padding: 3px;
+            gap: 2px;
+            border-radius: 999px;
+            background: rgba(0,0,0,0.25);
+        }
+
+        .mode-btn {
+            border: 0;
+            background: transparent;
+            color: white;
+            font-size: 0.85rem;
+            font-weight: 600;
+            padding: 0.3rem 0.9rem;
+            border-radius: 999px;
+            cursor: pointer;
+            opacity: 0.8;
+        }
+
+        .mode-btn.active {
+            background: white;
+            color: var(--primary);
+            opacity: 1;
+        }
     </style>
 </head>
 <body>
@@ -583,6 +612,10 @@
         <a href="./" class="back-link" aria-label="返回首頁">&larr;</a>
         <h1>🦴 磷含量掃描器（實驗版）</h1>
         <p>將相機對準食物，點擊拍照分析</p>
+        <div class="mode-toggle" role="radiogroup" aria-label="病人狀態">
+            <button type="button" class="mode-btn" data-mode="predialysis" role="radio" aria-checked="false">未洗腎</button>
+            <button type="button" class="mode-btn" data-mode="dialysis" role="radio" aria-checked="false">洗腎中</button>
+        </div>
     </div>
 
     <div class="camera-area" id="cameraArea">
@@ -647,6 +680,45 @@
         var placeholder = document.getElementById('cameraPlaceholder');
 
         var stream = null;
+        var NUTRIENT = 'p';
+        var NUTRIENT_LABEL = '磷';
+
+        // --- Patient mode (未洗腎 / 洗腎中) ---
+        var MODE_KEY = 'kh-scanner-mode';
+        var modeButtons = Array.prototype.slice.call(document.querySelectorAll('.mode-btn'));
+        var currentMode = 'predialysis';
+        try { currentMode = FoodLookup.modeOf(localStorage.getItem(MODE_KEY)); } catch (e) {}
+
+        function setMode(mode, remember) {
+            currentMode = FoodLookup.modeOf(mode);
+            modeButtons.forEach(function(btn) {
+                var on = btn.getAttribute('data-mode') === currentMode;
+                btn.classList.toggle('active', on);
+                btn.setAttribute('aria-checked', on ? 'true' : 'false');
+            });
+            if (remember) {
+                try { localStorage.setItem(MODE_KEY, currentMode); } catch (e) {}
+            }
+        }
+
+        modeButtons.forEach(function(btn) {
+            btn.addEventListener('click', function() { setMode(btn.getAttribute('data-mode'), true); });
+        });
+        setMode(currentMode, false);
+
+        // --- TFDA nutrient database (network-first: no-cache revalidates every time) ---
+        var dbPromise = null;
+        function loadDb() {
+            if (!dbPromise) {
+                dbPromise = fetch('food-nutrients.json', { cache: 'no-cache' }).then(function(r) {
+                    if (!r.ok) throw new Error('資料庫載入失敗 (' + r.status + ')');
+                    return r.json();
+                });
+                dbPromise.catch(function() { dbPromise = null; });
+            }
+            return dbPromise;
+        }
+        loadDb().catch(function() {});
 
         // --- Start Camera ---
         async function startCamera() {
@@ -681,11 +753,83 @@
         }
 
         // --- Call Gemini API ---
+        async function callGemini(body) {
+            var response = await fetch(WORKER_ENDPOINT, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(body)
+            });
+
+            if (!response.ok) {
+                throw new Error('API 請求失敗 (' + response.status + ')');
+            }
+
+            var data = await response.json();
+            var text = data.candidates[0].content.parts[0].text;
+
+            // Strip markdown code fences if present
+            text = text.replace(/```json\s*/g, '').replace(/```\s*/g, '').trim();
+
+            return JSON.parse(text);
+        }
+
+        // --- Match the AI result to the TFDA database ---
+        async function lookupDatabase(result) {
+            if (!result || result.error) return result;
+            function aiOnly(note) {
+                result.data_source = 'AI 估算（' + note + '，數值僅供參考）';
+                result.confidence = null;
+                return result;
+            }
+            var db;
+            try {
+                db = await loadDb();
+            } catch (e) {
+                return aiOnly('食藥署資料庫載入失敗');
+            }
+            var terms = [result.food_name].concat(Array.isArray(result.tfda_terms) ? result.tfda_terms : []);
+            var candidates = FoodLookup.searchCandidates(terms, db.foods, NUTRIENT, 12);
+            if (!candidates.length) return aiOnly('食藥署資料庫查無相符項目');
+
+            var prompt = '你是一位專業的腎臟科營養師。' + FoodLookup.MODES[currentMode].aiContext + '\n' +
+                '照片辨識結果：' + result.food_name + (result.state ? '（' + result.state + '）' : '') + '。\n' +
+                '以下是台灣食藥署食品營養成分資料庫的候選項目：\n' +
+                FoodLookup.describeCandidates(candidates, NUTRIENT) + '\n\n' +
+                '請挑出與照片食物最相符的一項：種類、部位、生熟、是否加工都要相符；都不相符就填 0，不要勉強挑。\n' +
+                '只回傳純 JSON（不要加 markdown 標記）：\n' +
+                '{"index": 編號或 0, ' +
+                '"advice": "依你挑選那一項的' + NUTRIENT_LABEL + '含量與分級，給這位病人的飲食建議，50字以內；index 為 0 時填空字串", ' +
+                '"cooking_tip": "降低' + NUTRIENT_LABEL + '攝取的烹調或選擇建議，30字以內；只寫確實有效的做法（例如水果無法靠烹調去鉀），沒有就填空字串，不要編造"}';
+            var pick;
+            try {
+                pick = await callGemini({
+                    contents: [{ parts: [{ text: prompt }] }],
+                    generationConfig: { temperature: 0, maxOutputTokens: 400 }
+                });
+            } catch (e) {
+                return aiOnly('資料庫比對失敗');
+            }
+            var food = FoodLookup.pickCandidate(candidates, pick && pick.index);
+            if (!food) return aiOnly('食藥署資料庫查無相符項目');
+
+            var level = FoodLookup.classify(NUTRIENT, food[NUTRIENT]);
+            result.level = level;
+            result.level_label = FoodLookup.levelLabel(NUTRIENT, level);
+            result['phosphorus_range'] = food[NUTRIENT] + ' mg';
+            result.advice = typeof pick.advice === 'string' ? pick.advice : '';
+            result.cooking_tip = typeof pick.cooking_tip === 'string' ? pick.cooking_tip : '';
+            result.data_source = '衛福部食藥署食品營養成分資料庫：' + food.n + (food.s ? '（' + food.s + '）' : '');
+            result.confidence = null;
+            result.db_food = food;
+            return result;
+        }
         async function analyzeFood(base64Image) {
-            var prompt = '你是一位專業的腎臟科營養師。請分析這張照片中的食物，並回傳以下 JSON 格式（不要加 markdown 標記，只回傳純 JSON）：\n\n' +
+            var prompt = '你是一位專業的腎臟科營養師。' + FoodLookup.MODES[currentMode].aiContext + '請分析這張照片中的食物，並回傳以下 JSON 格式（不要加 markdown 標記，只回傳純 JSON）：\n\n' +
                 '{\n' +
                 '  "food_name": "食物中文名稱",\n' +
                 '  "food_name_en": "食物英文名稱",\n' +
+                '  "tfda_terms": ["台灣食藥署食品營養成分資料庫可能使用的名稱或俗名，2 到 4 個，例如 香蕉、北蕉"],\n' +
+                '  "state": "生 或 熟 或 加工品",\n' +
                 '  "level": "high 或 medium 或 low",\n' +
                 '  "level_label": "高磷 或 中磷 或 低磷",\n' +
                 '  "phosphorus_range": "每100g的磷含量範圍，例如 約200-250mg",\n' +
@@ -726,23 +870,7 @@
                 }
             };
 
-            var response = await fetch(WORKER_ENDPOINT, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(body)
-            });
-
-            if (!response.ok) {
-                throw new Error('API 請求失敗 (' + response.status + ')');
-            }
-
-            var data = await response.json();
-            var text = data.candidates[0].content.parts[0].text;
-
-            // Strip markdown code fences if present
-            text = text.replace(/```json\s*/g, '').replace(/```\s*/g, '').trim();
-
-            return JSON.parse(text);
+            return callGemini(body);
         }
 
         // --- Render Result ---
@@ -801,6 +929,25 @@
                 html += '<span class="text"><strong>磷的類型：</strong>' + escapeHtml(result.phosphorus_type) + '</span>';
                 html += '</div>';
             }
+
+            // Protein (from the database) and patient-mode guidance
+            if (result.db_food && typeof result.db_food.pr === 'number') {
+                html += '<div class="detail-row">';
+                html += '<span class="icon">🥚</span>';
+                html += '<span class="text"><strong>蛋白質：</strong>每 100g 約 ' + escapeHtml(String(result.db_food.pr)) + ' g（食藥署資料庫）';
+                if (NUTRIENT === 'p') {
+                    var ratio = FoodLookup.phosphorusPerProtein(result.db_food);
+                    if (ratio !== null) {
+                        html += '<br>磷／蛋白質比：每公克蛋白質約含 ' + escapeHtml(String(ratio)) + ' mg 磷，數字越低，吃同樣蛋白質吃進的磷越少';
+                    }
+                }
+                html += '</span>';
+                html += '</div>';
+            }
+            html += '<div class="detail-row">';
+            html += '<span class="icon">🩺</span>';
+            html += '<span class="text"><strong>蛋白質原則：</strong>' + escapeHtml(FoodLookup.MODES[currentMode].proteinAdvice) + '</span>';
+            html += '</div>';
 
             // Advice
             if (result.advice) {
@@ -862,7 +1009,7 @@
 
             try {
                 var base64 = capturePhoto();
-                var result = await analyzeFood(base64);
+                var result = await lookupDatabase(await analyzeFood(base64));
                 renderResult(result);
                 resultPanel.classList.add('active');
             } catch (err) {
