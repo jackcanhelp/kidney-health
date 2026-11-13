@@ -56,11 +56,11 @@
     { key: '香菇', emoji: '🍄', group: 'mush', alias: ['鮮香菇'] },
     { key: '金針菇', emoji: '🍄', group: 'mush', alias: [] },
     { key: '雞蛋', emoji: '🥚', group: 'egg', alias: ['蛋', '土雞蛋', '白殼蛋', '紅殼蛋'] },
-    { key: '豆腐', emoji: '🫘', group: 'egg', alias: ['傳統豆腐', '板豆腐', '嫩豆腐'], db: ['嫩豆腐', '傳統豆腐(2022年取樣)'] },
-    { key: '豆干', emoji: '🫘', group: 'egg', alias: ['豆乾', '小方豆干', '五香豆干'] },
+    { key: '豆腐', emoji: '⬜', group: 'egg', alias: ['傳統豆腐', '板豆腐', '嫩豆腐'], db: ['嫩豆腐', '傳統豆腐(2022年取樣)'] },
+    { key: '豆干', emoji: '🟫', group: 'egg', alias: ['豆乾', '小方豆干', '五香豆干'] },
     { key: '豬肉', emoji: '🥩', group: 'meat', alias: ['豬里肌', '豬後腿肉', '豬肉片', '肉絲', '豬肉絲', '梅花肉', '里肌肉'], db: ['豬大里肌', '豬後腿肉', '豬上肩肉', '豬小里肌'] },
     { key: '豬絞肉', emoji: '🥩', group: 'meat', alias: ['絞肉', '肉末', '豬肉末'] },
-    { key: '雞胸肉', emoji: '🍗', group: 'meat', alias: ['雞胸', '雞肉'], db: ['去皮清肉(肉雞)', '去皮清肉(土雞)'] },
+    { key: '雞胸肉', emoji: '🐔', group: 'meat', alias: ['雞胸', '雞肉'], db: ['去皮清肉(肉雞)', '去皮清肉(土雞)'] },
     { key: '雞腿肉', emoji: '🍗', group: 'meat', alias: ['雞腿', '去骨雞腿'], db: ['清腿(肉雞)', '清腿(土雞)'] },
     { key: '牛肉', emoji: '🥩', group: 'meat', alias: ['牛肉片', '牛肉絲'] },
     { key: '鮭魚', emoji: '🐟', group: 'sea', alias: ['鮭魚片'] },
@@ -374,7 +374,74 @@
       intro: '燙青菜的升級版。',
       ingredients: [{ name: '{0}', amount: '1 把（約 300 g）' }, GARLIC, OIL, SALT],
       steps: ['{0}洗淨切段，' + BLANCH_VEG + '。', '熱鍋下油爆香蒜末。', '下{0}快炒 30 秒，加少許鹽起鍋。'],
-      tips: ['蔬菜切小、用足量水汆燙並倒掉燙水，可以減少部分鉀，份量仍要控制。'] }
+      tips: ['蔬菜切小、用足量水汆燙並倒掉燙水，可以減少部分鉀，份量仍要控制。'] },
+
+    // ---- 玉米筍、菇類、南瓜、薯類、義大利麵（2026-11-13 補）----
+    { id: 'babycorn-pork', style: 'chinese', needs: ['玉米筍', ['豬肉', '雞胸肉']], title: '玉米筍炒肉片', time: '約 15 分鐘',
+      intro: '玉米筍脆甜，配肉片快炒很下飯。',
+      ingredients: [{ name: '玉米筍', amount: '8 根' }, { name: '{1}', amount: MEAT2 }, { name: '胡蘿蔔', amount: '1 小段' }, GARLIC, OIL, SALT],
+      steps: ['{1}切薄片，' + BLANCH_MEAT + '。', '玉米筍斜切小段、胡蘿蔔切片，一起' + BLANCH_VEG + '。', '熱鍋下油爆香蒜片，下肉片炒到全熟，加入玉米筍和胡蘿蔔拌炒，加少許鹽。'],
+      tips: ['玉米筍是中鉀蔬菜，汆燙後再炒；它是蔬菜不是主食，飯量照平常。'] },
+    { id: 'babycorn-egg', style: 'chinese', needs: ['雞蛋', '玉米筍'], title: '玉米筍炒蛋', time: '約 15 分鐘',
+      intro: '黃色的蛋配上玉米筍，顏色討喜。',
+      ingredients: [{ name: '雞蛋', amount: EGG2 }, { name: '玉米筍', amount: '8 根' }, SCALLION, OIL, SALT],
+      steps: ['玉米筍斜切小段，' + BLANCH_VEG + '。', '雞蛋打散加少許鹽；熱鍋下油，把蛋炒到熟透成塊，先盛起。', '原鍋炒玉米筍 1 分鐘，倒回炒蛋拌勻，撒蔥花起鍋。'],
+      tips: ['想加點顏色可以放少量汆燙過的胡蘿蔔絲。'] },
+    { id: 'shiitake-chicken', style: 'chinese', needs: [['雞腿肉', '雞胸肉'], '香菇'], title: '香菇蒸雞', time: '約 30 分鐘',
+      intro: '電鍋就能做，雞肉吸了香菇的香氣。',
+      ingredients: [{ name: '{0}', amount: MEAT2 }, { name: '香菇', amount: '4 朵（鮮香菇）' }, GINGER, SCALLION, SOY, { name: '食用油', amount: '1 小匙' }],
+      steps: ['{0}切塊，' + BLANCH_MEAT + '；香菇切片，' + BLANCH_VEG + '。', '雞肉和香菇放進盤中，鋪上薑絲，淋少許醬油和油拌勻。', '電鍋外鍋 1 杯水蒸到跳起，確認雞肉中心全熟，倒掉盤中蒸出的湯汁，撒蔥花。'],
+      tips: ['用鮮香菇，不要用乾香菇：乾香菇含鉀很高。', '蒸出來的湯汁含鉀，倒掉不要拌飯。'] },
+    { id: 'shiitake-greens', style: 'chinese', needs: ['香菇', ['青江菜', '小白菜']], title: '香菇炒{1}', time: '約 15 分鐘',
+      intro: '香菇的香氣讓青菜更好吃。',
+      ingredients: [{ name: '香菇', amount: '4 朵（鮮香菇）' }, { name: '{1}', amount: '1 把（約 300 g）' }, GARLIC, OIL, SALT],
+      steps: ['香菇切片、{1}切段，分別' + BLANCH_VEG + '。', '熱鍋下油爆香蒜末，下香菇炒出香氣。', '加入{1}快炒 30 秒，加少許鹽起鍋。'],
+      tips: ['這道沒有肉蛋，旁邊配一份蛋白質菜。', '菇類和青菜都含鉀，汆燙後份量仍照建議。'] },
+    { id: 'enoki-beef', style: 'chinese', needs: ['牛肉', '金針菇'], title: '金針菇炒牛肉', time: '約 15 分鐘',
+      intro: '金針菇滑順，和牛肉片一起炒很對味。',
+      ingredients: [{ name: '牛肉', amount: MEAT2 }, { name: '金針菇', amount: '去根後約 100 g（2 人合計，約半包）' }, SCALLION, GARLIC, OIL, SOY],
+      steps: ['牛肉切薄片，' + BLANCH_MEAT + '。', '金針菇切掉根部、切成兩段，' + BLANCH_VEG + '，擠乾水分。', '熱鍋下油爆香蒜末，下牛肉炒到全熟，加入金針菇和蔥段拌炒，淋少許醬油。'],
+      tips: ['金針菇含鉀偏高，用半包就好，一定要汆燙。'] },
+    { id: 'enoki-egg', style: 'chinese', needs: ['雞蛋', '金針菇'], title: '金針菇煎蛋', time: '約 15 分鐘',
+      intro: '金針菇煎進蛋裡，口感軟中帶脆。',
+      ingredients: [{ name: '雞蛋', amount: EGG2 }, { name: '金針菇', amount: '去根後約 100 g（2 人合計，約半包）' }, SCALLION, OIL, SALT],
+      steps: ['金針菇切掉根部、切成小段，' + BLANCH_VEG + '，擠乾水分。', '雞蛋打散，拌入金針菇、蔥花和少許鹽。', '平底鍋下油，倒入蛋液攤平，小火兩面煎到金黃、中心熟透，切塊。'],
+      tips: ['金針菇含鉀偏高，用半包就好。'] },
+    { id: 'pumpkin-rice-noodle', style: 'chinese', needs: ['南瓜', '米粉'], title: '南瓜炒米粉', time: '約 25 分鐘',
+      intro: '南瓜炒到微微化開，米粉吸滿南瓜的甜味。',
+      ingredients: [{ name: '南瓜', amount: '去皮後約 100 g（2 人合計，拳頭大小一塊）' }, { name: '細米粉', amount: '乾重約 100 g' }, { name: '蔥', amount: '1 支' }, OIL, SOY],
+      steps: ['米粉照包裝用溫水泡軟或燙軟，瀝乾；南瓜去皮切細絲，' + BLANCH_VEG + '。', '熱鍋下油爆香蔥段，下南瓜絲炒到軟。', '加入米粉、少許醬油和 4 大匙開水，翻炒到米粉吸乾水分、沒有硬芯，均勻沾上南瓜。'],
+      tips: ['南瓜也算主食，和米粉一起就是這一餐的澱粉，不用再另外配飯。', '南瓜含鉀偏高，用量照上面的份量就好。', '傳統做法的乾香菇、蝦米含鉀很高，這裡省略；這道沒有肉蛋，旁邊配一份蛋白質菜。'] },
+    { id: 'pumpkin-egg', style: 'chinese', needs: ['雞蛋', '南瓜'], title: '南瓜炒蛋', time: '約 20 分鐘',
+      intro: '南瓜的甜加上炒蛋，小朋友和長輩都喜歡。',
+      ingredients: [{ name: '雞蛋', amount: EGG2 }, { name: '南瓜', amount: '去皮後約 100 g（2 人合計，拳頭大小一塊）' }, SCALLION, OIL, SALT],
+      steps: ['南瓜去皮切薄片，' + BLANCH_VEG + '。', '雞蛋打散加少許鹽；熱鍋下油，把蛋炒到熟透成塊，先盛起。', '原鍋炒南瓜片，加 2 大匙開水蓋鍋燜 2 分鐘到軟，倒回炒蛋拌勻，撒蔥花。'],
+      tips: ['南瓜也算主食，配這道菜時飯要少一點。', '南瓜含鉀偏高，用量照上面的份量就好。'] },
+    { id: 'potato-chicken-w', style: 'western', needs: [['雞腿肉', '雞胸肉'], '馬鈴薯'], title: '香煎雞肉佐馬鈴薯', time: '約 30 分鐘',
+      intro: '西式煎雞配煎馬鈴薯丁，一盤就有主食。',
+      ingredients: [{ name: '{0}', amount: MEAT2 }, { name: '馬鈴薯', amount: '去皮後約 100 g（2 人合計，1 小顆）' }, GARLIC, { name: '橄欖油', amount: '1 大匙' }, SALT, { name: '黑胡椒', amount: '少許' }],
+      steps: ['{0}片成約 1 公分厚的 2 片，' + BLANCH_MEAT + '，擦乾後抹少許鹽和黑胡椒。', '馬鈴薯去皮切 1 公分小丁，' + BLANCH_VEG + '，擦乾。', '平底鍋下橄欖油，中火把雞肉兩面各煎 3–4 分鐘到中心全熟，盛起；同鍋轉中小火煎馬鈴薯丁約 6–8 分鐘，到表面金黃、用筷子能輕鬆穿透，最後 1 分鐘再下蒜片，免得燒焦變苦。'],
+      tips: ['馬鈴薯算主食，這一餐的飯或麵要少一點。', '馬鈴薯含鉀偏高，一定要切小丁汆燙，不要整顆烤或炸。'] },
+    { id: 'potato-omelette-w', style: 'western', needs: ['雞蛋', '馬鈴薯'], title: '馬鈴薯烘蛋', time: '約 25 分鐘',
+      intro: '西班牙風味的厚烘蛋，切塊當早午餐。',
+      ingredients: [{ name: '雞蛋', amount: EGG2 }, { name: '馬鈴薯', amount: '去皮後約 100 g（2 人合計，1 小顆）' }, { name: '洋蔥', amount: '1/4 顆' }, { name: '橄欖油', amount: '1 大匙' }, SALT],
+      steps: ['馬鈴薯去皮切約 0.3 公分薄片、洋蔥切絲，一起' + BLANCH_VEG + '，擦乾。', '用約 20 公分的平底鍋，下橄欖油，小火把馬鈴薯和洋蔥煎到軟、用筷子能穿透。', '雞蛋打散加少許鹽，倒進鍋中蓋過馬鈴薯，蓋上鍋蓋小火煎約 5 分鐘，翻面再煎約 3 分鐘；蛋多（洗腎版）會比較厚，時間只當參考，切開中心沒有流動的蛋液才算熟透，再切塊。'],
+      tips: ['馬鈴薯算主食，這一餐的飯或麵要少一點。', '不要淋番茄醬，番茄醬含鉀與鈉都偏高。'] },
+    { id: 'sweetpotato-pancake', style: 'chinese', needs: ['雞蛋', '地瓜'], title: '地瓜蛋煎餅', time: '約 30 分鐘',
+      intro: '地瓜泥加蛋煎成小圓餅，當早餐或點心。',
+      ingredients: [{ name: '雞蛋', amount: EGG2 }, { name: '地瓜', amount: '去皮後約 100 g（2 人合計，約半條）' }, { name: '中筋麵粉', amount: '2 大匙' }, OIL],
+      steps: ['地瓜去皮切小塊，' + BLANCH_VEG + '；再放進電鍋蒸到軟（外鍋半杯水），壓成泥。', '雞蛋打散，拌入地瓜泥和麵粉，調成稠糊。', '平底鍋下少許油，舀一大匙麵糊壓成小圓餅，小火兩面各煎 3 分鐘到金黃、中心熟透；麵糊太稀舀不成形時（洗腎版蛋比較多），就整鍋攤成一大片薄餅，蓋鍋小火煎到表面凝固再翻面，煎到熟透切塊，不要為了變稠加很多麵粉。'],
+      tips: ['地瓜算主食，這一餐的飯或麵要少一點。', '地瓜含鉀偏高，用量照上面的份量就好；地瓜甜，不用另外加糖。'] },
+    { id: 'pasta-garlic-shrimp', style: 'western', needs: ['義大利麵', '蝦仁'], title: '蒜香蝦仁義大利麵', time: '約 25 分鐘',
+      intro: '清炒蒜香口味，不用奶油白醬。',
+      ingredients: [{ name: '義大利麵', amount: '乾麵 120 g' }, { name: '蝦仁', amount: SHRIMP2 }, { name: '蒜', amount: '4 瓣' }, { name: '橄欖油', amount: '2 大匙' }, SALT, { name: '乾燥巴西里', amount: '少許' }],
+      steps: ['蝦仁挑去腸泥，' + BLANCH_MEAT + '。', '義大利麵照包裝時間煮熟，煮麵水倒掉。', '小火用橄欖油把蒜片煸到微黃，下蝦仁炒到捲曲熟透，加麵拌炒，加少許鹽，撒巴西里。'],
+      tips: ['煮麵水不要加鹽，也不要拿煮麵水拌醬。', '冷凍蝦仁常泡過保水劑（含磷）或鹽水，選成分只有蝦的，或買新鮮的蝦自己剝；汆燙不能取代挑選。', '義大利麵本身也有蛋白質，未洗腎的腎友麵量照營養師建議。'] },
+    { id: 'pasta-pepper-meat', style: 'western', needs: ['義大利麵', ['豬肉', '牛肉']], title: '黑胡椒{1}義大利麵', time: '約 25 分鐘',
+      intro: '用現磨黑胡椒提味，不用市售黑胡椒醬。',
+      ingredients: [{ name: '義大利麵', amount: '乾麵 120 g' }, { name: '{1}', amount: MEAT2 }, { name: '洋蔥', amount: '1/4 顆' }, GARLIC, { name: '橄欖油', amount: '1 大匙' }, SALT, { name: '現磨黑胡椒', amount: '適量' }],
+      steps: ['{1}切薄片，' + BLANCH_MEAT + '；洋蔥切絲，' + BLANCH_VEG + '。', '義大利麵照包裝時間煮熟，煮麵水倒掉。', '鍋中下橄欖油爆香蒜末，下肉片炒到全熟，加洋蔥和麵拌炒，加少許鹽，起鍋前磨上黑胡椒。'],
+      tips: ['市售黑胡椒醬含鈉偏高，用現磨黑胡椒就好。', '義大利麵本身也有蛋白質，未洗腎的腎友麵量照營養師建議。'] }
   ];
 
   var STYLE_OK = { default: null, chinese: 'chinese', western: 'western' };
@@ -408,8 +475,12 @@
 
   var MODE_TIP = {
     predialysis: '未洗腎：這份食譜的肉、魚、蛋、豆約每人 1 份；麵條、吐司本身也有蛋白質，主食量照營養師建議，想更飽可以多用冬粉、米粉這類低蛋白澱粉。',
-    dialysis: '洗腎中：肉、魚、蛋、豆已加到每人約 2 份；如果營養師給你的份量不同，照營養師的建議。'
+    dialysis: '洗腎中：肉、魚、蛋、豆已加到每人約 2 份；如果營養師給你的份量不同，照營養師的建議。',
+    // 食譜本身沒有肉、魚、蛋、豆時（炒青菜、南瓜炒米粉），不能說「已加到幾份」
+    predialysis_none: '未洗腎：這道沒有肉、魚、蛋、豆；這一餐的蛋白質另外配，份量照醫師或營養師的低蛋白飲食建議。',
+    dialysis_none: '洗腎中：這道沒有肉、魚、蛋、豆，洗腎的人蛋白質要吃夠，這一餐要另外配一道蛋白質菜（每人約 2 份）；份量照營養師的建議。'
   };
+  var PROTEIN_GROUPS = { egg: true, meat: true, sea: true };
 
   /* 把一道常備食譜套上模式與使用者的食材，變成跟 AI 回傳一樣的形狀，畫面共用同一個 renderRecipe。 */
   function materialize(match, mode, usableNames) {
@@ -419,6 +490,8 @@
     picked.forEach(function (k) { used[k] = true; have[k] = true; });
     (usableNames || []).forEach(function (n) { if (n.key) have[n.key] = true; });
     r.ingredients.forEach(function (ing) { used[fill(ing.name, picked)] = true; });
+    var hasProtein = r.ingredients.some(function (ing) { var c = entryOf(fill(ing.name, picked)); return c && PROTEIN_GROUPS[c.group]; });
+    var tipKey = (m ? 'dialysis' : 'predialysis') + (hasProtein ? '' : '_none');
     return {
       id: r.id,
       title: fill(r.title, picked),
@@ -433,7 +506,7 @@
         return { name: name, key: c ? c.key : null, amount: Array.isArray(ing.amount) ? ing.amount[m] : ing.amount };
       }),
       steps: r.steps.map(function (s) { return fill(s, picked); }),
-      kidney_tips: r.tips.concat([MODE_TIP[m ? 'dialysis' : 'predialysis']]),
+      kidney_tips: r.tips.concat([MODE_TIP[tipKey]]),
       not_used: (usableNames || []).filter(function (n) { return !used[n.key]; })
         .map(function (n) { return { name: n.name, reason: '這道菜沒用到，可以按「換一道」或「讓 AI 設計」。' }; })
     };

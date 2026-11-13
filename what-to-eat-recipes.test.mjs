@@ -67,6 +67,7 @@ t('keyOf: exact names and TFDA row names only (no substring guessing)', () => {
 const BANNED = /低鈉鹽|薄鹽|代鹽|雞精|高湯塊|雞湯塊|番茄醬|沙茶|蠔油|芝麻醬|豆瓣醬|喝湯/;
 const BLANCH = /汆燙|川燙/;
 const PROTEIN_GROUPS = ['egg', 'meat', 'sea'];
+const TUBERS = ['馬鈴薯', '地瓜'];
 const keys = new Set(W.CATALOG.map((c) => c.key));
 const namesOf = (key) => { const c = W.CATALOG.find((x) => x.key === key); return [c.key].concat(c.alias); };
 
@@ -82,14 +83,36 @@ function problems(r, picked, mode) {
   if (R.flagRecipeIngredients(m.ingredients).some((f) => f.avoid)) out.push('材料被標 ✕');
   for (const ing of m.ingredients) {
     const c = ing.key && W.CATALOG.find((x) => x.key === ing.key);
-    if (!c || c.group === 'staple' || c.group === 'fruit' || c.key === '雞蛋') continue;
+    // 穀類主食不查；薯類（馬鈴薯、地瓜）雖歸主食，含鉀和根莖菜一樣高，照樣要汆燙
+    if (!c || (c.group === 'staple' && !TUBERS.includes(c.key)) || c.group === 'fruit' || c.key === '雞蛋') continue;
     const b = lookup(c.key);
     if (b.potassium < 150) continue;
-    // 中鉀以上：「提到這樣食材的那一步」要有汆燙或川燙，不能只靠別樣食材的汆燙蒙混過關
-    const ok = m.steps.some((st) => namesOf(c.key).some((nm) => st.includes(nm)) && BLANCH.test(st));
+    // 中鉀以上：「提到這樣食材的那一段」（以；。分段）要有汆燙或川燙，不能只靠同句別樣食材的汆燙蒙混過關
+    const ok = segments(m.steps).some((sg) => namesOf(c.key).some((nm) => sg.includes(nm)) && BLANCH.test(sg));
     if (!ok) out.push(`${c.key}(${b.potassium}) 沒有汆燙步驟`);
   }
+  // 每段汆燙都要照統一時間（蔬菜約 3 分、肉約 1 分；整塊雞肉燙熟寫「續煮」），而且水要倒掉
+  for (const sg of segments(m.steps).filter((s) => BLANCH.test(s.replace(/(汆|川)燙過的/g, '')))) {
+    if (!/約 [13] 分鐘|續煮約 \d+ 分鐘/.test(sg)) out.push('汆燙沒寫統一時間：' + sg);
+    if (!/倒掉/.test(sg)) out.push('汆燙水沒倒掉：' + sg);
+  }
+  // 有蛋、肉、海鮮、豆製品就要寫到熟透；半熟一律不行
+  const proteinIngs = m.ingredients.filter((i) => { const c = i.key && W.CATALOG.find((x) => x.key === i.key); return c && PROTEIN_GROUPS.includes(c.group); });
+  if (proteinIngs.some((i) => i.key !== '豆腐' && i.key !== '豆干') && !/熟透|全熟/.test(m.steps.join(''))) out.push('蛋肉海鮮沒寫熟透');
+  if (/半熟|溏心|七分熟|五分熟/.test(m.steps.join(''))) out.push('寫了半熟');
   return out;
+}
+const segments = (steps) => steps.flatMap((s) => s.split(/[；。]/)).filter(Boolean);
+
+/* 蛋白質份量：洗腎中＝未洗腎的 2 倍；未洗腎 2 人合計不超過 2 顆蛋或 160 g（傳統豆腐 2 份）。 */
+function proteinAmountProblem(amount) {
+  if (!Array.isArray(amount) || amount.length !== 2) return '份量要分兩種模式';
+  const num = (s) => { const x = String(s).match(/(\d+)\s*(顆|g|片)/); return x && { n: Number(x[1]), u: x[2] }; };
+  const p = num(amount[0]), d = num(amount[1]);
+  if (!p || !d || p.u !== d.u) return '份量格式看不懂：' + amount;
+  if (d.n !== p.n * 2) return '洗腎中份量不是未洗腎的 2 倍：' + amount;
+  if ((p.u === '顆' && p.n > 2) || (p.u === 'g' && p.n > 160)) return '未洗腎份量超過 2 人 2 份：' + amount;
+  return null;
 }
 
 for (const r of W.RECIPES) {
@@ -109,7 +132,7 @@ for (const r of W.RECIPES) {
       const name = ing.name.replace(/\{(\d)\}/, (_, i) => groups[Number(i)][0]);
       const c = W.CATALOG.find((x) => x.key === name);
       if (c && PROTEIN_GROUPS.includes(c.group)) {
-        assert.ok(Array.isArray(ing.amount) && ing.amount.length === 2 && ing.amount[0] !== ing.amount[1], `${r.id}: ${name} 份量要分兩種模式`);
+        assert.equal(proteinAmountProblem(ing.amount), null, `${r.id}: ${name}`);
       }
     }
   });
@@ -122,6 +145,28 @@ t('the checker itself catches a recipe that blanches only one of two ingredients
   assert.ok(problems(bad, ['豬肉', '洋蔥'], 'predialysis').some((x) => x.startsWith('豬肉')));
   const tooShort = { ...good, steps: good.steps.concat(['洋蔥（1–2 分鐘即可）']) };
   assert.ok(problems(tooShort, ['豬肉', '洋蔥'], 'predialysis').includes('汆燙時間出現例外寫法'));
+  // 薯類不因為歸在主食就免汆燙
+  const potato = W.RECIPES.find((x) => x.id === 'potato-omelette-w');
+  assert.deepEqual(problems(potato, ['雞蛋', '馬鈴薯'], 'predialysis'), []);
+  const rawPotato = { ...potato, steps: ['馬鈴薯去皮切薄片，直接下鍋煎軟。', '倒入蛋液煎到熟透。'] };
+  assert.ok(problems(rawPotato, ['雞蛋', '馬鈴薯'], 'predialysis').some((x) => x.startsWith('馬鈴薯')));
+  const sweet = W.RECIPES.find((x) => x.id === 'sweetpotato-pancake');
+  const rawSweet = { ...sweet, steps: ['地瓜去皮蒸軟壓成泥。', '拌入蛋液，煎到中心熟透。'] };
+  assert.ok(problems(rawSweet, ['雞蛋', '地瓜'], 'predialysis').some((x) => x.startsWith('地瓜')));
+  // Codex 審查反例：同一句裡別樣食材的汆燙不能替這一樣過關
+  const mixed = { ...potato, steps: ['馬鈴薯直接下鍋煎；洋蔥汆燙約 3 分鐘，燙水倒掉。', '倒入蛋液煎到熟透。'] };
+  assert.ok(problems(mixed, ['雞蛋', '馬鈴薯'], 'predialysis').some((x) => x.startsWith('馬鈴薯')));
+  // 汆燙 10 秒、保留燙水、蛋煎半熟、份量亂寫都要抓到
+  const quick = { ...potato, steps: ['馬鈴薯切薄片，汆燙 10 秒，燙水留著。', '倒入蛋液煎到熟透。'] };
+  const qp = problems(quick, ['雞蛋', '馬鈴薯'], 'predialysis');
+  assert.ok(qp.some((x) => x.startsWith('汆燙沒寫統一時間')) && qp.some((x) => x.startsWith('汆燙水沒倒掉')));
+  const runny = { ...potato, steps: [potato.steps[0], '倒入蛋液煎到半熟就起鍋。'] };
+  const rp = problems(runny, ['雞蛋', '馬鈴薯'], 'predialysis');
+  assert.ok(rp.includes('寫了半熟') && rp.includes('蛋肉海鮮沒寫熟透'));
+  assert.equal(proteinAmountProblem(['2 顆', '4 顆']), null);
+  assert.ok(proteinAmountProblem(['20 顆', '40 顆']));
+  assert.ok(proteinAmountProblem(['70 g', '100 g']));
+  assert.ok(proteinAmountProblem('70 g'));
 });
 
 t('matching: the user example 雞蛋＋豬肉 has several versions, rotating order is stable', () => {
@@ -161,6 +206,17 @@ t('materialize: mode changes protein amount, not_used lists the rest, placeholde
   assert.ok(noodle.ingredients.some((i) => i.name === '麵條（需另外準備）'));
   const greens = W.materialize(W.matchRecipes(['空心菜'], 'default')[0], 'predialysis', []);
   assert.equal(greens.title, '蒜炒空心菜');
+  // 沒有肉、魚、蛋、豆的菜，模式提醒不能說「已加到每人約 2 份」
+  const pumpkinD = W.materialize(W.matchRecipes(['南瓜', '米粉'], 'default')[0], 'dialysis', []);
+  assert.doesNotMatch(pumpkinD.kidney_tips.at(-1), /已加到/);
+  assert.match(pumpkinD.kidney_tips.at(-1), /洗腎中.*另外配/);
+  assert.match(W.materialize(W.matchRecipes(['空心菜'], 'default')[0], 'predialysis', []).kidney_tips.at(-1), /未洗腎.*沒有肉/);
+  assert.match(d.kidney_tips.at(-1), /已加到每人約 2 份/, '有肉蛋的照舊');
+  for (const r of W.RECIPES) {
+    const hasP = r.ingredients.some((i) => { const c = W.CATALOG.find((x) => x.key === i.name.replace(/\{(\d)\}/, (_, k) => [].concat(r.needs[k])[0])); return c && PROTEIN_GROUPS.includes(c.group); });
+    const tip = W.materialize({ recipe: r, picked: r.needs.map((g) => [].concat(g)[0]) }, 'dialysis', []).kidney_tips.at(-1);
+    assert.equal(/已加到/.test(tip), hasP, r.id + ' 模式提醒和有沒有蛋白質不一致');
+  }
 });
 
 // 覆蓋率（資訊用，不擋）：哪些非水果食材沒有任何常備食譜
