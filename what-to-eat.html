@@ -27,8 +27,8 @@
     <link rel="apple-touch-icon" href="icons/icon-180.png">
     <script src="site.js" defer></script>
     <script src="food-lookup.js?v=1.1.21"></script>
-    <script src="what-to-eat-rules.js?v=1.1.25"></script>
-    <script src="what-to-eat-recipes.js?v=1.1.25"></script>
+    <script src="what-to-eat-rules.js?v=1.1.26"></script>
+    <script src="what-to-eat-recipes.js?v=1.1.26"></script>
 
     <script type="application/ld+json">
 {
@@ -868,8 +868,8 @@
     var shown = null; // 畫面上這道食譜，下載時照它畫
     var lastTrigger = null; // 最後按的食譜按鈕：對話框關掉後把焦點還給它
     var CAN_SPEAK = 'speechSynthesis' in window && typeof SpeechSynthesisUtterance === 'function';
-    var DL_BTN = '<button type="button" data-cook="share">📤 分享食譜</button><button type="button" data-cook="dl">📥 下載食譜</button>' +
-        (CAN_SPEAK ? '<button type="button" data-cook="speak">🔊 念食譜</button>' : '');
+    var DL_BTN = (CAN_SPEAK ? '<button type="button" data-cook="speak">🔊 念食譜</button>' : '') +
+        '<button type="button" data-cook="dl">📥 下載食譜</button><button type="button" data-cook="share">💁‍♀️ 分享食譜</button>';
 
     // ---------- 念食譜：瀏覽器內建語音（不花 AI 額度、不連網） ----------
     var speaking = false;
