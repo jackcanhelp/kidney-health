@@ -4,7 +4,7 @@ import { readFile } from 'node:fs/promises';
 
 await import(new URL('./what-to-eat-rules.js', import.meta.url));
 const R = globalThis.WhatToEatRules;
-const db = JSON.parse(await readFile(new URL('./potassium_data.json', import.meta.url), 'utf8'));
+const db = JSON.parse(await readFile(new URL('./food-nutrients.json', import.meta.url), 'utf8')).foods.map(R.fromNutrientRow);
 
 let n = 0;
 function t(name, fn) { fn(); n++; }
@@ -78,6 +78,37 @@ t('matching against TFDA data', () => {
 t('recipe ingredient flags', () => {
   const f = R.flagRecipeIngredients([{ name: '低鈉鹽' }, { name: '鹽' }, { name: '楊桃片' }, { name: '高麗菜' }]);
   assert.deepEqual(f.map((x) => x.avoid), [true, false, true, false]);
+});
+
+// 蛋白質食物門檻：4.9 / 5 / 5.1 g/100g；沒有數字時看類別
+t('protein-rich boundary', () => {
+  assert.equal(R.isProteinRich({ protein: 4.9, category: '肉類' }), false);
+  assert.equal(R.isProteinRich({ protein: 5, category: '蔬菜類' }), true);
+  assert.equal(R.isProteinRich({ protein: 5.1, category: '蔬菜類' }), true);
+  assert.equal(R.isProteinRich({ protein: null, category: '魚貝類' }), true);
+  assert.equal(R.isProteinRich({ protein: null, category: '蔬菜類' }), false);
+});
+
+// 未洗腎／洗腎中：蛋白質食物的建議方向相反；非蛋白質食物、不建議的食材不加這句
+t('mode-specific protein advice', () => {
+  const chicken = { name: '雞胸肉', category: '肉類', potassium: 314, protein: 23.3 };
+  const pre = R.adviceFor(chicken, 'predialysis').join(' ');
+  const dia = R.adviceFor(chicken, 'dialysis').join(' ');
+  assert.match(pre, /未洗腎.*份量要控制/);
+  assert.doesNotMatch(pre, /要吃夠/);
+  assert.match(dia, /洗腎中.*要吃夠/);
+  assert.doesNotMatch(dia, /份量要控制/);
+  assert.doesNotMatch(R.adviceFor({ name: '甘藍', category: '蔬菜類', potassium: 187, protein: 1.3 }, 'dialysis').join(' '), /洗腎中/);
+  assert.doesNotMatch(R.adviceFor({ name: '黃豆', category: '豆類', potassium: 1700, protein: 35 }, 'dialysis').join(' '), /要吃夠/);
+  assert.match(R.recipeProteinRule('predialysis'), /低蛋白/);
+  assert.match(R.recipeProteinRule('dialysis'), /要吃夠/);
+  assert.equal(R.recipeProteinRule(undefined), R.recipeProteinRule('predialysis'));
+});
+
+// 資料庫俗名比對：高麗菜是甘藍的俗名
+t('alias matching', () => {
+  assert.equal(R.matchFood(['紅蘿蔔'], db).best.name.startsWith('胡蘿蔔'), true);
+  assert.equal(R.matchFood(['板豆腐'], db).best.name, '傳統豆腐');
 });
 
 console.log(`what-to-eat rules: ${n} groups passed.`);

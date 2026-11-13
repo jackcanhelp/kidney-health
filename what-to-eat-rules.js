@@ -107,10 +107,11 @@
   // 加工品字樣：使用者拍的是生鮮食材時，這些不該被選中。
   var PROCESSED_RE = /冷凍|粉|乾|醬|罐|汁|酥|包子|餃|麵|糕|餅|條|丸|捲|湯|茶|糖|酒|飲|飯糰|炒飯|乳酪|蛋糕/;
 
-  function scoreEntry(entryName, term) {
+  function scoreEntry(entryName, term, aliases) {
     if (!term) return 0;
     var score;
     if (entryName === term) score = 100;
+    else if (aliases && aliases.indexOf(term) >= 0) score = 92; // 資料庫俗名完全相同，例如「高麗菜」是甘藍的俗名
     else if (entryName.indexOf(term + '平均值') === 0) score = 98;
     else if (entryName.indexOf(term + '(') === 0) score = 85;
     else if (entryName.indexOf(term) === 0) score = 75;
@@ -138,8 +139,9 @@
     var ranked = [];
     db.forEach(function (entry) {
       var best = 0;
+      var aliases = entry.aliases ? String(entry.aliases).split(/[,，、]/) : null;
       all.forEach(function (t, i) {
-        var s = scoreEntry(entry.name, t) - i; // 越前面的詞越優先
+        var s = scoreEntry(entry.name, t, aliases) - i; // 越前面的詞越優先
         if (s > best) best = s;
       });
       if (best > 0 && !seen[entry.name]) {
@@ -153,8 +155,30 @@
     return { best: best, candidates: candidates };
   }
 
+  /* 食藥署 food-nutrients.json 的一筆 → 本工具使用的形狀。 */
+  function fromNutrientRow(row) {
+    return { name: row.n, aliases: row.a || '', category: row.c, potassium: row.k, protein: row.pr };
+  }
+
+  // 「蛋白質食物」：每 100 g 粗蛋白 ≥ 5 g；沒有蛋白質數字時退回看類別。
+  var PROTEIN_RICH_MIN = 5;
+  function isProteinRich(item) {
+    if (typeof item.protein === 'number' && isFinite(item.protein)) return item.protein >= PROTEIN_RICH_MIN;
+    return /肉|魚貝|蛋|豆|乳品/.test(item.category || '');
+  }
+
+  // 食譜裡蛋白質份量的規則，依未洗腎／洗腎中而不同（給 AI 的指示）。
+  var RECIPE_PROTEIN_RULE = {
+    predialysis: '病人未洗腎，需要低蛋白飲食：肉、魚、蛋、豆類每人份量少（約 1 份，例如肉類 35 公克或雞蛋 1 顆），以蔬菜和低蛋白澱粉（白飯、冬粉、米粉）撐起份量；不要額外加蛋、豆腐或肉。',
+    dialysis: '病人洗腎中，蛋白質要吃夠：每人要有足量的優質蛋白（蛋、魚、雞肉、瘦肉、豆腐）當主角；若可用食材裡沒有蛋白質食物，可建議加入 1 樣（例如雞蛋或雞胸肉），並在材料名稱後註明「（建議添加）」。'
+  };
+  function recipeProteinRule(mode) {
+    return RECIPE_PROTEIN_RULE[mode === 'dialysis' ? 'dialysis' : 'predialysis'];
+  }
+
   // 依分級與類別產生衛教建議（不經 AI，固定文字）。
-  function adviceFor(item) {
+  // mode 為 'predialysis' 或 'dialysis'；蛋白質食物的份量原則兩者相反。
+  function adviceFor(item, mode) {
     var v = verdict(item);
     var level = levelOf(item.potassium);
     var cat = item.category || '';
@@ -168,13 +192,17 @@
       tips.push('水果無法靠烹調去鉀，重點在份量：一次約一個拳頭大小，一天不超過兩份（依醫囑調整）。');
       tips.push('果汁、果乾含鉀更濃縮，盡量避免。');
     } else if (/肉|魚貝|蛋|豆/.test(cat)) {
-      tips.push('蛋白質份量依腎功能分期與是否透析而不同，請照營養師建議。');
       tips.push('燉湯、滷肉的湯汁含鉀與磷，吃料不喝湯。');
     } else if (/穀物|澱粉/.test(cat)) {
       if (level === 'high') tips.push('全穀、雜糧含鉀磷較高，限鉀期間可改白米飯、白麵條。');
       else tips.push('精緻澱粉含鉀較低，可當主食的熱量來源。');
     } else if (cat === SEASONING_CATEGORY) {
       tips.push('用天然辛香料（蔥、薑、蒜、白醋、檸檬汁少量）提味，比依賴醬料安全。');
+    }
+    if (isProteinRich(item) && v.code !== 'avoid') {
+      tips.push(mode === 'dialysis'
+        ? '洗腎中：這是蛋白質食物，要吃夠，每餐都要有一份優質蛋白，份量照營養師建議。'
+        : '未洗腎：這是蛋白質食物，份量要控制，照醫師或營養師的低蛋白飲食份量吃，不要多吃。');
     }
     return tips;
   }
@@ -197,6 +225,10 @@
     levelLabel: levelLabel,
     verdict: verdict,
     matchFood: matchFood,
+    PROTEIN_RICH_MIN: PROTEIN_RICH_MIN,
+    fromNutrientRow: fromNutrientRow,
+    isProteinRich: isProteinRich,
+    recipeProteinRule: recipeProteinRule,
     adviceFor: adviceFor,
     flagRecipeIngredients: flagRecipeIngredients
   };
