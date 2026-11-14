@@ -27,8 +27,8 @@
     <link rel="apple-touch-icon" href="icons/icon-180.png">
     <script src="site.js" defer></script>
     <script src="food-lookup.js?v=1.1.21"></script>
-    <script src="what-to-eat-rules.js?v=1.1.26"></script>
-    <script src="what-to-eat-recipes.js?v=1.1.26"></script>
+    <script src="what-to-eat-rules.js?v=1.1.27"></script>
+    <script src="what-to-eat-recipes.js?v=1.1.27"></script>
 
     <script type="application/ld+json">
 {
@@ -320,6 +320,10 @@
         .recipe-actions { display: flex; flex-wrap: wrap; gap: .5rem; margin-top: .2rem; }
         .recipe-actions button { flex: 1 1 calc(50% - .5rem);border: 1.5px solid var(--border); background: #fff; border-radius: 12px; padding: .65rem .4rem; font-size: .9rem; color: var(--text-dark); font-weight: 500; }
         .recipe-actions button.ai { border-color: #c4b5fd; color: #5b21b6; }
+        /* 這道菜的工具（念、下載、分享）固定排成一列，圖示在上、字在下，手機上也不拆開 */
+        .recipe-tools { display: flex; gap: .5rem; margin: .2rem 0 .5rem; }
+        .recipe-tools button { flex: 1 1 0; min-width: 0; display: flex; flex-direction: column; align-items: center; gap: .2rem; border: 1.5px solid var(--border); background: #f8fafc; border-radius: 12px; padding: .55rem .25rem; font-size: .85rem; color: var(--text-dark); font-weight: 500; }
+        .recipe-tools .ic { font-size: 1.35rem; line-height: 1; }
         [hidden] { display: none !important; }
     </style>
 </head>
@@ -868,8 +872,9 @@
     var shown = null; // 畫面上這道食譜，下載時照它畫
     var lastTrigger = null; // 最後按的食譜按鈕：對話框關掉後把焦點還給它
     var CAN_SPEAK = 'speechSynthesis' in window && typeof SpeechSynthesisUtterance === 'function';
-    var DL_BTN = (CAN_SPEAK ? '<button type="button" data-cook="speak">🔊 念食譜</button>' : '') +
-        '<button type="button" data-cook="dl">📥 下載食譜</button><button type="button" data-cook="share">💁‍♀️ 分享食譜</button>';
+    function toolBtn(cmd, ic, label) { return '<button type="button" data-cook="' + cmd + '"><span class="ic" aria-hidden="true">' + ic + '</span><span class="lb">' + label + '</span></button>'; }
+    var TOOLS = '<div class="recipe-tools">' + (CAN_SPEAK ? toolBtn('speak', '🔊', '念食譜') : '') +
+        toolBtn('dl', '📥', '下載食譜') + toolBtn('share', '💁‍♀️', '分享食譜') + '</div>';
 
     // ---------- 念食譜：瀏覽器內建語音（不花 AI 額度、不連網） ----------
     var speaking = false;
@@ -878,7 +883,9 @@
     function refreshVoices() { try { cachedVoices = speechSynthesis.getVoices() || []; } catch (e) { cachedVoices = []; } }
     function speakLabel() {
         var b = document.querySelector('#recipe button[data-cook="speak"]');
-        if (b) b.textContent = speaking ? '⏹ 停止朗讀' : '🔊 念食譜';
+        if (!b) return;
+        b.querySelector('.ic').textContent = speaking ? '⏹' : '🔊';
+        b.querySelector('.lb').textContent = speaking ? '停止朗讀' : '念食譜';
     }
     function stopSpeaking() {
         if (!CAN_SPEAK) return;
@@ -1041,17 +1048,23 @@
         cx.textAlign = 'left';
         return cv;
     }
-    function downloadRecipe() {
-        if (!shown) return;
+    // 把畫面上的食譜畫成 PNG。全程同步：iOS Safari 的 navigator.share 必須在點擊當下呼叫，中間不能等 toBlob 或 fonts.ready。
+    // 頁面文字本來就用同一套字型，按下按鈕時字型已經載入。
+    function recipePng() {
         var base = String(shown.r.title || '').replace(/[\\/:*?"<>|\s\x00-\x1f\x7f]+/g, '').slice(0, 40) || '食譜';
         var name = '腎友食譜-' + base + '.png';
-        // 全程同步：iOS Safari 的 navigator.share 必須在點擊當下呼叫，中間不能等 toBlob 或 fonts.ready。
-        // 頁面文字本來就用同一套字型，按下按鈕時字型已經載入。
         var cv = recipeImage(shown), dataUrl = cv.toDataURL('image/png');
         cv.width = cv.height = 0; // 立刻釋放畫布記憶體（手機上限較低）
-        if (!/^data:image\/png;base64,./.test(dataUrl)) { alert('圖片產生失敗，請改用截圖保存。'); return; }
+        if (!/^data:image\/png;base64,./.test(dataUrl)) return null;
         var blob = dataUrlToBlob(dataUrl);
-        var file = typeof File === 'function' ? new File([blob], name, { type: 'image/png' }) : null;
+        return { name: name, dataUrl: dataUrl, blob: blob, file: typeof File === 'function' ? new File([blob], name, { type: 'image/png' }) : null };
+    }
+    function downloadRecipe() {
+        if (!shown) return;
+        var png = null;
+        try { png = recipePng(); } catch (e) { png = null; }
+        if (!png) { alert('圖片產生失敗，請改用截圖保存。'); return; }
+        var name = png.name, dataUrl = png.dataUrl, blob = png.blob, file = png.file;
         var touch = window.matchMedia && window.matchMedia('(pointer: coarse)').matches;
         if (!touch) { saveBlob(blob, name); return; } // 電腦：直接下載
         // 手機：能分享就叫出系統分享（存相簿、傳 LINE）；不能分享或失敗（LINE 內建瀏覽器、舊 iOS）就開圖讓使用者長按儲存。
@@ -1143,7 +1156,13 @@
         // 手機：系統分享選單（LINE、FB、Messenger…都在裡面）。連結放在文字裡，不另外傳 url：有些 App 收到 url 就把文字丟掉
         if (touch && typeof navigator.share === 'function') {
             try {
-                navigator.share({ title: title, text: text }).catch(function (e) {
+                // 能附檔就連食譜圖片一起分享（比純文字好看）；圖片底部也印了網址，App 丟掉文字時還看得到出處
+                var data = { title: title, text: text };
+                try { // 畫圖或 canShare 出錯只放棄附圖，照樣叫出系統分享
+                    var png = recipePng();
+                    if (png && png.file && typeof navigator.canShare === 'function' && navigator.canShare({ title: title, text: text, files: [png.file] })) data.files = [png.file];
+                } catch (e2) { /* 只送文字 */ }
+                navigator.share(data).catch(function (e) {
                     if (!e || e.name !== 'AbortError') shareMenu(text);
                 });
                 return;
@@ -1208,9 +1227,9 @@
         var names = cook.usable.map(function (x) { return { key: W.keyOf(x), name: x.name }; });
         var r = W.materialize(m, mode, names);
         var n = cook.matches.length;
-        var actions = '<div class="recipe-actions">' +
+        var actions = TOOLS + '<div class="recipe-actions">' +
             (n > 1 ? '<button type="button" data-cook="next">🔄 換一道（' + (cook.idx + 1) + '/' + n + '）</button>' : '') +
-            DL_BTN + '<button type="button" class="ai" data-cook="ai">✨ 讓 AI 設計</button></div>';
+            '<button type="button" class="ai" data-cook="ai">✨ 讓 AI 設計</button></div>';
         renderRecipe(r, cook.avoided, { badge: '<span class="src-badge lib">📗 常備食譜</span>', style: m.recipe.style, actions: actions });
     }
     function runAi() {
@@ -1220,7 +1239,7 @@
         var backBtn = cook.matches.length ? '<button type="button" data-cook="lib">📗 回到常備食譜</button>' : '';
         var back = backBtn ? '<div class="recipe-actions">' + backBtn + '</div>' : '';
         Promise.all([callGemini([{ text: recipePrompt(cook.usable, cook.avoided) }], 1600), minShow]).then(function (res) {
-            renderRecipe(res[0], cook.avoided, { badge: '<span class="src-badge ai">✨ AI 設計</span>', actions: '<div class="recipe-actions">' + backBtn + DL_BTN + '</div>' });
+            renderRecipe(res[0], cook.avoided, { badge: '<span class="src-badge ai">✨ AI 設計</span>', actions: TOOLS + back });
         }).catch(function (err) {
             shown = null; stopSpeaking();
             $('recipe').innerHTML = (err.quota

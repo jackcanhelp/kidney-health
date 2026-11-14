@@ -64,7 +64,7 @@ t('keyOf: exact names and TFDA row names only (no substring guessing)', () => {
 });
 
 // ---- 每道食譜都要守規則 ----
-const BANNED = /低鈉鹽|薄鹽|代鹽|雞精|高湯塊|雞湯塊|番茄醬|沙茶|蠔油|芝麻醬|豆瓣醬|喝湯/;
+const BANNED = /低鈉鹽|薄鹽|代鹽|雞精|高湯塊|雞湯塊|番茄醬|沙茶|蠔油|芝麻醬|豆瓣醬|喝湯|味噌|韓式辣醬|豆豉|豆腐乳|咖哩塊|起司|牛奶|鮮奶油|堅果|乾香菇|蝦米|柴魚|海帶|紫菜|火腿|培根|香腸/;
 const BLANCH = /汆燙|川燙/;
 const PROTEIN_GROUPS = ['egg', 'meat', 'sea'];
 const TUBERS = ['馬鈴薯', '地瓜'];
