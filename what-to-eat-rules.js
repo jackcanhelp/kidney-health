@@ -231,6 +231,16 @@
     });
   }
 
+  // AI 的 not_used 有時會列出其實已放進材料的食材（例：材料有葡萄，not_used 又寫葡萄）。
+  // 材料名含有該名稱就拿掉。只做單向比對（材料名包含 not_used 名），not_used「洋蔥」不會因為材料有「蔥」被誤刪。
+  function filterNotUsed(notUsed, ingredients) {
+    var names = (ingredients || []).map(function (ing) { return String(ing && ing.name || '').replace(/\s+/g, ''); });
+    return (notUsed || []).filter(function (x) {
+      var n = String(x && x.name || '').replace(/\s+/g, '');
+      return n && !names.some(function (m) { return m.indexOf(n) >= 0; });
+    });
+  }
+
   /* AI 回的 JSON 文字 → 物件。先原樣解析；失敗才拿掉「包住整份回覆」的 ``` 圍欄（不動字串內容），
    * 再失敗就從每個 { 開始找完整物件，第一個解析得了的就用。
    * 2026-11-13 實測 flash-lite 偶爾在正確 JSON 後面多吐一段殘字，整段 JSON.parse 會失敗。 */
@@ -278,6 +288,7 @@
     recipeProteinRule: recipeProteinRule,
     adviceFor: adviceFor,
     flagRecipeIngredients: flagRecipeIngredients,
+    filterNotUsed: filterNotUsed,
     parseAiJson: parseAiJson
   };
   root.WhatToEatRules = Object.freeze(api);

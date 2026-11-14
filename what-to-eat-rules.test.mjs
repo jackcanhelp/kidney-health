@@ -80,6 +80,17 @@ t('recipe ingredient flags', () => {
   assert.deepEqual(f.map((x) => x.avoid), [true, false, true, false]);
 });
 
+// AI 的 not_used 不能列已放進材料的食材（實例：葡萄同時出現在材料與「沒有放進」）
+t('not_used drops ingredients actually used', () => {
+  const ing = [{ name: '鯛魚' }, { name: '葡萄' }, { name: '蔥' }, { name: '雞腿肉（去皮）' }];
+  const out = R.filterNotUsed([
+    { name: '葡萄', reason: '可適量食用' }, { name: ' 雞腿肉 ' }, { name: '洋蔥', reason: '不搭' }, { name: '高麗菜' }, { name: '' }, null,
+  ], ing);
+  assert.deepEqual(out.map((x) => x.name), ['洋蔥', '高麗菜']);
+  assert.deepEqual(R.filterNotUsed(undefined, ing), []);
+  assert.deepEqual(R.filterNotUsed([{ name: '葡萄' }], undefined).map((x) => x.name), ['葡萄']);
+});
+
 // 蛋白質食物門檻：4.9 / 5 / 5.1 g/100g；沒有數字時看類別
 t('protein-rich boundary', () => {
   assert.equal(R.isProteinRich({ protein: 4.9, category: '肉類' }), false);

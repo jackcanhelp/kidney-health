@@ -27,8 +27,8 @@
     <link rel="apple-touch-icon" href="icons/icon-180.png">
     <script src="site.js" defer></script>
     <script src="food-lookup.js?v=1.1.21"></script>
-    <script src="what-to-eat-rules.js?v=1.1.27"></script>
-    <script src="what-to-eat-recipes.js?v=1.1.27"></script>
+    <script src="what-to-eat-rules.js?v=1.1.28"></script>
+    <script src="what-to-eat-recipes.js?v=1.1.28"></script>
 
     <script type="application/ld+json">
 {
@@ -830,7 +830,7 @@
             '1. 標「高鉀」或「需限量」的食材份量要少，步驟裡要寫出「切小塊、滾水汆燙約 3 分鐘、撈起瀝乾、燙菜水倒掉」再烹調。中鉀蔬菜也建議汆燙。\n' +
             '2. 絕對不要使用低鈉鹽、薄鹽醬油、代鹽、雞精塊、高湯塊、楊桃、果汁、肉汁或湯汁拌飯；不要設計成要喝湯的湯品。\n' +
             '3. 可自行加入少量基本配料：食用油、少量鹽或一般醬油、糖、白醋、蔥、薑、蒜、白胡椒，並在材料中列出。\n' +
-            '4. 不必用完所有食材；不適合放在同一道菜的可以不用，並在 not_used 說明；not_used 只列「可用食材」清單裡沒用到的，基本配料不要列。\n' +
+            '4. 不必用完所有食材；不適合放在同一道菜的可以不用，並在 not_used 說明；not_used 只列「可用食材」清單裡沒用到的，已經寫進材料的絕對不要列，基本配料不要列。\n' +
             '5. 不要寫任何鉀含量數字，也不要給醫療建議。\n' +
             '6. 蛋白質份量：' + R.recipeProteinRule(mode) + '\n' +
             '只回傳 JSON：{"title":"菜名","intro":"一句介紹，40字內","servings":"1-2人份","time":"約20分鐘",' +
@@ -857,7 +857,7 @@
             html += '<h3>腎友重點</h3><ul class="tips">' + r.kidney_tips.map(function (s) { return '<li>' + esc(s) + '</li>'; }).join('') + '</ul>';
         }
         var skipped = avoided.map(function (x) { return x.name + '：' + R.verdict(x).reason; })
-            .concat((r.not_used || []).map(function (x) { return x.name + '：' + (x.reason || ''); }));
+            .concat(R.filterNotUsed(r.not_used, r.ingredients).map(function (x) { return x.name + '：' + (x.reason || ''); }));
         if (skipped.length) {
             html += '<h3>沒有放進這道菜的食材</h3><div class="omitted">' + skipped.map(esc).join('<br>') + '</div>';
         }
