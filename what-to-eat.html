@@ -27,8 +27,8 @@
     <link rel="apple-touch-icon" href="icons/icon-180.png">
     <script src="site.js" defer></script>
     <script src="food-lookup.js?v=1.1.21"></script>
-    <script src="what-to-eat-rules.js?v=1.1.29"></script>
-    <script src="what-to-eat-recipes.js?v=1.1.29"></script>
+    <script src="what-to-eat-rules.js?v=1.1.30"></script>
+    <script src="what-to-eat-recipes.js?v=1.1.30"></script>
 
     <script type="application/ld+json">
 {
@@ -465,7 +465,7 @@
     var W = window.WhatToEatRecipes;
     var STYLE_TEXT = { default: '不限菜系，以台灣家常、做法簡單為主', chinese: '中式（台式家常、快炒、清蒸、燉煮皆可）', western: '西式（煎、烤、沙拉、義大利麵、燉菜皆可）' };
     var TFDA_CATEGORIES = ['蔬菜類', '水果類', '肉類', '魚貝類', '蛋類', '豆類', '穀物類', '澱粉類', '菇類', '藻類', '乳品類', '堅果及種子類', '調味料及香辛料類', '油脂類', '加工調理食品及其他類', '飲料類', '糕餅點心類', '糖類'];
-    var CAT_EMOJI = { '蔬菜類': '🥬', '水果類': '🍎', '肉類': '🍖', '魚貝類': '🐟', '蛋類': '🥚', '豆類': '🫘', '穀物類': '🍚', '澱粉類': '🥔', '菇類': '🍄', '藻類': '🌿', '乳品類': '🥛', '堅果及種子類': '🥜', '調味料及香辛料類': '🧂', '油脂類': '🫒' };
+    var CAT_EMOJI = { '蔬菜類': '🥬', '水果類': '🍎', '肉類': '🍖', '魚貝類': '🐟', '蛋類': '🥚', '豆類': '🫘', '穀物類': '🍚', '澱粉類': '🥔', '菇類': '🍄', '藻類': '🌿', '乳品類': '🥛', '堅果及種子類': '🥜', '調味料及香辛料類': '🧂', '油脂類': '🫒', '糖類': '🍯', '糕餅點心類': '🍪', '加工調理食品及其他類': '🥫' };
 
     var $ = function (id) { return document.getElementById(id); };
     var video = $('video'), freeze = $('freeze'), cameraBox = $('cameraBox'), shutter = $('shutter');
@@ -685,6 +685,7 @@
 
     // ---------- Picker：挑食材（左右滑動的分類列，不經 AI）----------
     var picked = [];
+    var dbPick = {}; // 'db:名稱' → 資料庫那一筆（搜尋時列出的資料庫卡片）；圖示沿用上面的 CAT_EMOJI
     var catInfo = {}; // 每樣目錄食材只比對資料庫一次
     function catalogInfo(c) {
         if (catInfo[c.key]) return catInfo[c.key];
@@ -717,13 +718,31 @@
             html += '<div class="pk-group"><div class="pk-label">' + g.emoji + ' ' + esc(g.label) + ' <small>' + cards.length + ' 樣' + (cards.length > 4 ? '・可左右滑' : '') + '</small></div>' +
                 '<div class="pk-row">' + cards.join('') + '</div></div>';
         });
-        if (!shown) html = '<div class="pk-empty">清單裡沒有「' + esc(q) + '」。<br><button type="button" data-full="1">到完整資料庫搜尋「' + esc(q) + '」</button></div>';
-        else html += '<button type="button" class="picker-link" data-full="1">清單裡找不到？到完整食藥署資料庫搜尋</button>';
+        // 有打字就順便列出食藥署資料庫的結果，不用再按一次「完整資料庫搜尋」
+        if (q) {
+            var dbCards = R.matchFood([q], db, 12).candidates.map(function (c) {
+                var key = 'db:' + c.name;
+                dbPick[key] = c;
+                var v = R.verdict(c), on = picked.indexOf(key) >= 0;
+                var have = items.some(function (x) { return x.dbName === c.name; });
+                var tag = have ? '已在清單' : v.code === 'avoid' ? '✕ 不建議' : v.code === 'caution' ? '⚠ 限量' : (typeof c.potassium === 'number' ? '鉀 ' + Math.round(c.potassium) + ' mg' : '');
+                return '<button type="button" class="pk-card ' + v.code + '" data-key="' + esc(key) + '" title="' + esc(c.name + '（' + c.category + '）') + '" aria-pressed="' + on + '"' + (have ? ' disabled' : '') + '>' +
+                    '<i class="dot ' + R.levelOf(c.potassium) + '"></i><span class="pk-emoji" aria-hidden="true">' + (CAT_EMOJI[c.category] || '🔎') + '</span>' +
+                    '<span class="pk-name">' + esc(c.name) + '</span><span class="pk-tag">' + tag + '</span></button>';
+            });
+            if (dbCards.length) {
+                shown += dbCards.length;
+                html += '<div class="pk-group"><div class="pk-label">🔎 食藥署資料庫 <small>' + dbCards.length + ' 筆' + (dbCards.length > 4 ? '・可左右滑' : '') + '</small></div>' +
+                    '<div class="pk-row">' + dbCards.join('') + '</div></div>';
+            }
+        }
+        if (!shown) html = '<div class="pk-empty">清單和資料庫都找不到「' + esc(q) + '」。<br><button type="button" data-full="1">直接用「' + esc(q) + '」這個名稱</button></div>';
+        else html += '<button type="button" class="picker-link" data-full="1">' + (q ? '都不對？直接用「' + esc(q) + '」這個名稱' : '清單裡找不到？到完整食藥署資料庫搜尋') + '</button>';
         $('pickerBody').innerHTML = html;
         updatePickerAdd();
     }
     function openPicker() {
-        picked = [];
+        picked = []; dbPick = {};
         $('pickerSearch').value = '';
         renderPicker();
         $('pickerBody').scrollTop = 0;
@@ -747,6 +766,12 @@
     });
     $('pickerAdd').addEventListener('click', function () {
         picked.forEach(function (key) {
+            var d = dbPick[key];
+            if (d) { // 資料庫卡片：直接用那一筆，不再重新比對
+                items.push({ id: nextId++, name: d.name, thumb: null, emoji: CAT_EMOJI[d.category] || null, dbName: d.name,
+                    potassium: d.potassium, protein: d.protein, category: d.category, estimated: false });
+                return;
+            }
             var c = W.entryOf(key);
             var it = { id: nextId++, name: key, thumb: null, emoji: c ? c.emoji : null };
             resolveItem(it, [key]);
