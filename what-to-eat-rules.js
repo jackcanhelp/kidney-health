@@ -138,6 +138,17 @@
     return score;
   }
 
+  var STATE_PREFIX_RE = /^(?:冷凍|冷藏|新鮮|生鮮|有機|進口|國產|台灣)+/;
+  function inOrder(term, name) { // term 的每個字都依序出現在 name 裡
+    var at = 0;
+    for (var i = 0; i < term.length; i++) {
+      at = name.indexOf(term.charAt(i), at);
+      if (at < 0) return false;
+      at++;
+    }
+    return true;
+  }
+
   /* 在資料庫裡找最像的一筆。terms 依優先順序排（第一個是 AI 給的名稱）。
    * 回傳 { best, candidates }；best 分數未達門檻時為 null。 */
   function matchFood(terms, db, limit) {
@@ -149,6 +160,9 @@
       // 有別名時別名優先：「豆腐」原名會先撞到「豆腐皮」，別名才指得到生鮮那一筆。
       (ALIASES[t] || []).forEach(function (a) { all.push(a); });
       all.push(t);
+      // 「冷凍酪梨」「新鮮香菇」：資料庫沒有這種組合時，拿掉保存狀態的字再找一次（排在原詞後面，分數較低）
+      var bare = t.replace(STATE_PREFIX_RE, '');
+      if (bare !== t && bare.length >= 2) all.push(bare);
     });
     var seen = {};
     var ranked = [];
@@ -164,6 +178,18 @@
         ranked.push({ entry: entry, score: best });
       }
     });
+    // 完全沒有命中時退一步：字依序出現就算（「梅粉」→「梅子粉」），只當候選，不自動選（分數低於門檻）
+    if (!ranked.length) {
+      var raw = all.filter(function (t) { return t.length >= 2; });
+      db.forEach(function (entry) {
+        var names = [entry.name].concat(entry.aliases ? String(entry.aliases).split(/[,，、]/) : []);
+        var hit = raw.some(function (t) { return names.some(function (n) { return inOrder(t, n); }); });
+        if (hit && !seen[entry.name]) {
+          seen[entry.name] = true;
+          ranked.push({ entry: entry, score: Math.max(1, 30 - entry.name.length) });
+        }
+      });
+    }
     ranked.sort(function (a, b) { return b.score - a.score || a.entry.name.length - b.entry.name.length; });
     var candidates = ranked.slice(0, limit || 8).map(function (r) { return r.entry; });
     var best = ranked.length && ranked[0].score >= 50 ? ranked[0].entry : null;

@@ -80,6 +80,17 @@ t('recipe ingredient flags', () => {
   assert.deepEqual(f.map((x) => x.avoid), [true, false, true, false]);
 });
 
+// 使用者實際打字找不到的例子：梅粉（資料庫是梅子粉）、冷凍酪梨（資料庫只有生鮮酪梨）
+t('typed search fallbacks', () => {
+  const m = R.matchFood(['梅粉'], db);
+  assert.equal(m.best, null); // 只是猜測，不自動選
+  assert.ok(m.candidates.some((c) => c.name === '梅子粉'));
+  assert.ok(R.matchFood(['冷凍酪梨'], db).best.name.startsWith('酪梨'));
+  assert.equal(R.matchFood(['冷凍菠菜'], db).best.name, '冷凍菠菜'); // 有冷凍那筆就用它
+  assert.equal(R.matchFood(['冷凍'], db).candidates.some((c) => c.name === '凍'), false);
+  assert.deepEqual(R.matchFood(['完全不存在的東西xyz'], db).candidates, []);
+});
+
 // AI 的 not_used 不能列已放進材料的食材（實例：葡萄同時出現在材料與「沒有放進」）
 t('not_used drops ingredients actually used', () => {
   const ing = [{ name: '鯛魚' }, { name: '葡萄' }, { name: '蔥' }, { name: '雞腿肉（去皮）' }];

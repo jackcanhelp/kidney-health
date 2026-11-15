@@ -2,6 +2,6 @@
  * Update both values for every published website change.
  */
 globalThis.KIDNEY_HEALTH_RELEASE = Object.freeze({
-  productVersion: '1.1.28',
-  buildId: '20261114.4'
+  productVersion: '1.1.29',
+  buildId: '20261116.1'
 });
