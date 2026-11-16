@@ -27,8 +27,8 @@
     <link rel="apple-touch-icon" href="icons/icon-180.png">
     <script src="site.js" defer></script>
     <script src="food-lookup.js?v=1.1.21"></script>
-    <script src="what-to-eat-rules.js?v=1.1.31"></script>
-    <script src="what-to-eat-recipes.js?v=1.1.31"></script>
+    <script src="what-to-eat-rules.js?v=1.1.32"></script>
+    <script src="what-to-eat-recipes.js?v=1.1.32"></script>
 
     <script type="application/ld+json">
 {
@@ -212,6 +212,7 @@
         .cooking.active { display: flex; }
         .cooking svg { width: 240px; max-width: 70vw; height: auto; overflow: visible; }
         .cook-text { font-size: 1.05rem; font-weight: 500; min-height: 1.5em; }
+        .cook-note { font-size: .88rem; color: #cbd5e1; max-width: 18rem; text-align: center; line-height: 1.6; padding: 0 1rem; }
         .lid { animation: lid .5s ease-in-out infinite alternate; transform-origin: 120px 92px; }
         @keyframes lid { from { transform: translateY(0) rotate(0); } to { transform: translateY(-6px) rotate(-3deg); } }
         .steam path { stroke: rgba(255,255,255,.7); stroke-width: 5; fill: none; stroke-linecap: round; opacity: 0; animation: steam 2.2s ease-out infinite; }
@@ -436,6 +437,7 @@
         </g>
     </svg>
     <div class="cook-text" id="cookText">洗菜中…</div>
+    <div class="cook-note" id="cookNote" hidden>這次 AI 比較忙，正在改用備用 AI，最久約 1 分鐘，請稍候…</div>
 </div>
 
 <div class="sheet-bg" id="pickerBg">
@@ -1293,6 +1295,8 @@
         $('cookBtn').disabled = true;
         var anim = startCookingAnim();
         var minShow = new Promise(function (r) { setTimeout(r, Math.max(2600, anim.ms)); }); // 讓食材都下鍋
+        // 主要 AI 額度用完時會改走較慢的備用 AI（實測食譜約 50 秒），等久了要讓人知道不是當機
+        var slowTimer = setTimeout(function () { $('cookNote').hidden = false; }, 10000);
         var backBtn = cook.matches.length ? '<button type="button" data-cook="lib">📗 回到常備食譜</button>' : '';
         var back = backBtn ? '<div class="recipe-actions">' + backBtn + '</div>' : '';
         Promise.all([callGemini([{ text: recipePrompt(cook.usable, cook.avoided) }], 1600), minShow]).then(function (res) {
@@ -1303,6 +1307,7 @@
                 ? '<div class="error-box">⏳ ' + esc(err.message) + '<br>下面的各食材飲食建議不需要額度，仍可參考。</div>'
                 : '<div class="error-box">食譜產生失敗：' + esc(err.message) + '<br>請稍後再按一次「怎麼煮？」。</div>') + back;
         }).then(function () {
+            clearTimeout(slowTimer); $('cookNote').hidden = true;
             clearInterval(anim.timer);
             $('cooking').classList.remove('active');
             $('cookBtn').disabled = false;
