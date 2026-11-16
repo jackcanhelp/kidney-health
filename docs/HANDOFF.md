@@ -12,7 +12,7 @@
   - 煮菜動畫：掀蓋 → 每樣可用食材在左上方放大特寫、周圍一圈金光 → 往前拋物線落進鍋 → 蓋蓋（v1.1.33，時長不變）；不建議食材不下鍋；尊重減少動態。
   - AI 食譜等 >10 秒顯示「改用備用 AI，最久約 1 分鐘」。
 - 審查留著沒做：兩組相近食譜（`rosemary-chicken-potato-w`／`potato-chicken-w`、`bokchoy-mushroom`／`shiitake-greens`）；`.recipe-actions` emoji 沒 aria-hidden；AI 曾把葡萄汆燙當配菜（提示沒管水果用法）。
-- gemini-proxy Worker：**線上已部署 fa42912**（使用者 11-16 從 Dashboard 貼上，兩把 secret 已設）。順序：免費 `GEMINI_API_KEY`（2.5 → 3.5 → 3.1 flash-lite）→ 付費 `GEMINI_PAID_API_KEY`（AI Pro 每月 $10 抵用；新專案不能用 2.5，從 3.5 開始）→ Workers AI → Z.ai。實測兩次都是 `gemini:gemini-3.5-flash-lite`：免費 2.5 先失敗，使用者判斷是當日額度滿了。用 `?model=nope` 回白名單錯誤（不是 `Model not allowed`）可確認不是 Antigravity 舊版。Antigravity 那份仍在 `kidney-health/` 主目錄未提交，不要部署；Gemini 已確認以後以發布 worktree 為準。
+- gemini-proxy Worker：**線上已部署 fa42912**（使用者 11-16 從 Dashboard 貼上，兩把 secret 已設）。順序：免費 `GEMINI_API_KEY`（2.5 → 3.5 → 3.1 flash-lite）→ 付費 `GEMINI_PAID_API_KEY`（AI Pro 每月 $10 抵用；新專案不能用 2.5，從 3.5 開始）→ Workers AI → Z.ai。實測兩次都是 `gemini:gemini-3.5-flash-lite`：免費 2.5 先失敗，使用者判斷是當日額度滿了。用 `?model=nope` 回白名單錯誤（不是 `Model not allowed`）可確認不是 Antigravity 舊版。Antigravity 在 `kidney-health/` 主目錄的未提交改動（每 IP 限流，用 Cache API 計數、各機房分開算）11-16 已備份成 `D:/Projects/Kidneyhealth/drafts/antigravity-gemini-proxy-ratelimit.patch` 後還原；以後以發布 worktree 為準。限流靠 Google 端：付費專案在 AI Studio 設 Monthly spend cap NT$300（Experimental，約 10 分鐘延遲可能小幅超支；11-16 截圖確認，已用 NT$0.09），`gemini-3.5-flash-lite` 與 `gemini-3.1-flash-lite` 都已手動設 RPM 15／RPD 1,000（使用者 11-16 設）；免費金鑰在 AI Studio 顯示 Free。Worker 在 workers.dev，Cloudflare WAF 限流規則管不到，不用再提。
 - Workers AI 11-15（UTC 日）額度用光的原因：Claude／Codex／Antigravity 當天都沒呼叫，剩真實網站流量（Gemini 429 才會落到它）或手動跑 Mixmodel `cf_image.py`；要看 Dashboard → AI → Workers AI 的分模型用量才能定案（flux 開頭＝生圖，gemma／llama＝這支 Worker）。
 - 真手機上的分享、下載、朗讀、相機、新動畫、挑食材資料庫列**都未驗證**。
 
