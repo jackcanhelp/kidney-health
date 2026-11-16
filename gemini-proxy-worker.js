@@ -104,24 +104,37 @@ function corsHeaders(origin) {
 // 所以這是同一個專案內換模型，不是多帳號輪替。清單只放定價頁標示免費、可看圖的 flash-lite。
 export const GEMINI_FALLBACK_MODELS = ['gemini-3.5-flash-lite', 'gemini-3.1-flash-lite'];
 
-async function callGeminiModel(model, body, env) {
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${env.GEMINI_API_KEY}`;
+// 金鑰順序（2026-11-16）：GEMINI_PAID_API_KEY（Google AI Pro 每月抵用額度的專案，會計費）先用，
+// 它整串模型都 429 才換 GEMINI_API_KEY（免費專案）。兩把是同一個人的兩個專案，不是多帳號輪替。
+// 付費 key 一樣只收白名單過的請求、模型寫死，偽造 Origin 的人也換不到別的模型或功能。
+export function geminiKeys(env) {
+  const keys = [env.GEMINI_PAID_API_KEY, env.GEMINI_API_KEY].filter(Boolean);
+  return keys.filter((k, i) => keys.indexOf(k) === i);
+}
+
+async function callGeminiModel(model, body, key, tag) {
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${key}`;
   const res = await fetch(url, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(body),
   });
-  return { status: res.status, body: await res.text(), provider: model === MODEL ? 'gemini' : 'gemini:' + model };
+  return { status: res.status, body: await res.text(), provider: model === MODEL ? tag : tag + ':' + model };
 }
 
 async function callGemini(body, env) {
   // 模型清單寫死，忽略任何 ?model= 參數
-  let result;
-  for (const model of [MODEL, ...GEMINI_FALLBACK_MODELS]) {
-    result = await callGeminiModel(model, body, env);
-    if (result.status !== 429 && result.status !== 404) return result;
+  let result, last429;
+  for (const key of geminiKeys(env)) {
+    const tag = key === env.GEMINI_PAID_API_KEY ? 'gemini-paid' : 'gemini';
+    for (const model of [MODEL, ...GEMINI_FALLBACK_MODELS]) {
+      result = await callGeminiModel(model, body, key, tag);
+      if (result.status !== 429 && result.status !== 404) return result;
+      if (result.status === 429) last429 = result;
+    }
   }
-  return result;
+  // 有任何一次 429 就回 429，讓呼叫端接著試 Workers AI／Z.ai（不要被最後一個模型的 404 蓋掉）
+  return last429 || result;
 }
 
 // ---- Cloudflare Workers AI 備援：Worker 綁定名稱 AI，不需金鑰；免費 10,000 neurons／日，不拿輸入訓練 ----
@@ -256,7 +269,7 @@ export default {
     }
 
     // Check API key is configured
-    if (!env.GEMINI_API_KEY) {
+    if (!geminiKeys(env).length) {
       return new Response(JSON.stringify({ error: 'API key not configured' }), {
         status: 500,
         headers: { 'Content-Type': 'application/json', ...corsHeaders(origin) },
@@ -288,7 +301,7 @@ export default {
         });
       }
 
-      // 供應商：預設 Gemini（flash-lite → 其他免費 flash-lite）→ 仍 429 才依序改打 Workers AI、Z.ai。
+      // 供應商：預設 Gemini（付費 key → 免費 key，各自 flash-lite → 其他 flash-lite）→ 仍 429 才依序改打 Workers AI、Z.ai。
       // X-Provider 只能指定這三家免費模型之一（品質對比測試用），換不到較貴的模型。
       const want = (request.headers.get('X-Provider') || '').toLowerCase();
       let result;
@@ -311,7 +324,8 @@ export default {
         },
       });
     } catch (err) {
-      return new Response(JSON.stringify({ error: 'Proxy error: ' + err.message }), {
+      const msg = String(err && err.message || err).replace(/key=[^&\s"']+/g, 'key=***'); // 例外訊息可能帶 URL
+      return new Response(JSON.stringify({ error: 'Proxy error: ' + msg }), {
         status: 500,
         headers: { 'Content-Type': 'application/json', ...corsHeaders(origin) },
       });
