@@ -3,7 +3,9 @@
 // 1. 登入 Cloudflare Dashboard → Workers & Pages → Create Worker
 // 2. 命名為 gemini-proxy → Deploy
 // 3. 編輯程式碼，貼上此檔案內容 → Save and Deploy
-// 4. Settings → Variables and Secrets → Add → Name: GEMINI_API_KEY, Type: Secret, Value: 你的 API key
+// 4. Settings → Variables and Secrets → Add（Type: Secret）：
+//    GEMINI_API_KEY（免費專案）、GEMINI_PAID_API_KEY（AI Pro 抵用額度專案，可省略）、ZAI_API_KEY（可省略）；
+//    Bindings 加 Workers AI，名稱 AI（可省略）
 // 5. 記下 Worker URL: https://gemini-proxy.{你的subdomain}.workers.dev
 // 6. 將該 URL 填入 HTML 檔案中的 WORKER_ENDPOINT 變數
 
@@ -104,12 +106,23 @@ function corsHeaders(origin) {
 // 所以這是同一個專案內換模型，不是多帳號輪替。清單只放定價頁標示免費、可看圖的 flash-lite。
 export const GEMINI_FALLBACK_MODELS = ['gemini-3.5-flash-lite', 'gemini-3.1-flash-lite'];
 
-// 金鑰順序（2026-11-16）：GEMINI_PAID_API_KEY（Google AI Pro 每月抵用額度的專案，會計費）先用，
-// 它整串模型都 429 才換 GEMINI_API_KEY（免費專案）。兩把是同一個人的兩個專案，不是多帳號輪替。
+// 金鑰順序（2026-11-16 使用者決定）：先用 GEMINI_API_KEY（免費專案）的免費模型，
+// 全部 429 才用 GEMINI_PAID_API_KEY（Google AI Pro 每月抵用額度的專案，會計費），再來才是 Workers AI、Z.ai。
+// 付費專案不能用 2.5-flash-lite（使用者 11-16 告知、線上每次先失敗一次），所以付費 key 從 3.5-flash-lite 開始。
 // 付費 key 一樣只收白名單過的請求、模型寫死，偽造 Origin 的人也換不到別的模型或功能。
+export const PAID_MODELS = ['gemini-3.5-flash-lite', 'gemini-3.1-flash-lite'];
+
+export function geminiPlan(env) {
+  const plan = [];
+  if (env.GEMINI_API_KEY) plan.push({ key: env.GEMINI_API_KEY, tag: 'gemini', models: [MODEL, ...GEMINI_FALLBACK_MODELS] });
+  if (env.GEMINI_PAID_API_KEY && env.GEMINI_PAID_API_KEY !== env.GEMINI_API_KEY) {
+    plan.push({ key: env.GEMINI_PAID_API_KEY, tag: 'gemini-paid', models: PAID_MODELS });
+  }
+  return plan;
+}
+
 export function geminiKeys(env) {
-  const keys = [env.GEMINI_PAID_API_KEY, env.GEMINI_API_KEY].filter(Boolean);
-  return keys.filter((k, i) => keys.indexOf(k) === i);
+  return geminiPlan(env).map((p) => p.key);
 }
 
 async function callGeminiModel(model, body, key, tag) {
@@ -125,9 +138,8 @@ async function callGeminiModel(model, body, key, tag) {
 async function callGemini(body, env) {
   // 模型清單寫死，忽略任何 ?model= 參數
   let result, last429;
-  for (const key of geminiKeys(env)) {
-    const tag = key === env.GEMINI_PAID_API_KEY ? 'gemini-paid' : 'gemini';
-    for (const model of [MODEL, ...GEMINI_FALLBACK_MODELS]) {
+  for (const { key, tag, models } of geminiPlan(env)) {
+    for (const model of models) {
       result = await callGeminiModel(model, body, key, tag);
       if (result.status !== 429 && result.status !== 404) return result;
       if (result.status === 429) last429 = result;
@@ -301,7 +313,7 @@ export default {
         });
       }
 
-      // 供應商：預設 Gemini（付費 key → 免費 key，各自 flash-lite → 其他 flash-lite）→ 仍 429 才依序改打 Workers AI、Z.ai。
+      // 供應商：預設 Gemini（免費 key：2.5 → 3.5 → 3.1 flash-lite；付費 key：3.5 → 3.1）→ 仍 429 才依序改打 Workers AI、Z.ai。
       // X-Provider 只能指定這三家免費模型之一（品質對比測試用），換不到較貴的模型。
       const want = (request.headers.get('X-Provider') || '').toLowerCase();
       let result;

@@ -1,4 +1,4 @@
-// 供應商順序回歸測試：付費 key（Google AI Pro 每月抵用額度）→ 免費 key → Workers AI → Z.ai。
+// 供應商順序回歸測試：免費 key（2.5 → 3.5 → 3.1）→ 付費 key（3.5 → 3.1）→ Workers AI → Z.ai。
 // 跑法： node gemini-proxy-chain.test.mjs
 import worker, { geminiKeys } from './gemini-proxy-worker.js';
 
@@ -34,28 +34,28 @@ async function t(name, fn) {
 }
 function eq(a, b, msg) { if (JSON.stringify(a) !== JSON.stringify(b)) throw new Error(`${msg}: got ${JSON.stringify(a)} want ${JSON.stringify(b)}`); }
 
-await t('geminiKeys: paid first, dedupe, skip empty', () => {
-  eq(geminiKeys({ GEMINI_PAID_API_KEY: 'P', GEMINI_API_KEY: 'F' }), ['P', 'F'], 'both');
+await t('geminiKeys: free first, dedupe, skip empty', () => {
+  eq(geminiKeys({ GEMINI_PAID_API_KEY: 'P', GEMINI_API_KEY: 'F' }), ['F', 'P'], 'both');
   eq(geminiKeys({ GEMINI_API_KEY: 'F' }), ['F'], 'free only');
   eq(geminiKeys({ GEMINI_PAID_API_KEY: 'P' }), ['P'], 'paid only');
   eq(geminiKeys({ GEMINI_PAID_API_KEY: 'X', GEMINI_API_KEY: 'X' }), ['X'], 'same key once');
   eq(geminiKeys({ GEMINI_PAID_API_KEY: '', GEMINI_API_KEY: '' }), [], 'none');
 });
 
-await t('paid key answers first; free key untouched', async () => {
+await t('free key 2.5 answers first; paid key untouched', async () => {
   mockFetch(() => 200);
   const res = await worker.fetch(req(GOOD), { GEMINI_PAID_API_KEY: 'P', GEMINI_API_KEY: 'F' });
   eq(res.status, 200, 'status');
-  eq(res.headers.get('X-Provider-Used'), 'gemini-paid', 'provider');
-  eq(calls.map(c => c.key), ['P'], 'keys used');
+  eq(res.headers.get('X-Provider-Used'), 'gemini', 'provider');
+  eq(calls.map(c => c.key + ':' + c.model), ['F:gemini-2.5-flash-lite'], 'calls');
 });
 
-await t('paid key 429 on every model → free key', async () => {
-  mockFetch((key) => (key === 'P' ? 429 : 200));
+await t('free key 429 on every model → paid key starts at 3.5 (never 2.5)', async () => {
+  mockFetch((key) => (key === 'F' ? 429 : 200));
   const res = await worker.fetch(req(GOOD), { GEMINI_PAID_API_KEY: 'P', GEMINI_API_KEY: 'F' });
   eq(res.status, 200, 'status');
-  eq(res.headers.get('X-Provider-Used'), 'gemini', 'provider');
-  eq(calls.map(c => c.key), ['P', 'P', 'P', 'F'], 'keys used');
+  eq(res.headers.get('X-Provider-Used'), 'gemini-paid:gemini-3.5-flash-lite', 'provider');
+  eq(calls.map(c => c.key + ':' + c.model), ['F:gemini-2.5-flash-lite', 'F:gemini-3.5-flash-lite', 'F:gemini-3.1-flash-lite', 'P:gemini-3.5-flash-lite'], 'calls');
 });
 
 await t('both keys exhausted → Workers AI', async () => {
@@ -63,7 +63,7 @@ await t('both keys exhausted → Workers AI', async () => {
   const res = await worker.fetch(req(GOOD), cfEnv({ GEMINI_PAID_API_KEY: 'P', GEMINI_API_KEY: 'F' }));
   eq(res.status, 200, 'status');
   eq(res.headers.get('X-Provider-Used').startsWith('cf:'), true, 'provider is cf');
-  eq(calls.length, 6, 'tried 3 models × 2 keys');
+  eq(calls.length, 5, 'tried 3 free + 2 paid models');
 });
 
 await t('main model 429 + fallback models 404 → still falls through to Workers AI', async () => {
@@ -87,7 +87,7 @@ await t('exception message never leaks the key', async () => {
   eq(text.includes('SECRET_P'), false, 'key absent');
 });
 
-await t('non-429 error from paid key is returned, not retried on free key', async () => {
+await t('non-429 error from free key is returned, not retried on paid key', async () => {
   mockFetch(() => 400);
   const res = await worker.fetch(req(GOOD), { GEMINI_PAID_API_KEY: 'P', GEMINI_API_KEY: 'F' });
   eq(res.status, 400, 'status');
@@ -99,6 +99,12 @@ await t('free key only still works (paid secret not set)', async () => {
   const res = await worker.fetch(req(GOOD), { GEMINI_API_KEY: 'F' });
   eq(res.status, 200, 'status');
   eq(calls.map(c => c.key), ['F'], 'keys');
+});
+
+await t('paid key only (free secret not set) starts at 3.5', async () => {
+  mockFetch(() => 200);
+  await worker.fetch(req(GOOD), { GEMINI_PAID_API_KEY: 'P' });
+  eq(calls.map(c => c.model), ['gemini-3.5-flash-lite'], 'model');
 });
 
 await t('no key at all → 500', async () => {

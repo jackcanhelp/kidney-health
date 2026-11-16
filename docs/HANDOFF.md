@@ -12,7 +12,7 @@
   - 煮菜動畫：掀蓋 → 每樣可用食材在左上方放大特寫、周圍一圈金光 → 往前拋物線落進鍋 → 蓋蓋（v1.1.33，時長不變）；不建議食材不下鍋；尊重減少動態。
   - AI 食譜等 >10 秒顯示「改用備用 AI，最久約 1 分鐘」。
 - 審查留著沒做：兩組相近食譜（`rosemary-chicken-potato-w`／`potato-chicken-w`、`bokchoy-mushroom`／`shiitake-greens`）；`.recipe-actions` emoji 沒 aria-hidden；AI 曾把葡萄汆燙當配菜（提示沒管水果用法）。
-- gemini-proxy Worker：**11-16 早上線上版被 Antigravity 換成另一份**（以過期的 `kidney-health/` 主目錄為底，用 `?model=nope` 回 `Model not allowed` 可辨識）：沒有 Workers AI／Z.ai 備援、請求原樣轉給 Gemini（`...body`）、每 IP 限流在 workers.dev 實測無效（13 次連打都沒 429）。repo 版已合併：`GEMINI_PAID_API_KEY`（AI Pro 每月 $10 抵用，會計費）→ `GEMINI_API_KEY`（免費）→ Workers AI → Z.ai，白名單與寫死模型保留；**要使用者從 Cloudflare Dashboard 貼上部署並設好 secret**（未部署）。Antigravity 的改動還留在 `kidney-health/` 主目錄未提交，不要部署那份。
+- gemini-proxy Worker（11-16 使用者已從 Dashboard 部署合併版、設好兩把 secret；線上實測走 `gemini-paid`）：順序改為免費 `GEMINI_API_KEY`（2.5 → 3.5 → 3.1 flash-lite）→ 付費 `GEMINI_PAID_API_KEY`（AI Pro 每月 $10 抵用；新專案不能用 2.5，從 3.5 → 3.1）→ Workers AI → Z.ai。**這個新順序要再從 Dashboard 部署一次**。Antigravity 那份留在 `kidney-health/` 主目錄未提交，不要部署；Gemini 已確認以後改以發布 worktree 為準。
 - Workers AI 11-15（UTC 日）額度用光的原因：Claude／Codex／Antigravity 當天都沒呼叫，剩真實網站流量（Gemini 429 才會落到它）或手動跑 Mixmodel `cf_image.py`；要看 Dashboard → AI → Workers AI 的分模型用量才能定案（flux 開頭＝生圖，gemma／llama＝這支 Worker）。
 - 真手機上的分享、下載、朗讀、相機、新動畫、挑食材資料庫列**都未驗證**。
 
@@ -29,5 +29,5 @@
 
 1. 使用者用真手機跑一次相機、分享、下載、朗讀。
 2. 迷宮飯聯名：已給建議（授權門檻高；先累積 GA4 數據、一頁企劃、致敬食譜樣稿不上線）；使用者還沒決定要不要查授權窗口或擬企劃。
-3. 使用者部署合併版 Worker（Dashboard 貼上 + 新增 secret `GEMINI_PAID_API_KEY`），部署後用 `X-Provider-Used` 標頭確認走 `gemini-paid`。
+3. 使用者把「免費先、付費後」版 Worker 貼上部署，部署後確認 `X-Provider-Used` 是 `gemini`（免費 2.5）。
 4. 看 Dashboard 的 Workers AI 分模型用量，定案 11-15 是誰用光。
