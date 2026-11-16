@@ -27,8 +27,8 @@
     <link rel="apple-touch-icon" href="icons/icon-180.png">
     <script src="site.js" defer></script>
     <script src="food-lookup.js?v=1.1.21"></script>
-    <script src="what-to-eat-rules.js?v=1.1.30"></script>
-    <script src="what-to-eat-recipes.js?v=1.1.30"></script>
+    <script src="what-to-eat-rules.js?v=1.1.31"></script>
+    <script src="what-to-eat-recipes.js?v=1.1.31"></script>
 
     <script type="application/ld+json">
 {
@@ -221,8 +221,13 @@
         .flame { animation: flame .25s ease-in-out infinite alternate; transform-box: fill-box; transform-origin: 50% 100%; }
         .flame:nth-child(2) { animation-delay: .1s; } .flame:nth-child(3) { animation-delay: .18s; }
         @keyframes flame { from { transform: scaleY(1); } to { transform: scaleY(1.3); } }
-        .drop { font-size: 28px; opacity: 0; animation: drop 2.4s ease-in infinite; }
-        @keyframes drop { 0% { opacity: 0; transform: translateY(-60px) rotate(0); } 15% { opacity: 1; } 55% { opacity: 1; transform: translateY(40px) rotate(160deg); } 65%, 100% { opacity: 0; transform: translateY(48px) rotate(180deg); } }
+        /* 食材一樣一樣：先在鍋子上方放大特寫，再直直掉進掀開的鍋子（由 JS 的 element.animate 控制時間） */
+        .drop { font-size: 28px; opacity: 0; transform-box: fill-box; transform-origin: center; }
+        .lid { transition: transform .35s ease; }
+        .lid.open { animation: none; transform: translate(84px, -6px) rotate(38deg); }
+        .steam { transition: opacity .3s; }
+        .cooking.dropping .steam { opacity: 0; }
+        .pot-body { transform-box: fill-box; transform-origin: 50% 100%; }
 
         /* Recipe */
         .card { background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 1rem; margin-bottom: .8rem; }
@@ -416,11 +421,11 @@
             <path d="M145 60 q-10 -15 0 -30 q10 -15 0 -30"/>
         </g>
         <g id="drops"></g>
-        <g class="lid">
+        <g class="lid" id="potLid">
             <ellipse cx="120" cy="92" rx="78" ry="12" fill="#94a3b8"/>
             <rect x="110" y="72" width="20" height="12" rx="5" fill="#475569"/>
         </g>
-        <path d="M44 98 h152 v54 a26 26 0 0 1 -26 26 h-100 a26 26 0 0 1 -26 -26 z" fill="#e58a2c"/>
+        <path class="pot-body" id="potBody" d="M44 98 h152 v54 a26 26 0 0 1 -26 26 h-100 a26 26 0 0 1 -26 -26 z" fill="#e58a2c"/>
         <rect x="24" y="104" width="22" height="10" rx="5" fill="#b45309"/>
         <rect x="194" y="104" width="22" height="10" rx="5" fill="#b45309"/>
         <rect x="60" y="186" width="120" height="8" rx="4" fill="#334155"/>
@@ -829,16 +834,43 @@
 
     // ---------- Cooking ----------
     var COOK_LINES = ['洗菜中…', '切小塊…', '滾水汆燙去鉀…', '瀝乾，燙菜水倒掉…', '下鍋拌炒…', '少油少鹽調味…', '快好了，擺盤中…'];
+    var DROP_MS = 900, lidTimer = null;
+    // 回傳 { timer, ms }：timer 給 clearInterval；ms 是食材全部下鍋、蓋上鍋蓋所需的時間，呼叫端至少顯示這麼久
     function startCookingAnim() {
-        var emojis = items.map(function (x) { return x.emoji || CAT_EMOJI[x.category] || '🥘'; }).slice(0, 5);
+        var src = cook ? cook.usable : items; // 不建議的食材不下鍋
+        var emojis = src.map(function (x) { return x.emoji || CAT_EMOJI[x.category] || '🥘'; }).slice(0, 6);
         if (!emojis.length) emojis = ['🥬'];
-        $('drops').innerHTML = emojis.map(function (e, i) {
-            return '<text class="drop" x="' + (78 + i * 22) + '" y="70" style="animation-delay:' + (i * 0.45) + 's">' + e + '</text>';
+        var lid = $('potLid'), pot = $('potBody'), box = $('cooking');
+        clearTimeout(lidTimer);
+        $('drops').innerHTML = emojis.map(function (e) {
+            return '<text class="drop" x="120" y="30" text-anchor="middle" dominant-baseline="central">' + e + '</text>';
         }).join('');
+        var canAnimate = typeof Element.prototype.animate === 'function' &&
+            !(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+        var ms = 0;
+        if (canAnimate) {
+            lid.classList.add('open'); box.classList.add('dropping');
+            [].forEach.call($('drops').children, function (el, i) {
+                var at = 250 + i * DROP_MS; // 先等鍋蓋掀開
+                el.animate([
+                    { opacity: 0, transform: 'translateY(0) scale(.4)' },
+                    { opacity: 1, transform: 'translateY(0) scale(2.2)', offset: .25 },  // 特寫
+                    { opacity: 1, transform: 'translateY(0) scale(2.2)', offset: .55 },
+                    { opacity: 1, transform: 'translateY(68px) scale(1) rotate(20deg)', offset: .9 }, // 掉進鍋口
+                    { opacity: 0, transform: 'translateY(84px) scale(.9) rotate(25deg)' }
+                ], { duration: DROP_MS, delay: at, easing: 'ease-in', fill: 'both' });
+                pot.animate([{ transform: 'scaleY(1)' }, { transform: 'scaleY(.94)' }, { transform: 'scaleY(1)' }],
+                    { duration: 220, delay: at + DROP_MS * .9 }); // 撲通一下
+            });
+            ms = 250 + emojis.length * DROP_MS + 400;
+            lidTimer = setTimeout(function () { lid.classList.remove('open'); box.classList.remove('dropping'); }, ms - 400);
+        } else {
+            lid.classList.remove('open'); box.classList.remove('dropping');
+        }
         var i = 0;
         $('cookText').textContent = COOK_LINES[0];
-        $('cooking').classList.add('active');
-        return setInterval(function () { i = (i + 1) % COOK_LINES.length; $('cookText').textContent = COOK_LINES[i]; }, 1300);
+        box.classList.add('active');
+        return { timer: setInterval(function () { i = (i + 1) % COOK_LINES.length; $('cookText').textContent = COOK_LINES[i]; }, 1300), ms: ms };
     }
 
     function recipePrompt(usable, avoided) {
@@ -1259,8 +1291,8 @@
     }
     function runAi() {
         $('cookBtn').disabled = true;
-        var timer = startCookingAnim();
-        var minShow = new Promise(function (r) { setTimeout(r, 2600); }); // 讓動畫至少跑完一輪
+        var anim = startCookingAnim();
+        var minShow = new Promise(function (r) { setTimeout(r, Math.max(2600, anim.ms)); }); // 讓食材都下鍋
         var backBtn = cook.matches.length ? '<button type="button" data-cook="lib">📗 回到常備食譜</button>' : '';
         var back = backBtn ? '<div class="recipe-actions">' + backBtn + '</div>' : '';
         Promise.all([callGemini([{ text: recipePrompt(cook.usable, cook.avoided) }], 1600), minShow]).then(function (res) {
@@ -1271,7 +1303,7 @@
                 ? '<div class="error-box">⏳ ' + esc(err.message) + '<br>下面的各食材飲食建議不需要額度，仍可參考。</div>'
                 : '<div class="error-box">食譜產生失敗：' + esc(err.message) + '<br>請稍後再按一次「怎麼煮？」。</div>') + back;
         }).then(function () {
-            clearInterval(timer);
+            clearInterval(anim.timer);
             $('cooking').classList.remove('active');
             $('cookBtn').disabled = false;
             showRecipeSection();
@@ -1310,14 +1342,14 @@
         if (!matches.length) { runAi(); return; }
         saveRot(sig, idx);
         $('cookBtn').disabled = true;
-        var timer = startCookingAnim();
+        var anim = startCookingAnim();
         setTimeout(function () {
             renderLibrary();
-            clearInterval(timer);
+            clearInterval(anim.timer);
             $('cooking').classList.remove('active');
             $('cookBtn').disabled = false;
             showRecipeSection();
-        }, 1800);
+        }, Math.max(1800, anim.ms));
     });
 
     setMode(mode, false);
