@@ -91,12 +91,17 @@
   var BY_DB = {};     // 食藥署品名 → key；indexDb() 載入資料庫後補上各 key 自己對到的那一筆
 
   /* 載入食藥署資料後呼叫一次：每樣目錄食材「本身」對到的品名，加上 db 清單，都登記成同一樣。 */
+  var RULES = null;
+  // 目錄每樣食材「本身」那一筆的鉀分級：常備食譜的份量是照這個寫的
+  var BASE_LEVEL = {};
   function indexDb(db, rules) {
-    BY_DB = {};
+    RULES = rules;
+    BY_DB = {}; BASE_LEVEL = {};
     CATALOG.forEach(function (c) {
       (c.db || []).forEach(function (n) { if (!BY_DB[n]) BY_DB[n] = c.key; });
       var best = rules.matchFood([c.key], db).best;
       if (best && !BY_DB[best.name]) BY_DB[best.name] = c.key;
+      if (best) BASE_LEVEL[c.key] = rules.levelOf(best.potassium);
     });
   }
 
@@ -104,9 +109,44 @@
   function keyOf(item) {
     if (!item) return null;
     var name = String(item.name || '').trim();
-    if (BY_NAME[name]) return BY_NAME[name];
     var dbName = String(item.dbName || '');
-    return BY_DB[dbName] || null;
+    // 加了磷酸鹽的加工品（切片火腿(雞肉)…）不是新鮮食材，不套用食譜
+    if (RULES && RULES.isPhosphateAdditive(item)) return null;
+    var key = BY_NAME[name] || BY_DB[dbName] || null;
+    var full = dbName || name;
+    if (!key) {
+      // 從資料庫卡片直接挑的品名帶括號註記，例如「青江菜(土植)(4月取樣)」：去掉括號（和「平均值」）後完全等於目錄名稱才算
+      var bare = full.replace(/\([^)]*\)/g, '').trim();
+      key = BY_NAME[bare] || null;
+      // 「X平均值」只對目錄的正式名稱：「里肌肉平均值」是雞里肌（I04 雞肉組），別名「里肌肉」卻指豬肉
+      if (!key && /平均值$/.test(bare)) { var base = bare.replace(/平均值$/, ''); if (entryOf(base)) key = base; }
+      if (!key) return null;
+    }
+    // 紅、黃、橙甜椒不算青椒（別名「甜椒」只指青皮）：辨識名或資料列任一寫了顏色都擋，每條路（名稱、BY_DB、去括號）都要過
+    if (key === '青椒' && (/[紅黃橙]/.test(item.colorName || name) || /紅皮|黃皮|橙皮/.test(dbName))) return null;
+    // 食藥署的「里肌肉…」都是雞（I04 雞肉組）；別名「里肌肉」指豬肉，配到這些資料列不算豬肉
+    if (key === '豬肉' && /^里肌肉/.test(dbName)) return null;
+    if (dbName && BY_DB[dbName] === key) return key; // 明確登記過的資料列
+    // 選定資料列的類別也要對（雞腿菇是菇、高湯塊是調味料、雞肉水餃是加工品；Codex 六審）。
+    // 每個分組都查：搜「小黃瓜」卻選了「小黃魚(去皮)」，判斷以選定的資料列為準（Codex 十審）
+    var cg = (entryOf(key) || {}).group, cat = String(item.category || '');
+    if (cat && dbName) {
+      var catRe = cg === 'meat' ? /肉類/ : cg === 'sea' ? /魚貝/ : cg === 'egg' ? (key === '雞蛋' ? /蛋類/ : /豆類|加工調理/) :
+        cg === 'veg' ? /蔬菜/ : cg === 'mush' ? /菇類/ : cg === 'fruit' ? /水果/ : cg === 'staple' ? /穀物|澱粉|加工調理|糕餅/ : null;
+      if (catRe && !catRe.test(cat)) {
+        // 搜尋詞對到的那樣類別不符，改用選定的資料列本身再認一次：搜「甘藷」選「甘藷葉」是地瓜葉（Codex 十一審）
+        // 只重試一次，且辨識名的顏色檢查沿用原名（紅甜椒不會因此變青椒）
+        if (name !== dbName && !item.retried) return keyOf({ name: dbName, dbName: dbName, category: cat, colorName: name, retried: true });
+        return null;
+      }
+    }
+    // 肉、蛋：品名寫了別種動物就不算（里肌肉(土雞)、牛梅花肉火鍋片、雞絞肉）；牛番茄這類蔬菜不檢查
+    var g = (entryOf(key) || {}).group;
+    if (g === 'meat' || g === 'egg') {
+      var animal = full.match(/[雞鴨鵝牛羊豬]/g) || [];
+      if (!animal.every(function (a) { return key.indexOf(a) >= 0; })) return null;
+    }
+    return key;
   }
 
   function entryOf(key) {
@@ -650,6 +690,71 @@
       tips: ['不要用番茄醬，新鮮番茄炒軟就有自然酸甜；盤底湯汁不要拌飯。'] }
   ];
 
+  // ---------- 萬用菜單（程式裡叫 template；2026-11-19 試作）----------
+  // 同一鉀分級的蔬菜、菇共用同一套做法：低鉀洗淨直接下鍋；中鉀先汆燙；高鉀汆燙且份量減半。
+  // 招牌菜（上面寫死的食譜）優先；同一組食材已有招牌菜時，範本不重複出現（matchRecipes 去重）。
+  // [鉀分級, 切法, 平常份量 g, 額外提醒]。分級由測試對照食藥署資料，資料更新而分級變了會失敗。菠菜 ≥ 500 不建議，不列。
+  var TEMPLATE_VEG = {
+    '高麗菜': ['medium', '切小片', 200], '大白菜': ['medium', '切小片', 200],
+    '小白菜': ['low', '切 4 公分段', 200], '青江菜': ['low', '對半切開', 200], '空心菜': ['low', '切 4 公分段', 200],
+    '綠豆芽': ['low', '摘去尾端', 150], '冬瓜': ['low', '去皮切薄片', 200], '絲瓜': ['low', '去皮切小塊', 200],
+    '小黃瓜': ['medium', '切片', 150], '洋蔥': ['medium', '切絲', 120], '青椒': ['medium', '去籽切絲', 120],
+    '番茄': ['medium', '切小塊', 150], '茄子': ['medium', '切條', 150], '胡蘿蔔': ['medium', '刨細絲', 100],
+    '花椰菜': ['medium', '切小朵', 150], '玉米筍': ['medium', '斜切段', 100],
+    '綠花椰菜': ['high', '切小朵', 150], '地瓜葉': ['high', '摘成小段', 200], '南瓜': ['high', '去皮切薄片', 150, '南瓜也算主食，配這道菜時飯要少一點。'],
+    '杏鮑菇': ['medium', '切片', 100], '香菇': ['medium', '切片', 80], '金針菇': ['high', '切去根部、撥散', 100]
+  };
+  var TIER_LABEL = { low: '低鉀', medium: '中鉀', high: '高鉀' };
+  var TEMPLATE_MEATS = ['豬肉', '雞胸肉', '雞腿肉', '牛肉'];
+
+  function templateVeg(key) {
+    var t = TEMPLATE_VEG[key], tier = t[0], cut = t[1], grams = t[2];
+    var kind = entryOf(key).group === 'mush' ? '菇類' : '蔬菜';
+    var others = Object.keys(TEMPLATE_VEG).filter(function (k) { return k !== key && TEMPLATE_VEG[k][0] === tier; });
+    return {
+      tier: tier,
+      prep: key + '洗淨，' + cut + (tier === 'low' ? '' : '，' + BLANCH_VEG),
+      amount: tier === 'high' ? '約 ' + Math.round(grams / 2) + ' g（高鉀，平常的一半）' : '約 ' + grams + ' g',
+      tips: [
+        tier === 'low' ? key + '是低鉀' + kind + '，洗淨就能下鍋，照平常份量；盤底湯汁一樣不要拌飯。'
+          : tier === 'medium' ? key + '是中鉀' + kind + '，先汆燙再下鍋可去掉部分鉀；盤底湯汁不要拌飯。'
+            : key + '是高鉀' + kind + '，份量只用平常的一半；汆燙只能去掉一部分鉀，這一餐其他菜盡量選低鉀。',
+        // 這裡列的是一般分級；水耕、有機或不同季節的同一種菜可能比較高，以清單上標的為準
+        '同一個做法也適合其他' + TIER_LABEL[tier] + '的菜，例如' + others.slice(0, 6).join('、') + '（以食材清單標的鉀分級為準）。'
+      ].concat(t[3] ? [t[3]] : [])
+    };
+  }
+
+  Object.keys(TEMPLATE_VEG).forEach(function (key) {
+    var v = templateVeg(key);
+    var vegIng = { name: key, amount: v.amount };
+    var base = { style: 'chinese', template: true, tier: v.tier };
+    RECIPES.push(Object.assign({}, base, {
+      id: 'tpl-egg-' + key, needs: ['雞蛋', key], title: key + '炒蛋', time: '約 15 分鐘',
+      intro: '萬用做法：' + TIER_LABEL[v.tier] + '的菜都可以這樣炒蛋。',
+      ingredients: [{ name: '雞蛋', amount: EGG2 }, vegIng, GARLIC, OIL, SALT],
+      steps: [v.prep + '。', '雞蛋打散加少許鹽；熱鍋下油，倒入蛋液炒到熟透成塊，先盛起。', '原鍋爆香蒜末，下' + key + '炒到熟軟，倒回炒蛋、加少許鹽拌勻。'],
+      tips: v.tips
+    }));
+    // 每種肉各一道（不用「多選一」）：同一組食材的招牌菜只會擋掉同一種肉的範本
+    TEMPLATE_MEATS.forEach(function (meat) {
+      RECIPES.push(Object.assign({}, base, {
+        id: 'tpl-meat-' + meat + '-' + key, needs: [meat, key], title: key + '炒' + meat + '片', time: '約 15 分鐘',
+        intro: '萬用做法：' + TIER_LABEL[v.tier] + '的菜都可以這樣配肉片炒。',
+        ingredients: [{ name: meat, amount: MEAT2 }, vegIng, GARLIC, OIL, SOY],
+        steps: [meat + '切薄片，' + BLANCH_MEAT + '；' + v.prep + '。', '熱鍋下油爆香蒜末，下' + meat + '炒到全熟。', '加入' + key + '拌炒到熟軟，淋少許醬油炒勻。'],
+        tips: v.tips
+      }));
+    });
+    RECIPES.push(Object.assign({}, base, {
+      id: 'tpl-tofu-' + key, needs: ['豆腐', key], title: key + '燒豆腐', time: '約 20 分鐘',
+      intro: '萬用做法：' + TIER_LABEL[v.tier] + '的菜都可以這樣燒豆腐。',
+      ingredients: [{ name: '豆腐', amount: TOFU2 }, vegIng, SCALLION, OIL, SOY],
+      steps: [v.prep + '；豆腐切塊，另用滾水汆燙約 3 分鐘，撈起瀝乾，燙豆腐的水倒掉。', '熱鍋下油爆香蔥段，下' + key + '炒軟。', '加入豆腐、少許醬油和 2 大匙開水，輕輕拌燒 3 分鐘入味，撒蔥花起鍋。'],
+      tips: v.tips
+    }));
+  });
+
   var STYLE_OK = { default: null, chinese: 'chinese', western: 'western' };
 
   function fill(s, picked) {
@@ -657,8 +762,13 @@
   }
 
   /* 依使用者的食材挑食譜。keys：可用食材在目錄裡的 key（不含 ✕ 不建議的）。
+   * levels（可省略）：key → 使用者實際那一筆的鉀分級。同名食材可能對到鉀高很多的資料列（水耕青江菜 377 vs 土植 114），
+   * 實際分級比範本高時不出範本，避免高鉀菜照低鉀做法、照平常份量煮。
    * 回傳 [{ recipe, picked }]，用到越多樣食材的排越前面；同分照食譜庫順序。 */
-  function matchRecipes(keys, style) {
+  var TIER_RANK = { low: 0, medium: 1, high: 2 };
+  // known（可省略）：key → 使用者各筆裡「已知」的最高鉀分級，用來判斷常備食譜要不要減半。
+  // levels 裡鉀未知會蓋掉已知（為了擋範本），所以不能拿 levels 判斷減半（Codex 六審）。
+  function matchRecipes(keys, style, levels, known) {
     var have = {};
     (keys || []).forEach(function (k) { if (k) have[k] = true; });
     var want = STYLE_OK[style] || null;
@@ -673,10 +783,32 @@
         if (!hit) return;
         picked.push(hit);
       }
-      out.push({ recipe: r, picked: picked, score: picked.length, order: order });
+      // 有傳 levels 時，範本要「確定」不比菜單的分級高才出；鉀未知（手動只填名稱）或沒給分級都不出，
+      // 否則會照低鉀做法「洗淨直接下鍋、平常份量」
+      if (r.template && levels) {
+        var lv = levels[picked[picked.length - 1]];
+        if (!(lv in TIER_RANK) || TIER_RANK[lv] > TIER_RANK[r.tier]) return;
+      }
+      // 常備食譜的份量照目錄那一筆寫；使用者那一筆確定比較高鉀（水耕青江菜 377 vs 目錄 114）時，
+      // 照出但標「用量減半」（2026-11-19 使用者決定：不改交 AI，因為 AI 食譜無法逐道審）。鉀未知不標。
+      // 看食譜實際用到的每一樣（含配菜，不只 needs）；肉魚蛋豆是蛋白質來源，不減半（洗腎要吃夠）
+      var raised = [], kn = known || levels;
+      if (!r.template && kn) {
+        r.ingredients.forEach(function (ing) {
+          var c = entryOf(fill(ing.name, picked));
+          if (!c || !have[c.key] || PROTEIN_GROUPS[c.group] || raised.indexOf(c.key) >= 0) return;
+          var ul = kn[c.key], bl = BASE_LEVEL[c.key];
+          if (ul in TIER_RANK && bl in TIER_RANK && TIER_RANK[ul] > TIER_RANK[bl]) raised.push(c.key);
+        });
+      }
+      out.push({ recipe: r, picked: picked, raised: raised, score: picked.length, order: order });
     });
+    // 同一組食材已有招牌菜時，不再出同組合的範本（避免「高麗菜炒蛋」出現兩次）
+    var fixedSets = {};
+    out.forEach(function (m) { if (!m.recipe.template) fixedSets[m.picked.slice().sort().join('+')] = true; });
+    out = out.filter(function (m) { return !m.recipe.template || !fixedSets[m.picked.slice().sort().join('+')]; });
     out.sort(function (a, b) { return b.score - a.score || a.order - b.order; });
-    return out.map(function (m) { return { recipe: m.recipe, picked: m.picked }; });
+    return out.map(function (m) { return { recipe: m.recipe, picked: m.picked, raised: m.raised }; });
   }
 
   var MODE_TIP = {
@@ -698,8 +830,33 @@
     r.ingredients.forEach(function (ing) { used[fill(ing.name, picked)] = true; });
     var hasProtein = r.ingredients.some(function (ing) { var c = entryOf(fill(ing.name, picked)); return c && PROTEIN_GROUPS[c.group]; });
     var tipKey = (m ? 'dialysis' : 'predialysis') + (hasProtein ? '' : '_none');
+    var raised = match.raised || [];
+    var raisedTips = raised.map(function (k) {
+      var g = (entryOf(k) || {}).group;
+      return '你選的這筆' + k + '鉀比一般的高：用量減半' + (g === 'veg' || g === 'mush' ? '，下鍋前先汆燙、燙菜水倒掉' : '') + '，這一餐其他菜盡量選低鉀。';
+    });
+    var steps = r.steps.map(function (s) { return fill(s, picked); });
+    // 減半的蔬菜、菇類：原步驟沒汆燙它的（冬瓜燴肉末直接下鍋），在最前面補一步，不讓提醒和步驟打架（Codex 七審）
+    // 插在第一個用到它的步驟前面，切法照那一步（冬瓜要先去皮再切），不然會先汆燙、後去皮（Codex 八審）
+    raised.forEach(function (k) {
+      var g = (entryOf(k) || {}).group;
+      if ((g === 'veg' || g === 'mush') && !steps.some(function (s) { return s.indexOf(k) >= 0 && s.indexOf('汆燙') >= 0; })) {
+        // 接在原步驟的切法後面（「冬瓜去皮切小塊」→「冬瓜去皮切小塊，切好後…汆燙…」），不另起一步互相打架（Codex 九審）
+        var add = '，' + BLANCH_VEG + '（這筆鉀較高，比平常多這一步）';
+        var at = steps.findIndex(function (s) { return s.indexOf(k) >= 0; });
+        var seg = at >= 0 ? steps[at].slice(steps[at].indexOf(k)) : '';
+        var cut = seg.search(/[；。]/);
+        if (at >= 0 && cut > 0 && /切|去皮|摘|撕|剝/.test(seg.slice(0, cut))) {
+          var p = steps[at].indexOf(k) + cut;
+          steps[at] = steps[at].slice(0, p) + add + steps[at].slice(p);
+        } else {
+          steps.splice(at < 0 ? 0 : at, 0, '先把' + k + '洗淨切小塊' + add + '。');
+        }
+      }
+    });
     return {
       id: r.id,
+      template: !!r.template,
       title: fill(r.title, picked),
       intro: r.intro,
       servings: '2 人份',
@@ -709,10 +866,16 @@
         var c = entryOf(name);
         // 食譜用到、但使用者清單裡沒有的食材要講清楚：配菜可省略，主食得另外準備
         if (c && !have[name]) name += (c.group === 'veg' || c.group === 'mush') ? '（有的話再加）' : '（需另外準備）';
-        return { name: name, key: c ? c.key : null, amount: Array.isArray(ing.amount) ? ing.amount[m] : ing.amount };
+        var amount = Array.isArray(ing.amount) ? ing.amount[m] : ing.amount;
+        if (c && raised.indexOf(c.key) >= 0) amount += '（鉀較高，用量減半）';
+        return { name: name, key: c ? c.key : null, amount: amount };
       }),
-      steps: r.steps.map(function (s) { return fill(s, picked); }),
-      kidney_tips: r.tips.concat([MODE_TIP[tipKey]]),
+      steps: steps,
+      // 原食譜談這樣食材「份量或鉀分級」的提醒（「番茄是中鉀，一道菜用 1 顆就好」）會和減半打架，改用減半那條；
+      // 其他提到它的提醒（「冬瓜會出水，盤底湯汁不要喝」）照留
+      kidney_tips: raisedTips.concat(r.tips.filter(function (t) {
+        return !raised.some(function (k) { return t.indexOf(k) >= 0 && /份量|用量|[低中高]鉀|\d+\s*顆|\d+\s*g|一把|半把|就好/.test(t); });
+      }), [MODE_TIP[tipKey]]),
       not_used: (usableNames || []).filter(function (n) { return !used[n.key]; })
         .map(function (n) { return { name: n.name, reason: '這道菜沒用到，可以按「換一道」或「讓 AI 設計」。' }; })
     };
@@ -722,6 +885,7 @@
     GROUPS: GROUPS,
     CATALOG: CATALOG,
     RECIPES: RECIPES,
+    TEMPLATE_VEG: TEMPLATE_VEG,
     indexDb: indexDb,
     keyOf: keyOf,
     entryOf: entryOf,

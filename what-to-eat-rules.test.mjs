@@ -150,4 +150,83 @@ t('parseAiJson', () => {
   assert.equal(R.parseAiJson('說明 {範例} {"items":[{"name":"雞蛋"}]}').items[0].name, '雞蛋');
 });
 
+// 磷分級（沿用磷掃描器）：99 / 100 / 101，249 / 250 / 251
+t('phosphorus level boundaries', () => {
+  assert.equal(R.pLevelOf(99), 'low');
+  assert.equal(R.pLevelOf(99.9), 'low');
+  assert.equal(R.pLevelOf(100), 'medium');
+  assert.equal(R.pLevelOf(101), 'medium');
+  assert.equal(R.pLevelOf(250), 'medium');
+  assert.equal(R.pLevelOf(250.1), 'high');
+  assert.equal(R.pLevelOf(251), 'high');
+  assert.equal(R.pLevelOf(undefined), 'unknown');
+  assert.equal(R.pLevelLabel('high'), '高磷');
+  assert.equal(R.fromNutrientRow({ n: 'x', k: 1, p: 123, pr: 2 }).phosphorus, 123);
+});
+
+t('phosphorus advice', () => {
+  const tips = (o) => R.adviceFor(Object.assign({ name: '測試' }, o), 'dialysis').join('');
+  // 肉魚蛋豆：中磷也不叫人避開，指向加工品
+  assert.match(tips({ category: '肉類', potassium: 300, phosphorus: 190, protein: 20 }), /蛋白質來源.*加工食品/);
+  assert.match(tips({ category: '豆類', potassium: 45, phosphorus: 277, protein: 18 }), /含磷偏高，但這是蛋白質來源/);
+  // 麵條類蛋白質雖 ≥ 5 g，不能說成「蛋白質來源」
+  assert.doesNotMatch(tips({ category: '穀物類', potassium: 171, phosphorus: 136, protein: 13.8 }), /蛋白質來源/);
+  // 上面已有「要吃夠」（洗腎中）的蛋白質提醒時，磷提醒不能再說「不要吃太多」（Codex 二審：小米 鉀 202、磷 164、蛋白質 11.3）
+  const millet = tips({ name: '小米', category: '穀物類', potassium: 202, phosphorus: 164, protein: 11.3 });
+  assert.match(millet, /要吃夠/);
+  assert.doesNotMatch(millet, /不要吃太多/);
+  assert.match(millet, /含磷中等，份量照上面的原則/);
+  // 蛋白質低於門檻、沒有蛋白質提醒的才說「不要吃太多」
+  assert.match(tips({ category: '穀物類', potassium: 100, phosphorus: 136, protein: 3 }), /含磷中等，不要吃太多/);
+  // 低磷、查不到磷、已判不建議：不加磷提醒
+  assert.doesNotMatch(tips({ category: '蔬菜類', potassium: 187, phosphorus: 30 }), /含磷/);
+  assert.doesNotMatch(tips({ category: '蔬菜類', potassium: 187 }), /含磷/);
+  assert.doesNotMatch(tips({ name: '楊桃', category: '水果類', potassium: 152, phosphorus: 300 }), /含磷/);
+});
+
+t('verdict labels name potassium (row also shows phosphorus)', () => {
+  const lab = (k, c) => R.verdict({ name: '測試', category: c || '蔬菜類', potassium: k }).label;
+  assert.equal(lab(8, '穀物類'), '低鉀可吃');
+  assert.equal(lab(200), '中鉀適量');
+  assert.equal(lab(350), '⚠ 高鉀限量');
+  assert.equal(lab(null), '? 鉀無資料');
+  // 鉀未知的調味料不能只寫「可用」（Codex 二審）
+  assert.equal(lab(null, '調味料及香辛料類'), '? 鉀無資料，少量用');
+  // 香油（資料裡唯一缺鉀的調味料）：要是 caution，挑選卡片與 AI 提示才會帶「少量」（Codex 三審）
+  assert.equal(R.verdict({ name: '香油', category: '調味料及香辛料類', potassium: null }).code, 'caution');
+  assert.equal(lab(100, '調味料及香辛料類'), '低鉀可用');
+  assert.equal(lab(400, '調味料及香辛料類'), '⚠ 高鉀少量');
+  assert.equal(lab(600), '✕ 不建議');
+});
+
+t('phosphate additives: processed foods and cola get the additive warning, not "eat enough protein"', () => {
+  const tips = (o, mode) => R.adviceFor(Object.assign({ name: '測試' }, o), mode || 'dialysis').join('');
+  // 食藥署：切片火腿(豬肉) 加工調理食品及其他類，鉀 281、磷 344、蛋白質 16.5
+  const ham = tips({ name: '切片火腿(豬肉)', category: '加工調理食品及其他類', potassium: 281, phosphorus: 344, protein: 16.5 });
+  assert.match(ham, /磷酸鹽.*盡量少吃/);
+  assert.doesNotMatch(ham, /要吃夠|不要吃太多|照上面的份量/);
+  // 可樂磷只有 16，仍要提醒磷酸鹽
+  assert.match(tips({ name: '可樂', category: '飲料類', potassium: 0, phosphorus: 16 }), /磷酸鹽/);
+  // 肉類名稱帶加工字樣（香腸）也算
+  assert.match(tips({ name: '香腸', category: '肉類', potassium: 300, phosphorus: 200, protein: 15 }), /磷酸鹽.*盡量少吃/);
+  // 市售蒸蛋：蛋白質 3.6 g，沒有份量提醒，磷提醒不能說「照上面的份量」
+  const egg = tips({ name: '蒸蛋(市售)', category: '蛋類', potassium: 34, phosphorus: 111, protein: 3.6 });
+  assert.doesNotMatch(egg, /照上面的份量|蛋白質食物/);
+  assert.match(egg, /含磷中等，不要吃太多/);
+  assert.equal(R.isPhosphateAdditive({ name: '雞胸肉', category: '肉類' }), false);
+  // 可樂餅不是可樂（Codex 三審）
+  assert.equal(R.isPhosphateAdditive({ name: '冷凍可樂餅(奶汁)', category: '加工調理食品及其他類' }), false);
+  assert.equal(R.isPhosphateAdditive({ name: '可樂' }), true);
+  // 修改流程：搜尋「可樂」選「冷凍可樂餅」→ 看選定列（Codex 四審）
+  assert.equal(R.isPhosphateAdditive({ name: '可樂', dbName: '冷凍可樂餅(奶汁)' }), false);
+  assert.equal(R.isPhosphateAdditive({ name: '雞肉', dbName: '切片火腿(雞肉)' }), true);
+  // 傳統豆腐(2022年取樣) 在資料庫分到加工調理類，仍是蛋白質來源
+  assert.match(tips({ name: '傳統豆腐(2022年取樣)', dbName: '傳統豆腐(2022年取樣)', category: '加工調理食品及其他類', potassium: 120, phosphorus: 117, protein: 9.6 }), /含磷中等，但這是蛋白質來源/);
+  // 加工調理類整類不算：米粉、免煮飯沒有磷酸鹽依據（Codex 二審）
+  for (const name of ['埔里米粉', '免煮飯']) {
+    assert.equal(R.isPhosphateAdditive({ name, dbName: name, category: '加工調理食品及其他類' }), false, name);
+    assert.doesNotMatch(tips({ name, dbName: name, category: '加工調理食品及其他類', potassium: 20, phosphorus: 34, protein: 2 }), /磷酸鹽/, name);
+  }
+});
+
 console.log(`what-to-eat rules: ${n} groups passed.`);

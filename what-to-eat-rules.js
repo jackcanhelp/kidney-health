@@ -32,12 +32,33 @@
     return { low: '低鉀', medium: '中鉀', high: '高鉀', unknown: '未知' }[level];
   }
 
+  // 磷分級：沿用磷掃描器的定義（低 < 100、中 100–250、高 > 250 mg/100g）。只用來標示，不影響「不建議」判定。
+  var P_LOW_MAX_EXCLUSIVE = 100;
+  var P_MEDIUM_MAX_INCLUSIVE = 250;
+  function pLevelOf(p) {
+    if (typeof p !== 'number' || !isFinite(p)) return 'unknown';
+    if (p < P_LOW_MAX_EXCLUSIVE) return 'low';
+    if (p <= P_MEDIUM_MAX_INCLUSIVE) return 'medium';
+    return 'high';
+  }
+  // 常加磷酸鹽的加工品與飲料：這種磷幾乎全部被吸收，資料庫的磷含量也不一定算得到，不論分級都提醒少吃。
+  var PHOSPHATE_ADDITIVE_RE = /火腿|香腸|臘腸|培根|熱狗|貢丸|魚丸|肉丸|丸子|肉鬆|肉乾|肉脯|午餐肉|可樂(?!餅)|汽水|碳酸飲料|起司片|加工起司|奶精/;
+  // 只看名稱：「加工調理食品及其他類」整類有 316 筆，連米粉、包子、免煮飯都在內，不能整類當成加了磷酸鹽。
+  // 有選定的資料列就只看它：搜尋「可樂」選到「冷凍可樂餅」時，搜尋詞不能讓它變成可樂
+  function isPhosphateAdditive(item) {
+    return PHOSPHATE_ADDITIVE_RE.test(item.dbName || item.name || '');
+  }
+  function pLevelLabel(level) {
+    return { low: '低磷', medium: '中磷', high: '高磷', unknown: '磷未知' }[level];
+  }
+
   function isSeasoning(item) {
     return item.category === SEASONING_CATEGORY || item.isSeasoning === true;
   }
 
   /* 回傳 { code: 'avoid' | 'caution' | 'ok', label, reason }。
    * name 與比對到的資料庫名稱都要檢查：使用者可能拍到「薄鹽醬油」但比對到「醬油」。 */
+  // 標籤都帶「鉀」字（2026-11-19 使用者要求）：同一行還有磷分級，只寫「可吃」會被誤會成磷也沒問題。
   function verdict(item) {
     var names = [item.name || '', item.dbName || ''].join(' ');
     var k = item.potassium;
@@ -55,9 +76,10 @@
         return { code: 'avoid', label: '✕ 不建議', reason: '這項調味料含鉀很高，建議改用蔥、薑、蒜、白醋等少量提味。' };
       }
       if (level === 'high') {
-        return { code: 'caution', label: '⚠ 少量', reason: '調味料含鉀偏高，用量以小匙計，不要淋湯汁拌飯。' };
+        return { code: 'caution', label: '⚠ 高鉀少量', reason: '調味料含鉀偏高，用量以小匙計，不要淋湯汁拌飯。' };
       }
-      return { code: 'ok', label: '可用', reason: '' };
+      if (level === 'unknown') return { code: 'caution', label: '? 鉀無資料，少量用', reason: '查不到鉀含量，用量以小匙計。' };
+      return { code: 'ok', label: levelLabel(level) + '可用', reason: '' };
     }
 
     if (typeof k === 'number' && k >= AVOID_FOOD_MIN) {
@@ -68,15 +90,15 @@
       var why = /水果/.test(cat) ? '高鉀水果：烹調去不掉鉀，一次只吃少量。'
         : /肉|魚貝|蛋|豆/.test(cat) ? '高鉀：份量照營養師建議，可先汆燙，燉湯湯汁不喝。'
         : '高鉀：份量要少，切小塊先汆燙、湯汁不喝。';
-      return { code: 'caution', label: '⚠ 限量', reason: why };
+      return { code: 'caution', label: '⚠ 高鉀限量', reason: why };
     }
     if (level === 'medium') {
-      return { code: 'ok', label: '適量', reason: '' };
+      return { code: 'ok', label: '中鉀適量', reason: '' };
     }
     if (level === 'low') {
-      return { code: 'ok', label: '可吃', reason: '' };
+      return { code: 'ok', label: '低鉀可吃', reason: '' };
     }
-    return { code: 'caution', label: '? 無資料', reason: '查不到鉀含量，請詢問營養師。' };
+    return { code: 'caution', label: '? 鉀無資料', reason: '查不到鉀含量，請詢問營養師。' };
   }
 
   // 常見俗名 → 食藥署資料庫用名。AI 也會給 tfda_terms，這張表只補它常漏的。
@@ -198,7 +220,7 @@
 
   /* 食藥署 food-nutrients.json 的一筆 → 本工具使用的形狀。 */
   function fromNutrientRow(row) {
-    return { name: row.n, aliases: row.a || '', category: row.c, potassium: row.k, protein: row.pr };
+    return { name: row.n, aliases: row.a || '', category: row.c, potassium: row.k, phosphorus: row.p, protein: row.pr };
   }
 
   // 「蛋白質食物」：每 100 g 粗蛋白 ≥ 5 g；沒有蛋白質數字時退回看類別。
@@ -240,10 +262,22 @@
     } else if (cat === SEASONING_CATEGORY) {
       tips.push('用天然辛香料（蔥、薑、蒜、白醋、檸檬汁少量）提味，比依賴醬料安全。');
     }
-    if (isProteinRich(item) && v.code !== 'avoid') {
+    var additive = isPhosphateAdditive(item);
+    if (isProteinRich(item) && v.code !== 'avoid' && !additive) {
       tips.push(mode === 'dialysis'
         ? '洗腎中：這是蛋白質食物，要吃夠，每餐都要有一份優質蛋白，份量照營養師建議。'
         : '未洗腎：這是蛋白質食物，份量要控制，照醫師或營養師的低蛋白飲食份量吃，不要多吃。');
+    }
+    // 磷：天然食物裡的磷只標示；肉魚蛋豆是蛋白質來源，不因為磷就避開，要少吃的是加了磷酸鹽的加工品。
+    var pl = pLevelOf(item.phosphorus);
+    if (v.code !== 'avoid' && additive) {
+      tips.push('加工食品和可樂、汽水常加磷酸鹽，這種磷幾乎全部會被吸收；腎友盡量少吃，偶爾吃也只吃一點。');
+    } else if (v.code !== 'avoid' && (pl === 'medium' || pl === 'high')) {
+      var pWord = '含磷' + (pl === 'high' ? '偏高' : '中等');
+      // 上面有蛋白質份量提醒時不能再說「不要吃太多」（洗腎中那句是「要吃夠」）；肉魚蛋豆才說「這是蛋白質來源」，麵條、小米不算
+      tips.push(!isProteinRich(item) ? pWord + '，不要吃太多。'
+        : /肉|魚貝|蛋|豆/.test(cat) || /豆腐|豆干/.test(item.dbName || item.name || '') ? pWord + '，但這是蛋白質來源，照上面的份量吃就好；真正要少吃的是火腿、香腸、丸子、可樂這類加了磷酸鹽的加工食品。'
+          : pWord + '，份量照上面的原則，不要額外加量。');
     }
     return tips;
   }
@@ -306,6 +340,11 @@
     AVOID_SEASONING_MIN: AVOID_SEASONING_MIN,
     levelOf: levelOf,
     levelLabel: levelLabel,
+    P_LOW_MAX_EXCLUSIVE: P_LOW_MAX_EXCLUSIVE,
+    P_MEDIUM_MAX_INCLUSIVE: P_MEDIUM_MAX_INCLUSIVE,
+    pLevelOf: pLevelOf,
+    pLevelLabel: pLevelLabel,
+    isPhosphateAdditive: isPhosphateAdditive,
     verdict: verdict,
     matchFood: matchFood,
     PROTEIN_RICH_MIN: PROTEIN_RICH_MIN,
