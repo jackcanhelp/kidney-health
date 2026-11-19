@@ -102,13 +102,46 @@ t('not_used drops ingredients actually used', () => {
   assert.deepEqual(R.filterNotUsed([{ name: '葡萄' }], undefined).map((x) => x.name), ['葡萄']);
 });
 
-// 蛋白質食物門檻：4.9 / 5 / 5.1 g/100g；沒有數字時看類別
+// 蛋白質食物：肉魚蛋豆（含豆腐、豆干）且門檻 4.9 / 5 / 5.1 g/100g；沒有數字時只看類別
 t('protein-rich boundary', () => {
   assert.equal(R.isProteinRich({ protein: 4.9, category: '肉類' }), false);
-  assert.equal(R.isProteinRich({ protein: 5, category: '蔬菜類' }), true);
-  assert.equal(R.isProteinRich({ protein: 5.1, category: '蔬菜類' }), true);
+  assert.equal(R.isProteinRich({ protein: 5, category: '肉類' }), true);
+  assert.equal(R.isProteinRich({ protein: 5.1, category: '蛋類' }), true);
   assert.equal(R.isProteinRich({ protein: null, category: '魚貝類' }), true);
   assert.equal(R.isProteinRich({ protein: null, category: '蔬菜類' }), false);
+  // 蛋白質克數夠但不是肉魚蛋豆：乾麵條、小米、堅果、起司都不算（2026-11-20）
+  assert.equal(R.isProteinRich({ name: '乾麵條', category: '加工調理食品及其他類', protein: 10.2 }), false);
+  assert.equal(R.isProteinRich({ name: '小米', category: '穀物類', protein: 11 }), false);
+  assert.equal(R.isProteinRich({ name: '花生仁', category: '堅果及種子類', protein: 29 }), false);
+  assert.equal(R.isProteinRich({ name: '切達起司', category: '乳品類', protein: 25 }), false);
+  assert.equal(R.isProteinRich({ protein: 5.1, category: '蔬菜類' }), false);
+  // 豆腐、豆干在加工調理類，看品名
+  assert.equal(R.isProteinRich({ name: '豆腐', dbName: '傳統豆腐', category: '加工調理食品及其他類', protein: 8.5 }), true);
+  assert.equal(R.isProteinRich({ name: '豆干', dbName: '五香豆干', category: '加工調理食品及其他類', protein: 17 }), true);
+  // 加工調理類的肉魚製品：品名有肉魚字且蛋白質 14.9 / 15 / 15.1；堅果點心不算
+  const proc = (name, protein) => R.isProteinRich({ name, category: '加工調理食品及其他類', protein });
+  assert.equal(proc('烤雞', 14.9), false);
+  assert.equal(proc('烤雞', 15), true);
+  assert.equal(proc('熟鵝腿肉', 18.5), true);
+  assert.equal(proc('通心麵', 13.8), false);
+  assert.equal(proc('冷凍牛肉水餃', 8.9), false);
+  assert.equal(proc('蛋酥花生仁', 21.1), false);
+  assert.equal(proc('烤雞', null), false);
+  assert.equal(proc('烤雞', 15.1), true);
+  // Codex 十二審：魚字旁、肘；豆製品不看門檻但整道餐點不算
+  assert.equal(proc('鹽漬小鱗脂眼鯡(鹹馧仔)', 17.4), true);
+  assert.equal(proc('醬肘子', 19), true);
+  const soy = (name, protein) => R.isProteinRich({ name, category: '加工調理食品及其他類', protein });
+  assert.equal(soy('嫩豆腐', 4.9), true);
+  assert.equal(soy('傳統豆腐', 8.5), true);
+  assert.equal(soy('壽司(豆皮壽司)', 6.3), false);
+  assert.equal(soy('油豆腐粉絲(阿給)', 6.9), false);
+  // 魚鬆、肉酥和肉鬆一樣當磷酸鹽加工品（旗魚鬆不能顯示「要吃夠」）
+  assert.equal(R.isPhosphateAdditive({ name: '旗魚鬆' }), true);
+  assert.equal(R.isPhosphateAdditive({ name: '豬肉酥' }), true);
+  assert.doesNotMatch(R.adviceFor({ name: '旗魚鬆', category: '加工調理食品及其他類', potassium: 200, phosphorus: 423, protein: 31.3 }, 'dialysis').join(' '), /要吃夠/);
+  // 洗腎中：乾麵條不能說「要吃夠」
+  assert.doesNotMatch(R.adviceFor({ name: '乾麵條', category: '加工調理食品及其他類', potassium: 120, phosphorus: 150, protein: 10.2 }, 'dialysis').join(' '), /要吃夠|蛋白質來源/);
 });
 
 // 未洗腎／洗腎中：蛋白質食物的建議方向相反；非蛋白質食物、不建議的食材不加這句
@@ -171,11 +204,14 @@ t('phosphorus advice', () => {
   assert.match(tips({ category: '豆類', potassium: 45, phosphorus: 277, protein: 18 }), /含磷偏高，但這是蛋白質來源/);
   // 麵條類蛋白質雖 ≥ 5 g，不能說成「蛋白質來源」
   assert.doesNotMatch(tips({ category: '穀物類', potassium: 171, phosphorus: 136, protein: 13.8 }), /蛋白質來源/);
-  // 上面已有「要吃夠」（洗腎中）的蛋白質提醒時，磷提醒不能再說「不要吃太多」（Codex 二審：小米 鉀 202、磷 164、蛋白質 11.3）
+  // 小米不是蛋白質食物（2026-11-20 起只算肉魚蛋豆）：沒有「要吃夠」，磷照一般食物提醒（Codex 二審的例子：鉀 202、磷 164、蛋白質 11.3）
   const millet = tips({ name: '小米', category: '穀物類', potassium: 202, phosphorus: 164, protein: 11.3 });
-  assert.match(millet, /要吃夠/);
-  assert.doesNotMatch(millet, /不要吃太多/);
-  assert.match(millet, /含磷中等，份量照上面的原則/);
+  assert.doesNotMatch(millet, /要吃夠|蛋白質來源/);
+  assert.match(millet, /含磷中等，不要吃太多/);
+  // 蛋白質食物有「要吃夠」時，磷提醒不能再說「不要吃太多」
+  const tofu = tips({ name: '豆腐', dbName: '傳統豆腐', category: '加工調理食品及其他類', potassium: 180, phosphorus: 111, protein: 8.5 });
+  assert.match(tofu, /要吃夠/);
+  assert.doesNotMatch(tofu, /不要吃太多/);
   // 蛋白質低於門檻、沒有蛋白質提醒的才說「不要吃太多」
   assert.match(tips({ category: '穀物類', potassium: 100, phosphorus: 136, protein: 3 }), /含磷中等，不要吃太多/);
   // 低磷、查不到磷、已判不建議：不加磷提醒

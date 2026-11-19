@@ -42,7 +42,7 @@
     return 'high';
   }
   // 常加磷酸鹽的加工品與飲料：這種磷幾乎全部被吸收，資料庫的磷含量也不一定算得到，不論分級都提醒少吃。
-  var PHOSPHATE_ADDITIVE_RE = /火腿|香腸|臘腸|培根|熱狗|貢丸|魚丸|肉丸|丸子|肉鬆|肉乾|肉脯|午餐肉|可樂(?!餅)|汽水|碳酸飲料|起司片|加工起司|奶精/;
+  var PHOSPHATE_ADDITIVE_RE = /火腿|香腸|臘腸|培根|熱狗|貢丸|魚丸|肉丸|丸子|[肉魚]鬆|肉酥|肉乾|肉脯|午餐肉|可樂(?!餅)|汽水|碳酸飲料|起司片|加工起司|奶精/;
   // 只看名稱：「加工調理食品及其他類」整類有 316 筆，連米粉、包子、免煮飯都在內，不能整類當成加了磷酸鹽。
   // 有選定的資料列就只看它：搜尋「可樂」選到「冷凍可樂餅」時，搜尋詞不能讓它變成可樂
   function isPhosphateAdditive(item) {
@@ -223,11 +223,25 @@
     return { name: row.n, aliases: row.a || '', category: row.c, potassium: row.k, phosphorus: row.p, protein: row.pr };
   }
 
-  // 「蛋白質食物」：每 100 g 粗蛋白 ≥ 5 g；沒有蛋白質數字時退回看類別。
-  var PROTEIN_RICH_MIN = 5;
+  // 「蛋白質食物」＝肉、魚貝、蛋、豆類，以及豆腐、豆干這類豆製品（食藥署歸在加工調理類），且每 100 g 粗蛋白 ≥ 5 g（沒有數字就只看類別）。
+  // 只看蛋白質克數會把乾麵條、小米、堅果算進來，洗腎中那句「要吃夠優質蛋白」就錯了（2026-11-20）。
+  // 乳品不算：起司、奶粉磷高，給「含磷偏高，不要吃太多」比「蛋白質要吃夠」安全
+  // 加工調理類混著餐點、麵條、肉製品：豆製品看品名；烤雞、熟鵝、叉燒、魚鬆這類肉魚製品要品名有肉魚字且蛋白質 ≥ 15 g
+  // （乾麵條 11.6、水餃 9 左右都不到），堅果點心（蛋酥花生）排除。門檻是拿全食藥署資料比對後定的
+  var PROTEIN_RICH_MIN = 5, PROCESSED_PROTEIN_MIN = 15;
   function isProteinRich(item) {
-    if (typeof item.protein === 'number' && isFinite(item.protein)) return item.protein >= PROTEIN_RICH_MIN;
-    return /肉|魚貝|蛋|豆|乳品/.test(item.category || '');
+    var name = item.dbName || item.name || '';
+    var hasP = typeof item.protein === 'number' && isFinite(item.protein);
+    // 豆製品不看門檻（嫩豆腐 4.9 g 也是蛋白質食物）；壽司、阿給這類整道餐點不算（Codex 十二審）
+    if (/豆腐|豆干|豆乾|豆包|豆皮/.test(name)) return !/壽司|粉絲|飯糰/.test(name);
+    if (/肉|魚貝|蛋|豆類/.test(item.category || '')) return !hasP || item.protein >= PROTEIN_RICH_MIN;
+    if (/加工調理/.test(item.category || '')) {
+      return hasP && item.protein >= PROCESSED_PROTEIN_MIN &&
+        // 魚字旁（鯡、鯖、鮭…）整段都算：鹹馧仔品名是「小鱗脂眼鯡」；醬肘子是豬（Codex 十二審）
+        /雞|鴨|鵝|牛|豬|羊|[魚-鱿]|蝦|蟹|花枝|小卷|魷|肘|肉|麵筋|麵腸/.test(name) &&
+        !/花生|瓜子|堅果|杏仁|核桃|腰果|松子/.test(name);
+    }
+    return false;
   }
 
   // 食譜裡蛋白質份量的規則，依未洗腎／洗腎中而不同（給 AI 的指示）。
@@ -274,10 +288,9 @@
       tips.push('加工食品和可樂、汽水常加磷酸鹽，這種磷幾乎全部會被吸收；腎友盡量少吃，偶爾吃也只吃一點。');
     } else if (v.code !== 'avoid' && (pl === 'medium' || pl === 'high')) {
       var pWord = '含磷' + (pl === 'high' ? '偏高' : '中等');
-      // 上面有蛋白質份量提醒時不能再說「不要吃太多」（洗腎中那句是「要吃夠」）；肉魚蛋豆才說「這是蛋白質來源」，麵條、小米不算
+      // 上面有蛋白質份量提醒時不能再說「不要吃太多」（洗腎中那句是「要吃夠」）
       tips.push(!isProteinRich(item) ? pWord + '，不要吃太多。'
-        : /肉|魚貝|蛋|豆/.test(cat) || /豆腐|豆干/.test(item.dbName || item.name || '') ? pWord + '，但這是蛋白質來源，照上面的份量吃就好；真正要少吃的是火腿、香腸、丸子、可樂這類加了磷酸鹽的加工食品。'
-          : pWord + '，份量照上面的原則，不要額外加量。');
+        : pWord + '，但這是蛋白質來源，照上面的份量吃就好；真正要少吃的是火腿、香腸、丸子、可樂這類加了磷酸鹽的加工食品。');
     }
     return tips;
   }
